@@ -584,7 +584,8 @@ public class MyCodeList extends JList<InstrEntry> {
         this.currentClass = cn;
         this.currentMethod = null;
         LazyListModel<InstrEntry> lm = new LazyListModel<InstrEntry>();
-        editor.setText(cn.name + " Fields");
+        String crashFixClassName = cn.name.replace("<html>", "HTMLCrashtag");
+        editor.setText(crashFixClassName + " Fields");
         ArrayList<InstrEntry> entries = new ArrayList<>();
         for (FieldNode fn : cn.fields) {
             InstrEntry entry = new FieldEntry(cn, fn);

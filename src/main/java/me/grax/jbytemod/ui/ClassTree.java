@@ -67,7 +67,7 @@ public class ClassTree extends JTree implements IDropUser {
         preloadMap = new HashMap<>();
         if (jar.getClasses() != null)
             for (ClassNode c : jar.getClasses().values()) {
-                String name = c.name;
+                String name = c.name.replace("<html>", "HTMLCrashtag");
                 String[] path = array_unique(name.split("/"));
                 name = String.join("/", path);
 
