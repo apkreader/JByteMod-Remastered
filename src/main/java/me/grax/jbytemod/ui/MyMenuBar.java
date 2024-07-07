@@ -4,7 +4,7 @@ import android.util.Patterns;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 import me.grax.jbytemod.JByteMod;
-import me.grax.jbytemod.plugin.Plugin;
+import de.xbrowniecodez.jbytemod.plugin.Plugin;
 import me.grax.jbytemod.res.LanguageRes;
 import me.grax.jbytemod.res.Option;
 import me.grax.jbytemod.res.Options;

@@ -1,12 +1,15 @@
-package me.grax.jbytemod.plugin;
+package de.xbrowniecodez.jbytemod.plugin;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.grax.jbytemod.JByteMod;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
 import java.util.Map;
-
+@Getter
+@Setter
 public abstract class Plugin {
     protected String name;
     protected String version;
@@ -38,27 +41,16 @@ public abstract class Plugin {
         return JByteMod.instance.getMyMenuBar();
     }
 
-    protected final JTree gerTree() {
+    protected final JTree getTree() {
         return JByteMod.instance.getJarTree();
     }
 
-    protected final ClassNode gerSelectedNode() {
+    protected final ClassNode getSelectedNode() {
         return JByteMod.instance.getCurrentNode();
     }
 
-    protected final MethodNode gerSelectedMethod() {
+    protected final MethodNode getSelectedMethod() {
         return JByteMod.instance.getCurrentMethod();
     }
 
-    public final String getName() {
-        return name;
-    }
-
-    public final String getVersion() {
-        return version;
-    }
-
-    public final String getAuthor() {
-        return author;
-    }
 }
