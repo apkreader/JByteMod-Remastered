@@ -4,7 +4,6 @@ import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.github.weisj.darklaf.theme.OneDarkTheme;
 import me.grax.jbytemod.JByteMod;
-import me.grax.jbytemod.ui.graph.ControlFlowPanel;
 
 public class LookUtils {
 
