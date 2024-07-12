@@ -1,6 +1,7 @@
 
 # JByteMod Remastered
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1424a48eb60a41d0bdf8fbe6820e8669)](https://app.codacy.com/gh/xBrownieCodezV2/JByteMod-Remastered?utm_source=github.com&utm_medium=referral&utm_content=xBrownieCodezV2/JByteMod-Remastered&utm_campaign=Badge_Grade)
 [![Build Status](https://ci.mdma.dev/api/badges/xBrownieCodezV2/JByteMod-Remastered/status.svg)](https://ci.mdma.dev/xBrownieCodezV2/JByteMod-Remastered)
 
 JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array of features for decompiling, editing, and recompiling Java class files. This version includes improvements over the original JByteMod, making it a versatile tool for Java developers and enthusiasts.
