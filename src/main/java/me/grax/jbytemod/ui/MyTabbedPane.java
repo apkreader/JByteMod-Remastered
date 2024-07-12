@@ -36,9 +36,9 @@ public class MyTabbedPane extends JTabbedPane {
                     int tabNr = ((TabbedPaneUI) getUI()).tabForCoordinate(MyTabbedPane.this, me.getX(), me.getY());
                     if (tabNr == 0) {
                         JPopupMenu menu = new JPopupMenu();
-                        for (ClassNode cn : JByteMod.lastSelectedTreeEntries.keySet()) {
+                        for (ClassNode cn : JByteMod.instance.getLastSelectedTreeEntries().keySet()) {
                             String item = cn.name;
-                            MethodNode mn = JByteMod.lastSelectedTreeEntries.get(cn);
+                            MethodNode mn = JByteMod.instance.getLastSelectedTreeEntries().get(cn);
                             if (mn != null) {
                                 item += "." + mn.name;
                             }

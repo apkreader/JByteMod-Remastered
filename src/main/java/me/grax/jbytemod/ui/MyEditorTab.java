@@ -86,7 +86,7 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectClass(ClassNode cn) {
-        JByteMod.instance.getDiscord().updatePresence("Working on " + JByteMod.lastEditFile, "Editing " + cn.name);
+        JByteMod.instance.getDiscord().updatePresence("Working on " + JByteMod.instance.getLastEditFile(), "Editing " + cn.name);
 
         String selectedComponentName = center.getComponent(0).getName();
         if (Objects.nonNull(selectedComponentName)) {
@@ -96,7 +96,7 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectMethod(ClassNode cn, MethodNode mn) {
-        JByteMod.instance.getDiscord().updatePresence("Working on " + JByteMod.lastEditFile, "Editing " + cn.name + "." + mn.name);
+        JByteMod.instance.getDiscord().updatePresence("Working on " + JByteMod.instance.getLastEditFile(), "Editing " + cn.name + "." + mn.name);
 
         String selectedComponentName = center.getComponent(0).getName();
         if (Objects.nonNull(selectedComponentName)) {

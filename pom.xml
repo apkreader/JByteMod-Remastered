@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
-		<asm.version>9.7-SNAPSHOT</asm.version>
+		<asm.version>9.8-SNAPSHOT</asm.version>
 		<procyon.version>0.6.0</procyon.version>
 		<cfr.version>0.152</cfr.version>
 		<jd-core.version>1.1.3</jd-core.version>
@@ -202,7 +202,7 @@
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
-			<version>1.5.1</version>
+			<version>1.5.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.weisj</groupId>

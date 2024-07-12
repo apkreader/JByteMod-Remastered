@@ -57,8 +57,12 @@ public class JByteMod extends JFrame {
     public static Logging LOGGER;
     public static LanguageRes res;
     public static Options ops;
-    public static String lastEditFile = "";
-    public static HashMap<ClassNode, MethodNode> lastSelectedTreeEntries = new LinkedHashMap<>();
+    @Getter
+    @Setter
+    private String lastEditFile = "";
+    @Getter
+    @Setter
+    private HashMap<ClassNode, MethodNode> lastSelectedTreeEntries = new LinkedHashMap<>();
     public static JByteMod instance;
     public static Color border;
     private static boolean lafInit;

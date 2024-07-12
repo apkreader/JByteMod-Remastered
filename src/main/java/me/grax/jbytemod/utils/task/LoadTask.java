@@ -184,7 +184,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
 
     @Override
     protected void done() {
-        JByteMod.lastEditFile = file.getName();
+        JByteMod.instance.setLastEditFile(file.getName());
         JByteMod.instance.getDiscord().updatePresence("Working on " + file.getName(), "Idle ...");
         JByteMod.LOGGER.log("Successfully loaded file!");
         jbm.refreshTree();
