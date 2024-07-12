@@ -44,10 +44,10 @@ public class ClassTree extends JTree implements IDropUser {
                 SortedTreeNode node = (SortedTreeNode) ClassTree.this.getLastSelectedPathComponent();
                 if (node == null)
                     return;
-                if (node.getCn() != null && node.getMn() != null) {
-                    jam.selectMethod(node.getCn(), node.getMn());
-                } else if (node.getCn() != null) {
-                    jam.selectClass(node.getCn());
+                if (node.getClassNode() != null && node.getMethodNode() != null) {
+                    jam.selectMethod(node.getClassNode(), node.getMethodNode());
+                } else if (node.getClassNode() != null) {
+                    jam.selectClass(node.getClassNode());
                 } else {
 
                 }
@@ -123,7 +123,7 @@ public class ClassTree extends JTree implements IDropUser {
 
     public void expandSaved(SortedTreeNode node) {
         TreePath tp = new TreePath(node.getPath());
-        if (node.getCn() != null && expandedNodes.contains(node.getCn())) {
+        if (node.getClassNode() != null && expandedNodes.contains(node.getClassNode())) {
             super.expandPath(tp);
         }
         if (expandedNodes.contains(tp.toString())) {
@@ -140,8 +140,8 @@ public class ClassTree extends JTree implements IDropUser {
     @Override
     public void expandPath(TreePath path) {
         SortedTreeNode stn = (SortedTreeNode) path.getLastPathComponent();
-        if (stn.getCn() != null) {
-            expandedNodes.add(stn.getCn());
+        if (stn.getClassNode() != null) {
+            expandedNodes.add(stn.getClassNode());
         } else {
             expandedNodes.add(path.toString());
         }
@@ -151,8 +151,8 @@ public class ClassTree extends JTree implements IDropUser {
     @Override
     public void collapsePath(TreePath path) {
         SortedTreeNode stn = (SortedTreeNode) path.getLastPathComponent();
-        if (stn.getCn() != null) {
-            expandedNodes.remove(stn.getCn());
+        if (stn.getClassNode() != null) {
+            expandedNodes.remove(stn.getClassNode());
         } else {
             expandedNodes.remove(path.toString());
         }
@@ -170,8 +170,8 @@ public class ClassTree extends JTree implements IDropUser {
                             return;
                         }
                         SortedTreeNode stn = (SortedTreeNode) ClassTree.this.getLastSelectedPathComponent();
-                        MethodNode mn = stn.getMn();
-                        ClassNode cn = stn.getCn();
+                        MethodNode mn = stn.getMethodNode();
+                        ClassNode cn = stn.getClassNode();
 
                         if (mn != null) {
                             //method selected
@@ -353,7 +353,7 @@ public class ClassTree extends JTree implements IDropUser {
                             return;
                         }
                         SortedTreeNode stn = (SortedTreeNode) ClassTree.this.getLastSelectedPathComponent();
-                        if (stn.getMn() == null && stn.getCn() == null) {
+                        if (stn.getMethodNode() == null && stn.getClassNode() == null) {
                             if (ClassTree.this.isExpanded(tp)) {
                                 ClassTree.this.collapsePath(tp);
                             } else {
@@ -416,8 +416,8 @@ public class ClassTree extends JTree implements IDropUser {
                 deleteItselfAndChilds((SortedTreeNode) n);
             }
         }
-        if (node.getCn() != null)
-            jbm.getJarArchive().getClasses().remove(node.getCn().name);
+        if (node.getClassNode() != null)
+            jbm.getJarArchive().getClasses().remove(node.getClassNode().name);
         model.removeNodeFromParent(node);
     }
 

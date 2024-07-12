@@ -215,7 +215,7 @@ public class JByteMod extends JFrame {
     private boolean selectEntry(MethodNode mn, DefaultTreeModel tm, SortedTreeNode node) {
         for (int i = 0; i < tm.getChildCount(node); i++) {
             SortedTreeNode child = (SortedTreeNode) tm.getChild(node, i);
-            if (child.getMn() != null && child.getMn().equals(mn)) {
+            if (child.getMethodNode() != null && child.getMethodNode().equals(mn)) {
                 TreePath tp = new TreePath(tm.getPathToRoot(child));
                 jarTree.setSelectionPath(tp);
                 jarTree.scrollPathToVisible(tp);

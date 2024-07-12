@@ -1,26 +1,30 @@
 package me.grax.jbytemod.ui.tree;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.Vector;
 
+@Getter
+@Setter
 public class SortedTreeNode extends DefaultMutableTreeNode {
 
-    private ClassNode c;
-    private MethodNode m;
+    private ClassNode classNode;
+    private MethodNode methodNode;
     private String className;
 
-    public SortedTreeNode(ClassNode c, MethodNode m) {
-        this.c = c;
-        this.m = m;
+    public SortedTreeNode(ClassNode classNode, MethodNode methodNode) {
+        this.classNode = classNode;
+        this.methodNode = methodNode;
         setClassName();
     }
 
-    public SortedTreeNode(ClassNode c) {
-        this.c = c;
+    public SortedTreeNode(ClassNode classNode) {
+        this.classNode = classNode;
         setClassName();
     }
 
@@ -29,56 +33,39 @@ public class SortedTreeNode extends DefaultMutableTreeNode {
     }
 
     private void setClassName() {
-        String[] split = c.name.split("/");
+        String[] split = classNode.name.split("/");
         this.className = split[split.length - 1] + ".class";
-    }
-
-    public ClassNode getCn() {
-        return c;
-    }
-
-    public void setCn(ClassNode c) {
-        this.c = c;
-    }
-
-    public MethodNode getMn() {
-        return m;
-    }
-
-    public void setMn(MethodNode m) {
-        this.m = m;
     }
 
     @SuppressWarnings("unchecked")
     public void sort() {
-        Collections.sort(children, compare());
+        Vector<DefaultMutableTreeNode> childrenNodes = (Vector<DefaultMutableTreeNode>) children;
+        if (childrenNodes != null) {
+            childrenNodes.sort(compare());
+        }
     }
 
     private Comparator<DefaultMutableTreeNode> compare() {
-        return new Comparator<DefaultMutableTreeNode>() {
-            @Override
-            public int compare(DefaultMutableTreeNode o1, DefaultMutableTreeNode o2) {
-                boolean leaf1 = o1.toString().endsWith(".class");
-                boolean leaf2 = o2.toString().endsWith(".class");
+        return (o1, o2) -> {
+            boolean leaf1 = o1.toString().endsWith(".class");
+            boolean leaf2 = o2.toString().endsWith(".class");
 
-                if (leaf1 && !leaf2) {
-                    return 1;
-                }
-                if (!leaf1 && leaf2) {
-                    return -1;
-                }
-                return o1.toString().compareTo(o2.toString());
-
+            if (leaf1 && !leaf2) {
+                return 1;
             }
+            if (!leaf1 && leaf2) {
+                return -1;
+            }
+            return o1.toString().compareTo(o2.toString());
         };
     }
 
     @Override
     public String toString() {
-        if (m != null) {
-            return m.name;
+        if (methodNode != null) {
+            return methodNode.name;
         }
-        if (c != null) {
+        if (classNode != null) {
             return className;
         }
         return userObject.toString();

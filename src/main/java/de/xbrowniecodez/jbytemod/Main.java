@@ -10,6 +10,7 @@ import me.grax.jbytemod.utils.FileUtils;
 import org.apache.commons.cli.*;
 
 
+import javax.swing.*;
 import java.io.File;
 @Getter
 public enum Main {
@@ -28,10 +29,10 @@ public enum Main {
         }
         this.logger = new Logging();
         this.jByteMod = new JByteMod(false);
-        this.updateChecker = new UpdateChecker();
         this.discord = new Discord("1184572566795468881");
         this.loadFileIfNeeded(cmd, jByteMod);
-        this.jByteMod.setVisible(true);
+        SwingUtilities.invokeLater(() -> this.jByteMod.setVisible(true));
+        this.updateChecker = new UpdateChecker();
     }
 
     private CommandLine parseCommandLine(String[] args) {

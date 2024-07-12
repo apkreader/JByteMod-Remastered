@@ -21,7 +21,7 @@ public class UpdateChecker {
 	private Version latestVersion;
 
 	public UpdateChecker() {
-		check();
+		new Thread(this::check).start();
 	}
 
 	public void check() {

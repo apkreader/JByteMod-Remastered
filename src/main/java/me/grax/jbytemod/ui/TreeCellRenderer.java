@@ -86,7 +86,7 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer implements Opcodes
             this.setIcon(this.pack);
         } else if (this.getFileName(n).endsWith(".class")) {
             SortedTreeNode stn = (SortedTreeNode) n;
-            ClassNode cn = stn.getCn();
+            ClassNode cn = stn.getClassNode();
             if (cn != null) {
                 if (AccessHelper.isInterface(cn.access)) {
                     this.setIcon(this.itf);
@@ -98,7 +98,7 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer implements Opcodes
             }
         } else if (n.getParent() != null && this.getFileName((DefaultMutableTreeNode) n.getParent()).endsWith(".class")) {
             SortedTreeNode stn = (SortedTreeNode) n;
-            MethodNode mn = stn.getMn();
+            MethodNode mn = stn.getMethodNode();
             if (mn != null) {
                 ImageIcon icon;
                 if (methodIcons.containsKey(mn.access)) {
