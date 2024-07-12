@@ -1,13 +1,12 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.utils.TextUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class JAboutFrame extends JDialog {
 
@@ -16,14 +15,14 @@ public class JAboutFrame extends JDialog {
     }
 
     private void initializeUI(JByteMod jbm) {
-        setTitle(JByteMod.res.getResource("about") + " " + jbm.getTitle());
+        setTitle(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("about") + " " + jbm.getTitle());
         setModal(true);
         setBounds(100, 100, 450, 300);
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         setResizable(false);
 
-        JButton closeButton = new JButton(JByteMod.res.getResource("close"));
+        JButton closeButton = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("close"));
         closeButton.addActionListener(e -> dispose());
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 4));

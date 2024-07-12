@@ -1,6 +1,6 @@
 package me.grax.jbytemod.utils;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 
 public class TextUtils {
 
@@ -9,7 +9,7 @@ public class TextUtils {
     }
 
     public static String toThemeColor(String str) {
-        String fontColor = JByteMod.ops.get("use_dark_theme").getBoolean() ? "#aba9a9" : "#000000";
+        String fontColor = Main.INSTANCE.getJByteMod().getOptions().get("use_dark_theme").getBoolean() ? "#aba9a9" : "#000000";
         return addTag(str, "font color=" + fontColor);
     }
 

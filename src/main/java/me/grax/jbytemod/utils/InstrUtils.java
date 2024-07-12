@@ -1,6 +1,7 @@
 package me.grax.jbytemod.utils;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+
 import me.grax.jbytemod.res.Option;
 import me.lpk.util.OpUtils;
 import org.objectweb.asm.Handle;
@@ -8,8 +9,8 @@ import org.objectweb.asm.tree.*;
 
 public class InstrUtils {
 
-    public static Option primColor = JByteMod.ops.get("primary_color");
-    public static Option secColor = JByteMod.ops.get("secondary_color");
+    public static Option primColor = Main.INSTANCE.getJByteMod().getOptions().get("primary_color");
+    public static Option secColor = Main.INSTANCE.getJByteMod().getOptions().get("secondary_color");
 
     public static String toString(AbstractInsnNode ain) {
         String opc = TextUtils.toBold(OpUtils.getOpcodeText(ain.getOpcode()).toLowerCase()) + " ";

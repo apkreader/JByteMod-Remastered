@@ -3,8 +3,6 @@ package me.grax.jbytemod.utils;
 import com.javadeobfuscator.deobfuscator.analyzer.AnalyzerResult;
 import com.javadeobfuscator.deobfuscator.analyzer.MethodAnalyzer;
 import com.javadeobfuscator.deobfuscator.analyzer.frame.LdcFrame;
-import com.javadeobfuscator.deobfuscator.utils.ClassTree;
-import me.grax.jbytemod.JByteMod;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -19,7 +17,6 @@ import static org.objectweb.asm.Opcodes.*;
 import com.javadeobfuscator.deobfuscator.analyzer.frame.*;
 import com.javadeobfuscator.deobfuscator.utils.Utils;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 

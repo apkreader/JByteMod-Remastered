@@ -1,6 +1,7 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import de.xbrowniecodez.jbytemod.ui.lists.SearchList;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -22,8 +23,8 @@ public class MyTabbedPane extends JTabbedPane {
         this.addTab("Editor", editorTab);
         SearchList searchList = new SearchList(jbm);
         jbm.setSearchList(searchList);
-        JLabel search = new JLabel(JByteMod.res.getResource("search_results"));
-        this.addTab(JByteMod.res.getResource("search"), this.withBorder(search, searchList));
+        JLabel search = new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("search_results"));
+        this.addTab(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("search"), this.withBorder(search, searchList));
         this.addTab("Opcodes", this.withBorder(new JLabel("Opcodes"), new OpcodeTable()));
         //MethodRefPanel mrp = new MethodRefPanel(jbm);
         //jbm.setMethodRefPanel(mrp);
@@ -36,9 +37,9 @@ public class MyTabbedPane extends JTabbedPane {
                     int tabNr = ((TabbedPaneUI) getUI()).tabForCoordinate(MyTabbedPane.this, me.getX(), me.getY());
                     if (tabNr == 0) {
                         JPopupMenu menu = new JPopupMenu();
-                        for (ClassNode cn : JByteMod.instance.getLastSelectedTreeEntries().keySet()) {
+                        for (ClassNode cn : Main.INSTANCE.getJByteMod().getLastSelectedTreeEntries().keySet()) {
                             String item = cn.name;
-                            MethodNode mn = JByteMod.instance.getLastSelectedTreeEntries().get(cn);
+                            MethodNode mn = Main.INSTANCE.getJByteMod().getLastSelectedTreeEntries().get(cn);
                             if (mn != null) {
                                 item += "." + mn.name;
                             }

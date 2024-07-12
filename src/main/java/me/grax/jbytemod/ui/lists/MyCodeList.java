@@ -1,6 +1,7 @@
 package me.grax.jbytemod.ui.lists;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.JAnnotationEditor;
 import me.grax.jbytemod.ui.JSearch;
 import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;
@@ -156,7 +157,7 @@ public class MyCodeList extends JList<InstrEntry> {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                if (JByteMod.ops.get("hints").getBoolean()) {
+                if (Main.INSTANCE.getJByteMod().getOptions().get("hints").getBoolean()) {
                     ListModel<InstrEntry> m = getModel();
                     int index = locationToIndex(e.getPoint());
                     if (index > -1) {
@@ -176,7 +177,7 @@ public class MyCodeList extends JList<InstrEntry> {
         ClassNode cn = fle.getCn();
         JPopupMenu menu = new JPopupMenu();
         if (selected.size() > 1) {
-            JMenuItem remove = new JMenuItem(JByteMod.res.getResource("remove_all"));
+            JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove_all"));
             remove.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     for (InstrEntry sel : selected) {
@@ -189,7 +190,7 @@ public class MyCodeList extends JList<InstrEntry> {
             menu.add(copyText());
             menu.show(jbm, (int) jbm.getMousePosition().getX(), (int) jbm.getMousePosition().getY());
         } else {
-            JMenuItem edit = new JMenuItem(JByteMod.res.getResource("edit"));
+            JMenuItem edit = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
             edit.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -201,7 +202,7 @@ public class MyCodeList extends JList<InstrEntry> {
                 }
             });
             menu.add(edit);
-            JMenuItem remove = new JMenuItem(JByteMod.res.getResource("remove"));
+            JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
             remove.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     cn.fields.remove(fle.getFn());
@@ -209,7 +210,7 @@ public class MyCodeList extends JList<InstrEntry> {
                 }
             });
             menu.add(remove);
-            JMenuItem add = new JMenuItem(JByteMod.res.getResource("insert"));
+            JMenuItem add = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("insert"));
             add.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -246,11 +247,11 @@ public class MyCodeList extends JList<InstrEntry> {
     }
 
     private JMenuItem copyText() {
-        JMenuItem copy = new JMenuItem(JByteMod.res.getResource("copy_text"));
+        JMenuItem copy = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("copy_text"));
         copy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 copyToClipbord();
-                JByteMod.LOGGER.log("Copied code to clipboard!");
+                 Main.INSTANCE.getLogger().log("Copied code to clipboard!");
             }
         });
         return copy;
@@ -258,7 +259,7 @@ public class MyCodeList extends JList<InstrEntry> {
 
     protected void copyToClipbord() {
         StringBuilder sb = new StringBuilder();
-        boolean html = JByteMod.ops.get("copy_formatted").getBoolean();
+        boolean html = Main.INSTANCE.getJByteMod().getOptions().get("copy_formatted").getBoolean();
         if (html) {
             for (InstrEntry sel : MyCodeList.this.getSelectedValuesList()) {
                 sb.append(sel.toString());
@@ -279,7 +280,7 @@ public class MyCodeList extends JList<InstrEntry> {
     protected void rightClickMethod(JByteMod jbm, MethodNode mn, AbstractInsnNode ain, List<InstrEntry> selected) {
         if (selected.size() > 1) {
             JPopupMenu menu = new JPopupMenu();
-            JMenuItem remove = new JMenuItem(JByteMod.res.getResource("remove_all"));
+            JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove_all"));
             remove.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     for (InstrEntry sel : selected) {
@@ -295,7 +296,7 @@ public class MyCodeList extends JList<InstrEntry> {
             menu.show(jbm, (int) jbm.getMousePosition().getX(), (int) jbm.getMousePosition().getY());
         } else {
             JPopupMenu menu = new JPopupMenu();
-            JMenuItem insertBefore = new JMenuItem(JByteMod.res.getResource("ins_before"));
+            JMenuItem insertBefore = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("ins_before"));
             insertBefore.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
@@ -308,7 +309,7 @@ public class MyCodeList extends JList<InstrEntry> {
                 }
             });
             menu.add(insertBefore);
-            JMenuItem insert = new JMenuItem(JByteMod.res.getResource("ins_after"));
+            JMenuItem insert = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("ins_after"));
             insert.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -323,7 +324,7 @@ public class MyCodeList extends JList<InstrEntry> {
             menu.add(insert);
 
             if (InsnEditDialogue.canEdit(ain)) {
-                JMenuItem edit = new JMenuItem(JByteMod.res.getResource("edit"));
+                JMenuItem edit = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
                 edit.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         try {
@@ -336,7 +337,7 @@ public class MyCodeList extends JList<InstrEntry> {
                 menu.add(edit);
             }
             if (ain instanceof JumpInsnNode) {
-                JMenuItem edit = new JMenuItem(JByteMod.res.getResource("jump_to_label"));
+                JMenuItem edit = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("jump_to_label"));
                 edit.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         JumpInsnNode jin = (JumpInsnNode) ain;
@@ -354,8 +355,8 @@ public class MyCodeList extends JList<InstrEntry> {
                 menu.add(edit);
             }
             if (ain instanceof MethodInsnNode) {
-                JMenuItem edit = new JMenuItem(JByteMod.res.getResource("go_to_dec"));
-                JMenuItem find_usage = new JMenuItem(JByteMod.res.getResource("find_usage"));
+                JMenuItem edit = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("go_to_dec"));
+                JMenuItem find_usage = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("find_usage"));
                 edit.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         MethodInsnNode min = (MethodInsnNode) ain;
@@ -386,8 +387,8 @@ public class MyCodeList extends JList<InstrEntry> {
                 menu.add(find_usage);
             }
             if (ain instanceof FieldInsnNode) {
-                JMenuItem edit = new JMenuItem(JByteMod.res.getResource("go_to_dec"));
-                JMenuItem find_usage = new JMenuItem(JByteMod.res.getResource("find_usage"));
+                JMenuItem edit = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("go_to_dec"));
+                JMenuItem find_usage = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("find_usage"));
                 edit.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         FieldInsnNode fin = (FieldInsnNode) ain;
@@ -411,7 +412,7 @@ public class MyCodeList extends JList<InstrEntry> {
                 menu.add(edit);
                 menu.add(find_usage);
             }
-            JMenuItem duplicate = new JMenuItem(JByteMod.res.getResource("duplicate"));
+            JMenuItem duplicate = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("duplicate"));
             duplicate.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     duplicate(mn, ain);
@@ -419,7 +420,7 @@ public class MyCodeList extends JList<InstrEntry> {
             });
             duplicate.setAccelerator(KeyStroke.getKeyStroke('D', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             menu.add(duplicate);
-            JMenuItem up = new JMenuItem(JByteMod.res.getResource("move_up"));
+            JMenuItem up = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("move_up"));
             up.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     moveUp(mn, ain);
@@ -427,7 +428,7 @@ public class MyCodeList extends JList<InstrEntry> {
             });
             up.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0));
             menu.add(up);
-            JMenuItem down = new JMenuItem(JByteMod.res.getResource("move_down"));
+            JMenuItem down = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("move_down"));
             down.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     moveDown(mn, ain);
@@ -435,7 +436,7 @@ public class MyCodeList extends JList<InstrEntry> {
             });
             down.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0));
             menu.add(down);
-            JMenuItem remove = new JMenuItem(JByteMod.res.getResource("remove"));
+            JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
             remove.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     removeNode(mn, ain);
@@ -499,7 +500,7 @@ public class MyCodeList extends JList<InstrEntry> {
     protected void createPopupForEmptyList(JByteMod jbm) {
         JPopupMenu menu = new JPopupMenu();
         if (currentMethod != null) {
-            JMenuItem add = new JMenuItem(JByteMod.res.getResource("add"));
+            JMenuItem add = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("add"));
             add.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -512,7 +513,7 @@ public class MyCodeList extends JList<InstrEntry> {
             });
             menu.add(add);
         } else if (currentClass != null) {
-            JMenuItem add = new JMenuItem(JByteMod.res.getResource("add"));
+            JMenuItem add = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("add"));
             add.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
@@ -533,7 +534,7 @@ public class MyCodeList extends JList<InstrEntry> {
         try {
             menu.show(jbm, (int) jbm.getMousePosition().getX(), (int) jbm.getMousePosition().getY());
         } catch (NullPointerException exception) {
-            JByteMod.LOGGER.println("Null mouse position, weird. :/");
+             Main.INSTANCE.getLogger().println("Null mouse position, weird. :/");
         }
 
     }

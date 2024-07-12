@@ -1,7 +1,8 @@
 package me.grax.jbytemod.utils.task;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.JarArchive;
 import me.grax.jbytemod.ui.PageEndPanel;
 import me.grax.jbytemod.utils.ErrorDisplay;
@@ -54,11 +55,11 @@ public class RetransformTask extends SwingWorker<Void, Integer> {
             if (!definitions.isEmpty()) {
                 publish(80);
                 ins.redefineClasses(definitions.toArray(new ClassDefinition[0]));
-                JByteMod.LOGGER.log("Successfully retransformed " + newOriginal.size() + " classes");
+                 Main.INSTANCE.getLogger().log("Successfully retransformed " + newOriginal.size() + " classes");
                 original.putAll(newOriginal);
             }
         } catch (VerifyError v) {
-            JOptionPane.showMessageDialog(null, JByteMod.res.getResource("verify_error"));
+            JOptionPane.showMessageDialog(null, Main.INSTANCE.getJByteMod().getLanguageRes().getResource("verify_error"));
         } catch (Throwable t) {
             new ErrorDisplay(t);
             t.printStackTrace();

@@ -1,6 +1,7 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -28,9 +29,9 @@ public class MyEditorTab extends JPanel {
         this.code = withBorder(label, codeEditor);
 
         InfoPanel sp = new InfoPanel(jbm);
-        jbm.setSP(sp);
+        jbm.setInfoPanel(sp);
 
-        this.info = this.withBorder(new JLabel(JByteMod.res.getResource("settings")), sp);
+        this.info = this.withBorder(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("settings")), sp);
 
         this.decompiler = new DecompilerTab(jbm);
         this.decompiler.setName("decompiler");
@@ -86,7 +87,7 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectClass(ClassNode cn) {
-        JByteMod.instance.getDiscord().updatePresence("Working on " + JByteMod.instance.getLastEditFile(), "Editing " + cn.name);
+        Main.INSTANCE.getDiscord().updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name);
 
         String selectedComponentName = center.getComponent(0).getName();
         if (Objects.nonNull(selectedComponentName)) {
@@ -96,7 +97,7 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectMethod(ClassNode cn, MethodNode mn) {
-        JByteMod.instance.getDiscord().updatePresence("Working on " + JByteMod.instance.getLastEditFile(), "Editing " + cn.name + "." + mn.name);
+        Main.INSTANCE.getDiscord().updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name + "." + mn.name);
 
         String selectedComponentName = center.getComponent(0).getName();
         if (Objects.nonNull(selectedComponentName)) {

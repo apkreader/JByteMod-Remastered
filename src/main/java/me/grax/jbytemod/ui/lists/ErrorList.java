@@ -1,11 +1,11 @@
 package me.grax.jbytemod.ui.lists;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.analysis.errors.EmptyMistake;
 import me.grax.jbytemod.analysis.errors.ErrorAnalyzer;
 import me.grax.jbytemod.analysis.errors.Mistake;
 import me.grax.jbytemod.ui.lists.entries.InstrEntry;
-import me.grax.jbytemod.utils.gui.SwingUtils;
 import me.grax.jbytemod.utils.list.LazyListModel;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
@@ -67,11 +67,11 @@ public class ErrorList extends JList<Mistake> {
 
 
     public void updateErrors() {
-        if (JByteMod.ops.get("analyze_errors").getBoolean() && jbm.getCurrentMethod() != null) {
+        if (Main.INSTANCE.getJByteMod().getOptions().get("analyze_errors").getBoolean() && jbm.getCurrentMethod() != null) {
             LazyListModel<Mistake> lm = new LazyListModel<Mistake>();
             LazyListModel<InstrEntry> clm = (LazyListModel<InstrEntry>) cl.getModel();
             if (clm.getSize() > 1000) {
-                JByteMod.LOGGER.warn("Not analyzing mistakes, too many instructions!");
+                 Main.INSTANCE.getLogger().warn("Not analyzing mistakes, too many instructions!");
                 return;
             }
             ErrorAnalyzer ea = new ErrorAnalyzer(jbm.getCurrentNode(), jbm.getCurrentMethod());

@@ -1,6 +1,5 @@
 package me.grax.jbytemod.ui.dialogue.testing;
 
-import me.grax.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;
 
 import java.lang.reflect.Field;
@@ -27,7 +26,7 @@ public class TestValues {
     public List<String> list = Arrays.asList("1", "2", "3");
 
     public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException {
-        JByteMod.initialize();
+        //JByteMod.initialize();
         TestValues tv = new TestValues();
         new InsnEditDialogue(null, tv).open();
         for (Field f : tv.getClass().getDeclaredFields()) {

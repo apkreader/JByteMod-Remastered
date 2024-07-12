@@ -1,6 +1,7 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +14,7 @@ public class MySplitPane extends JSplitPane {
         rightSide = new MyTabbedPane(jbm);
         leftSide = new JPanel();
         leftSide.setLayout(new BorderLayout(0, 0));
-        leftSide.add(new JLabel(" " + JByteMod.res.getResource("java_archive")), BorderLayout.NORTH);
+        leftSide.add(new JLabel(" " + Main.INSTANCE.getJByteMod().getLanguageRes().getResource("java_archive")), BorderLayout.NORTH);
         leftSide.add(new JScrollPane(classTree), BorderLayout.CENTER);
         this.setLeftComponent(leftSide);
         this.setRightComponent(rightSide);

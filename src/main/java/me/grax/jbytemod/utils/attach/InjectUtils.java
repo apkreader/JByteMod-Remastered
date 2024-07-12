@@ -1,6 +1,6 @@
 package me.grax.jbytemod.utils.attach;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 
 import java.io.*;
 import java.util.Enumeration;

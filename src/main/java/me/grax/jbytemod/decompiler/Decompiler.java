@@ -1,6 +1,6 @@
 package me.grax.jbytemod.decompiler;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.DecompilerPanel;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;

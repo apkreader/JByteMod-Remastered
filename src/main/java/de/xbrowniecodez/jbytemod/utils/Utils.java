@@ -1,8 +1,8 @@
 package de.xbrowniecodez.jbytemod.utils;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.os.OSUtil;
 import lombok.experimental.UtilityClass;
-import me.grax.jbytemod.JByteMod;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,11 +48,11 @@ public class Utils {
 
         if (!workingDirectory.exists()) {
             if (!workingDirectory.mkdir()) {
-                JByteMod.LOGGER.err("Failed to create working directory!");
+                 Main.INSTANCE.getLogger().err("Failed to create working directory!");
                 return new File(".");
             }
         }
-        JByteMod.LOGGER.log("Working directory " + workingDirectory);
+         Main.INSTANCE.getLogger().log("Working directory " + workingDirectory);
         return workingDirectory;
     }
 }

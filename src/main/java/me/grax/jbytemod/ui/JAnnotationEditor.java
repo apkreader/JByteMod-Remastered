@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.dialogue.ClassDialogue.JCharField;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import me.grax.jbytemod.utils.gui.SwingUtils;
@@ -67,7 +67,7 @@ public class JAnnotationEditor extends JFrame {
             this.add(new JScrollPane(jtable), BorderLayout.CENTER);
             JPanel actions = new JPanel();
             actions.setLayout(new GridLayout(1, 4));
-            JButton add = new JButton(JByteMod.res.getResource("add"));
+            JButton add = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("add"));
             add.addActionListener(a -> {
                 AnnotationNode edit = editAnnotationWindow(null);
                 int row = jtable.getSelectedRow();
@@ -83,7 +83,7 @@ public class JAnnotationEditor extends JFrame {
                 }
             });
             actions.add(add);
-            JButton remove = new JButton(JByteMod.res.getResource("remove"));
+            JButton remove = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
             remove.addActionListener(a -> {
                 int[] selectedRows = jtable.getSelectedRows();
                 if (selectedRows.length > 0) {
@@ -95,7 +95,7 @@ public class JAnnotationEditor extends JFrame {
                 }
             });
             actions.add(remove);
-            JButton edit = new JButton(JByteMod.res.getResource("edit"));
+            JButton edit = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
             edit.addActionListener(a -> {
                 int row = jtable.getSelectedRow();
                 if (row == -1) {
@@ -117,7 +117,7 @@ public class JAnnotationEditor extends JFrame {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     try {
-                        JByteMod.LOGGER.log("Updating List!");
+                         Main.INSTANCE.getLogger().log("Updating List!");
                         if (newList.size() == 0)
                             flist.set(parent, null);
                         else
@@ -414,7 +414,7 @@ public class JAnnotationEditor extends JFrame {
             frame.add(new JScrollPane(jtable), BorderLayout.CENTER);
             JPanel actions = new JPanel();
             actions.setLayout(new GridLayout(1, 4));
-            JButton add = new JButton(JByteMod.res.getResource("add"));
+            JButton add = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("add"));
             add.addActionListener(a -> {
                 Entry<Object, Object> entry = editValueWindow(null);
                 int row = jtable.getSelectedRow();
@@ -430,7 +430,7 @@ public class JAnnotationEditor extends JFrame {
                 }
             });
             actions.add(add);
-            JButton remove = new JButton(JByteMod.res.getResource("remove"));
+            JButton remove = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
             remove.addActionListener(a -> {
                 int[] selectedRows = jtable.getSelectedRows();
                 if (selectedRows.length > 0) {
@@ -442,7 +442,7 @@ public class JAnnotationEditor extends JFrame {
                 }
             });
             actions.add(remove);
-            JButton edit = new JButton(JByteMod.res.getResource("edit"));
+            JButton edit = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
             edit.addActionListener(a -> {
                 int row = jtable.getSelectedRow();
                 if (row == -1) {
@@ -464,7 +464,7 @@ public class JAnnotationEditor extends JFrame {
             frame.add(actions, BorderLayout.PAGE_END);
             if (JOptionPane.showConfirmDialog(null, frame, "Edit Values", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                 try {
-                    JByteMod.LOGGER.log("Updating List!");
+                     Main.INSTANCE.getLogger().log("Updating List!");
                     values.clear();
                     for (Entry<Object, Object> entry : valuesMap) {
                         values.add(entry.getKey());
@@ -626,7 +626,7 @@ public class JAnnotationEditor extends JFrame {
             frame.add(new JScrollPane(jtable), BorderLayout.CENTER);
             JPanel actions = new JPanel();
             actions.setLayout(new GridLayout(1, 4));
-            JButton add = new JButton(JByteMod.res.getResource("add"));
+            JButton add = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("add"));
             add.addActionListener(a -> {
                 Object o = editValueWindow(null);
                 int row = jtable.getSelectedRow();
@@ -642,7 +642,7 @@ public class JAnnotationEditor extends JFrame {
                 }
             });
             actions.add(add);
-            JButton remove = new JButton(JByteMod.res.getResource("remove"));
+            JButton remove = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
             remove.addActionListener(a -> {
                 int[] selectedRows = jtable.getSelectedRows();
                 if (selectedRows.length > 0) {
@@ -654,7 +654,7 @@ public class JAnnotationEditor extends JFrame {
                 }
             });
             actions.add(remove);
-            JButton edit = new JButton(JByteMod.res.getResource("edit"));
+            JButton edit = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
             edit.addActionListener(a -> {
                 int row = jtable.getSelectedRow();
                 if (row == -1) {
@@ -676,7 +676,7 @@ public class JAnnotationEditor extends JFrame {
             frame.add(actions, BorderLayout.PAGE_END);
             if (JOptionPane.showConfirmDialog(null, frame, "Edit List", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                 try {
-                    JByteMod.LOGGER.log("Updating List!");
+                     Main.INSTANCE.getLogger().log("Updating List!");
                     values.clear();
                     for (Object o : newValues)
                         values.add(o);
@@ -735,7 +735,7 @@ public class JAnnotationEditor extends JFrame {
                     if (type.getSelectedItem().equals("Type"))
                         value = org.objectweb.asm.Type.getType((String) value);
                 } catch (Exception e) {
-                    JByteMod.LOGGER.err("Failed annotation editing: " + e.toString());
+                     Main.INSTANCE.getLogger().err("Failed annotation editing: " + e.toString());
                     JOptionPane.showMessageDialog(null, "Exception: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     value = org.objectweb.asm.Type.getType("Lnull;");
                     e.printStackTrace();

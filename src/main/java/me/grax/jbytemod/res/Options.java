@@ -1,12 +1,12 @@
 package me.grax.jbytemod.res;
 
 import com.strobel.decompiler.DecompilerSettings;
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.Utils;
-import me.grax.jbytemod.JByteMod;
 import me.grax.jbytemod.decompiler.CFRDecompiler;
 
-import me.grax.jbytemod.res.Option.Type;
 import me.grax.jbytemod.utils.ErrorDisplay;
+import me.grax.jbytemod.res.Option.Type;
 
 import javax.swing.*;
 import java.io.File;
@@ -37,7 +37,7 @@ public class Options {
     public Options() {
         initializeDecompilerOptions();
         if (propFile.exists()) {
-            JByteMod.LOGGER.log("Loading settings... ");
+            Main.INSTANCE.getLogger().log("Loading settings... ");
             try {
                 Files.lines(propFile.toPath()).forEach(l -> {
                     int split = l.indexOf('=');
@@ -47,21 +47,21 @@ public class Options {
                     try {
                         bools.add(new Option(def[0], part2, Type.valueOf(def[1]), def[2]));
                     } catch (Exception e) {
-                        JByteMod.LOGGER.warn("Couldn't parse line: " + l);
+                         Main.INSTANCE.getLogger().warn("Couldn't parse line: " + l);
                     }
                 });
                 for (int i = 0; i < bools.size(); i++) {
                     Option o1 = bools.get(i);
                     Option o2 = defaults.get(i);
                     if (o1 == null || o2 == null || find(o2.getName()) == null || findDefault(o1.getName()) == null) {
-                        JByteMod.LOGGER.warn("Option file not matching defaults, maybe from old version?");
+                         Main.INSTANCE.getLogger().warn("Option file not matching defaults, maybe from old version?");
                         this.initWithDefaults(true);
                         this.save();
                         return;
                     }
                 }
                 if (bools.isEmpty()) {
-                    JByteMod.LOGGER.warn("Couldn't read file, probably empty");
+                     Main.INSTANCE.getLogger().warn("Couldn't read file, probably empty");
                     this.initWithDefaults(false);
                     this.save();
                 }
@@ -69,7 +69,7 @@ public class Options {
                 e.printStackTrace();
             }
         } else {
-            JByteMod.LOGGER.warn("Property File \"" + propFile.getName() + "\" does not exist, creating...");
+             Main.INSTANCE.getLogger().warn("Property File \"" + propFile.getName() + "\" does not exist, creating...");
             this.initWithDefaults(false);
             this.save();
         }
@@ -116,7 +116,7 @@ public class Options {
                 if (!propFile.exists()) {
                     propFile.getParentFile().mkdirs();
                     propFile.createNewFile();
-                    JByteMod.LOGGER.log("Prop file doesn't exist, creating.");
+                     Main.INSTANCE.getLogger().log("Prop file doesn't exist, creating.");
                 }
                 PrintWriter pw = new PrintWriter(propFile);
                 for (Option o : bools) {

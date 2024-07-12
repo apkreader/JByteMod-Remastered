@@ -1,12 +1,10 @@
 package me.grax.jbytemod.utils;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -45,14 +43,9 @@ public class ErrorDisplay extends JFrame {
         for (int i = 0; i < 4; i++) {
             pageEnd.add(new JPanel());
         }
-        JButton close = new JButton(JByteMod.res != null ? JByteMod.res.getResource("close") : "Close"); //res may not be loaded
+        JButton close = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes() != null ? Main.INSTANCE.getJByteMod().getLanguageRes().getResource("close") : "Close"); //res may not be loaded
         pageEnd.add(close);
-        close.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ErrorDisplay.this.dispose();
-            }
-        });
+        close.addActionListener(e -> ErrorDisplay.this.dispose());
         String st = s + suffix;
         contentPane.add(new JScrollPane(new JTextArea(st)), BorderLayout.CENTER);
         this.add(contentPane);

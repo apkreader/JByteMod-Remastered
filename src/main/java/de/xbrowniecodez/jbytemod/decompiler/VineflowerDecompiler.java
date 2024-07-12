@@ -2,7 +2,7 @@ package de.xbrowniecodez.jbytemod.decompiler;
 
 import lombok.SneakyThrows;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.decompiler.Decompiler;
 import me.grax.jbytemod.ui.DecompilerPanel;
 

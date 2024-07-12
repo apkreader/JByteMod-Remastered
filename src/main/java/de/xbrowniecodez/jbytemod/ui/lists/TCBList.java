@@ -1,6 +1,6 @@
 package de.xbrowniecodez.jbytemod.ui.lists;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;
 import me.grax.jbytemod.ui.lists.entries.TCBEntry;
 import me.grax.jbytemod.utils.ErrorDisplay;
@@ -11,7 +11,6 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -50,17 +49,17 @@ public class TCBList extends JList<TCBEntry> {
         List<TCBEntry> selectedEntries = getSelectedValuesList();
         JPopupMenu menu = new JPopupMenu();
         if (!selectedEntries.isEmpty()) {
-            JMenuItem remove = new JMenuItem(JByteMod.res.getResource("remove"));
+            JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
             remove.addActionListener(this::removeSelectedEntries);
             menu.add(remove);
 
-            JMenuItem edit = new JMenuItem(JByteMod.res.getResource("edit"));
+            JMenuItem edit = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
             edit.addActionListener(this::editSelectedEntries);
             menu.add(edit);
         }
 
         JMenuItem insert = new JMenuItem(getSelectedValuesList().isEmpty() ?
-                JByteMod.res.getResource("add") : JByteMod.res.getResource("insert"));
+                Main.INSTANCE.getJByteMod().getLanguageRes().getResource("add") : Main.INSTANCE.getJByteMod().getLanguageRes().getResource("insert"));
         insert.addActionListener(this::insertEntry);
         menu.add(insert);
 

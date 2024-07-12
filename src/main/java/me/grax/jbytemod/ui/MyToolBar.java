@@ -1,6 +1,7 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,10 +14,10 @@ public class MyToolBar extends JToolBar {
         this.menubar = (MyMenuBar) jbm.getJMenuBar();
         this.setFloatable(false);
         if (!menubar.isAgent()) {
-            this.add(makeNavigationButton(JByteMod.res.getResource("load"), getIcon("load"), e -> {
+            this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("load"), getIcon("load"), e -> {
                 menubar.openLoadDialogue();
             }));
-            this.add(makeNavigationButton(JByteMod.res.getResource("save"), getIcon("save"), e -> {
+            this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("save"), getIcon("save"), e -> {
                 if (menubar.getLastFile() != null) {
                     jbm.saveFile(menubar.getLastFile());
                 } else {
@@ -24,15 +25,15 @@ public class MyToolBar extends JToolBar {
                 }
             }));
         } else {
-            this.add(makeNavigationButton(JByteMod.res.getResource("reload"), getIcon("reload"), e -> {
+            this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("reload"), getIcon("reload"), e -> {
                 jbm.refreshAgentClasses();
             }));
-            this.add(makeNavigationButton(JByteMod.res.getResource("apply"), getIcon("save"), e -> {
+            this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("apply"), getIcon("save"), e -> {
                 jbm.applyChangesAgent();
             }));
         }
         this.addSeparator();
-        this.add(makeNavigationButton(JByteMod.res.getResource("search"), getIcon("search"), e -> {
+        this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("search"), getIcon("search"), e -> {
             menubar.searchLDC();
         }));
         this.addSeparator();

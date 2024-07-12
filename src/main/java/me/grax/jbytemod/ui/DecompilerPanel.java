@@ -1,13 +1,11 @@
 package me.grax.jbytemod.ui;
 
+import de.xbrowniecodez.jbytemod.Main;
 import lombok.SneakyThrows;
-import me.grax.jbytemod.JByteMod;
-import me.grax.jbytemod.utils.ErrorDisplay;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Theme;
 
 import java.awt.*;
-import java.io.IOException;
 
 public class DecompilerPanel extends RSyntaxTextArea {
 
@@ -22,7 +20,7 @@ public class DecompilerPanel extends RSyntaxTextArea {
 
     @SneakyThrows
     public void setTheme() {
-        Theme theme = Theme.load(JByteMod.ops.get("use_dark_theme").getBoolean() ? getClass().getResourceAsStream("/resources/de/brownie/rsyntaxtextarea/themes/custom.xml") : getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml"));
+        Theme theme = Theme.load(Main.INSTANCE.getJByteMod().getOptions().get("use_dark_theme").getBoolean() ? getClass().getResourceAsStream("/resources/de/brownie/rsyntaxtextarea/themes/custom.xml") : getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml"));
         theme.apply(this);
     }
 

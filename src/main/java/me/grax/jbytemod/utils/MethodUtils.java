@@ -1,7 +1,6 @@
 package me.grax.jbytemod.utils;
 
-import me.grax.jbytemod.JByteMod;
-import org.objectweb.asm.Opcodes;
+import de.xbrowniecodez.jbytemod.Main;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -93,7 +92,7 @@ public class MethodUtils {
                 i++;
             }
         }
-        JByteMod.LOGGER.log("Removed " + i + " nodes!");
+         Main.INSTANCE.getLogger().log("Removed " + i + " nodes!");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

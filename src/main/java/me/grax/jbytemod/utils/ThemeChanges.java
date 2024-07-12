@@ -1,6 +1,6 @@
 package me.grax.jbytemod.utils;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +18,7 @@ public class ThemeChanges {
             f.setAccessible(true);
             f.set(o, new Color(0xFF01D328));
         } catch (Exception e) {
-            JByteMod.LOGGER.err("Failed to apply nimbus theme changes");
+             Main.INSTANCE.getLogger().err("Failed to apply nimbus theme changes");
         }
     }
 

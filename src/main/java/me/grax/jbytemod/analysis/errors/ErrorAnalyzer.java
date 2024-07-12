@@ -1,6 +1,6 @@
 package me.grax.jbytemod.analysis.errors;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -31,7 +31,7 @@ public class ErrorAnalyzer {
         } catch (AnalyzerException e) {
             put(map, e.node, new InsnError(e.getMessage()));
         } catch (Exception e) {
-            JByteMod.LOGGER.err("Couldn't analyze errors in bytecode (" + e.toString() + ")");
+             Main.INSTANCE.getLogger().err("Couldn't analyze errors in bytecode (" + e.toString() + ")");
         }
         return map;
     }

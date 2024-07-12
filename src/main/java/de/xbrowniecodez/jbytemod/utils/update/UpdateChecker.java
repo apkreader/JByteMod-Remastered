@@ -10,24 +10,30 @@ import javax.swing.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.update.objects.Version;
 import de.xbrowniecodez.jbytemod.utils.update.ui.UpdateDialogFrame;
+import lombok.Getter;
 import lombok.SneakyThrows;
-import me.grax.jbytemod.JByteMod;
 
+@Getter
 public class UpdateChecker {
+	private Version latestVersion;
 
 	public UpdateChecker() {
-		JByteMod.LOGGER.log("Checking for updates...");
+		check();
+	}
+
+	public void check() {
+		 Main.INSTANCE.getLogger().log("Checking for updates...");
 		JsonObject releaseInfo = fetchLatestReleaseInfo();
 		if (releaseInfo != null) {
-			Version latestVersion = new Version(releaseInfo.get("name").getAsString());
+			latestVersion = new Version(releaseInfo.get("name").getAsString());
 			String changelog = releaseInfo.get("body").getAsString();
-			if(latestVersion.isNewer(JByteMod.version))
+			if(latestVersion.isNewer(Main.INSTANCE.getJByteMod().getVersion()))
 				showUpdateDialog(String.valueOf(latestVersion), changelog);
 		}
 	}
-
 
 	@SneakyThrows
 	private JsonObject fetchLatestReleaseInfo() {

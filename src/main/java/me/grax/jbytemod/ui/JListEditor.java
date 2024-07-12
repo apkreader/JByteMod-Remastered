@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.utils.ErrorDisplay;
 
 import javax.swing.*;
@@ -58,14 +58,14 @@ public class JListEditor extends JFrame {
             this.add(new JScrollPane(jtable), BorderLayout.CENTER);
             JPanel actions = new JPanel();
             actions.setLayout(new GridLayout(1, 4));
-            JButton add = new JButton(JByteMod.res.getResource("add"));
+            JButton add = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("add"));
             add.addActionListener(a -> {
                 int c = lm.getRowCount();
                 lm.addRow(new Object[]{String.valueOf(c), ""});
                 jtable.setRowSelectionInterval(c, c);
             });
             actions.add(add);
-            JButton remove = new JButton(JByteMod.res.getResource("remove"));
+            JButton remove = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
             remove.addActionListener(a -> {
                 int[] selectedRows = jtable.getSelectedRows();
                 if (selectedRows.length > 0) {
@@ -76,7 +76,7 @@ public class JListEditor extends JFrame {
                 }
             });
             actions.add(remove);
-            JButton edit = new JButton(JByteMod.res.getResource("edit"));
+            JButton edit = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
             edit.addActionListener(a -> {
                 jtable.editCellAt(jtable.getSelectedRow(), 1);
             });
@@ -87,7 +87,7 @@ public class JListEditor extends JFrame {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     try {
-                        JByteMod.LOGGER.log("Updating List!");
+                         Main.INSTANCE.getLogger().log("Updating List!");
                         TableModel model = jtable.getModel();
                         ArrayList<String> list = new ArrayList<>();
                         for (int i = 0; i < model.getRowCount(); i++) {

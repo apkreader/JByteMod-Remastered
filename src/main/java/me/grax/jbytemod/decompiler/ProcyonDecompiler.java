@@ -5,13 +5,12 @@ import com.strobel.assembler.metadata.*;
 import com.strobel.decompiler.DecompilationOptions;
 import com.strobel.decompiler.DecompilerSettings;
 import com.strobel.decompiler.PlainTextOutput;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.DecompilerPanel;
-import me.grax.jbytemod.utils.ErrorDisplay;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.StringWriter;
-import java.io.PrintWriter;
 import java.lang.reflect.Field;
 
 public class ProcyonDecompiler extends Decompiler {
@@ -47,7 +46,7 @@ public class ProcyonDecompiler extends Decompiler {
         for (Field f : settings.getClass().getDeclaredFields()) {
             if (f.getType() == boolean.class && f.getName().startsWith("procyon")) {
                 f.setAccessible(true);
-                f.setBoolean(settings, JByteMod.ops.get(f.getName()).getBoolean());
+                f.setBoolean(settings, Main.INSTANCE.getJByteMod().getOptions().get(f.getName()).getBoolean());
             }
         }
         return settings;

@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui.dialogue;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.JAccessSelectorPanel;
 import me.grax.jbytemod.ui.JFrameList;
 import me.grax.jbytemod.ui.JLDCEditor;
@@ -86,7 +86,7 @@ public class InsnEditDialogue extends ClassDialogue {
         labels.add(new JLabel("Type"));
         JComboBox<String> clazz = new JComboBox<String>(new ArrayList<String>(opc.keySet()).toArray(new String[0]));
         input.add(clazz);
-        if (JOptionPane.showConfirmDialog(JByteMod.instance, panel, "Insert " + (after ? "after" : "before"), 2) == JOptionPane.OK_OPTION) {
+        if (JOptionPane.showConfirmDialog(Main.INSTANCE.getJByteMod(), panel, "Insert " + (after ? "after" : "before"), 2) == JOptionPane.OK_OPTION) {
             try {
                 //only works because i created constructors for those nodes
                 Class<?> node = Class.forName("org.objectweb.asm.tree" + "." + clazz.getSelectedItem().toString());
@@ -102,7 +102,7 @@ public class InsnEditDialogue extends ClassDialogue {
                     } else {
                         mn.instructions.add(newnode);
                     }
-                    JByteMod.instance.getCodeList().loadInstructions(mn);
+                    Main.INSTANCE.getJByteMod().getCodeList().loadInstructions(mn);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -266,7 +266,7 @@ public class InsnEditDialogue extends ClassDialogue {
         if (obj instanceof FrameNode) {
             FrameNode fn = (FrameNode) obj;
             leftText.add(new JLabel("Local / Stack: "));
-            JButton edit = new JButton(JByteMod.res.getResource("edit"));
+            JButton edit = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
             edit.addActionListener(e -> {
                 new JFrameList(fn.local, fn.stack).open();
             });
@@ -409,7 +409,7 @@ public class InsnEditDialogue extends ClassDialogue {
                 private void setToolTip() {
                     boolean set = false;
                     if (ownerField != null && !ownerField.getText().isEmpty() && !nameField.getText().isEmpty()) {
-                        ClassNode node = JByteMod.instance.getJarArchive().getClasses().get(ownerField.getText());
+                        ClassNode node = Main.INSTANCE.getJByteMod().getJarArchive().getClasses().get(ownerField.getText());
                         if (node == null) {
                             try {
                                 node = Loader.classToNode(ownerField.getText());
@@ -481,7 +481,7 @@ public class InsnEditDialogue extends ClassDialogue {
                             String mName = nameField.getText();
                             String mOwner = ownerField.getText();
                             if (!mName.isEmpty() && !mOwner.isEmpty()) {
-                                ClassNode node = JByteMod.instance.getJarArchive().getClasses().get(mOwner);
+                                ClassNode node = Main.INSTANCE.getJByteMod().getJarArchive().getClasses().get(mOwner);
                                 if (node == null) {
                                     try {
                                         node = Loader.classToNode(mOwner);

@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui.ifs;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.JAccessHelper;
 import me.grax.jbytemod.ui.JAnnotationEditor;
 import me.grax.jbytemod.ui.JListEditor;
@@ -31,7 +31,7 @@ public class CNSettings extends MyInternalFrame {
         final JPanel labels = new JPanel(new GridLayout(0, 1));
         panel.add(labels, "West");
         panel.add(input, "Center");
-        panel.add(new JLabel(JByteMod.res.getResource("ref_warn")), "South");
+        panel.add(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("ref_warn")), "South");
         labels.add(new JLabel("Class Name:"));
         JTextField name = new JTextField(cn.name);
         input.add(name);
@@ -66,7 +66,7 @@ public class CNSettings extends MyInternalFrame {
         JTextField parent = new JTextField(cn.superName);
         input.add(parent);
         labels.add(new JLabel("Class Interfaces:"));
-        JButton interfaces = new JButton(JByteMod.res.getResource("edit"));
+        JButton interfaces = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
         interfaces.addActionListener(a -> {
             if (!JListEditor.isOpen())
                 new JListEditor("Interfaces", cn, "interfaces").setVisible(true);
@@ -82,14 +82,14 @@ public class CNSettings extends MyInternalFrame {
         JTextField outerdesc = new JTextField(cn.outerMethodDesc);
         input.add(outerdesc);
         labels.add(new JLabel("Annotations:"));
-        JButton annotations = new JButton(JByteMod.res.getResource("edit"));
+        JButton annotations = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
         annotations.addActionListener(a -> {
             if (!JAnnotationEditor.isOpen("visibleAnnotations"))
                 new JAnnotationEditor("Annotations", cn, "visibleAnnotations").setVisible(true);
         });
         input.add(annotations);
         labels.add(new JLabel("Invisible Annotations:"));
-        JButton invisAnnotations = new JButton(JByteMod.res.getResource("edit"));
+        JButton invisAnnotations = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
         invisAnnotations.addActionListener(a -> {
             if (!JAnnotationEditor.isOpen("invisibleAnnotations"))
                 new JAnnotationEditor("Invisible Annotations", cn, "invisibleAnnotations").setVisible(true);
@@ -146,7 +146,7 @@ public class CNSettings extends MyInternalFrame {
                     cn.outerMethodDesc = od;
                 }
                 if (refresh) {
-                    JByteMod.instance.refreshTree();
+                    Main.INSTANCE.getJByteMod().refreshTree();
                 }
             }
         });

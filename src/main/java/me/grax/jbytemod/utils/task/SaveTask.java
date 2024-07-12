@@ -1,11 +1,11 @@
 package me.grax.jbytemod.utils.task;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.JarArchive;
 import me.grax.jbytemod.ui.PageEndPanel;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
 import de.xbrowniecodez.jbytemod.asm.CustomClassWriter;
@@ -35,17 +35,17 @@ public class SaveTask extends SwingWorker<Void, Integer> {
             try {
                 Map<String, ClassNode> classes = this.file.getClasses();
                 Map<String, byte[]> outputBytes = this.file.getOutput();
-                int flags = JByteMod.ops.get("compute_maxs").getBoolean() ? 1 : 0;
-                JByteMod.LOGGER.log("Writing..");
+                int flags = Main.INSTANCE.getJByteMod().getOptions().get("compute_maxs").getBoolean() ? 1 : 0;
+                 Main.INSTANCE.getLogger().log("Writing..");
                 if (this.file.isSingleEntry()) {
                     ClassNode node = classes.values().iterator().next();
                     CustomClassWriter writer = new CustomClassWriter(flags);
                     node.accept(writer);
                     publish(50);
-                    JByteMod.LOGGER.log("Saving..");
+                     Main.INSTANCE.getLogger().log("Saving..");
                     Files.write(this.output.toPath(), writer.toByteArray());
                     publish(100);
-                    JByteMod.LOGGER.log("Saving successful!");
+                     Main.INSTANCE.getLogger().log("Saving successful!");
                     return null;
                 }
 
@@ -60,16 +60,16 @@ public class SaveTask extends SwingWorker<Void, Integer> {
                         outputBytes.put(s + ".class", writer.toByteArray());
                         publish((int) ((i++ / size) * 50d));
                     }catch(StringIndexOutOfBoundsException exception) {
-                        JByteMod.LOGGER.println("Failed to save " + classes.get(s).name);
+                         Main.INSTANCE.getLogger().println("Failed to save " + classes.get(s).name);
                     }
                 }
                 publish(50);
-                JByteMod.LOGGER.log("Saving..");
+                 Main.INSTANCE.getLogger().log("Saving..");
                 this.saveAsJarNew(outputBytes, output.getAbsolutePath());
-                JByteMod.LOGGER.log("Saving successful!");
+                 Main.INSTANCE.getLogger().log("Saving successful!");
             } catch (Exception e) {
                 e.printStackTrace();
-                JByteMod.LOGGER.log("Saving failed!");
+                 Main.INSTANCE.getLogger().log("Saving failed!");
             }
             publish(100);
             return null;

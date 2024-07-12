@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.lists.MyCodeList;
 import me.grax.jbytemod.ui.lists.entries.InstrEntry;
 import me.grax.jbytemod.utils.list.LazyListModel;
@@ -37,14 +37,14 @@ public class JSearch extends JDialog implements ActionListener {
         border.add(find, BorderLayout.NORTH);
         JPanel boxes = new JPanel(new GridLayout(2, 2));
         find.add(boxes, BorderLayout.SOUTH);
-        boxes.add(mc = new JCheckBox(JByteMod.res.getResource("case_sens")));
-        boxes.add(ww = new JCheckBox(JByteMod.res.getResource("whole_word")));
+        boxes.add(mc = new JCheckBox(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("case_sens")));
+        boxes.add(ww = new JCheckBox(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("whole_word")));
         cp.add(border, BorderLayout.NORTH);
         JPanel bottom = new JPanel(new GridLayout(1, 0, 10, 10));
-        JButton findBtn = new JButton(JByteMod.res.getResource("find_next"));
+        JButton findBtn = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("find_next"));
         findBtn.addActionListener(this);
         bottom.add(findBtn);
-        JButton closeBtn = new JButton(JByteMod.res.getResource("close"));
+        JButton closeBtn = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("close"));
         closeBtn.addActionListener(e -> {
             this.dispose();
         });

@@ -1,7 +1,7 @@
 package me.grax.jbytemod.utils.asm;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
-import me.grax.jbytemod.JByteMod;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.ByteArrayOutputStream;
@@ -19,7 +19,7 @@ public class Loader {
         }
         InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream(type + ".class");
         if (is == null) {
-            JByteMod.LOGGER.err(type + " not in classpath");
+            Main.INSTANCE.getLogger().err(type + " not in classpath");
             return null;
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

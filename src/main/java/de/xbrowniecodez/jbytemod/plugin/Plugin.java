@@ -1,8 +1,8 @@
 package de.xbrowniecodez.jbytemod.plugin;
 
+import de.xbrowniecodez.jbytemod.Main;
 import lombok.Getter;
 import lombok.Setter;
-import me.grax.jbytemod.JByteMod;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -30,27 +30,27 @@ public abstract class Plugin {
     public abstract void menuClick();
 
     protected final Map<String, ClassNode> getCurrentFile() {
-        return JByteMod.instance.getJarArchive().getClasses();
+        return Main.INSTANCE.getJByteMod().getJarArchive().getClasses();
     }
 
     protected final void updateTree() {
-        JByteMod.instance.refreshTree();
+        Main.INSTANCE.getJByteMod().refreshTree();
     }
 
     protected final JMenuBar getMenu() {
-        return JByteMod.instance.getMyMenuBar();
+        return Main.INSTANCE.getJByteMod().getMyMenuBar();
     }
 
     protected final JTree getTree() {
-        return JByteMod.instance.getJarTree();
+        return Main.INSTANCE.getJByteMod().getJarTree();
     }
 
     protected final ClassNode getSelectedNode() {
-        return JByteMod.instance.getCurrentNode();
+        return Main.INSTANCE.getJByteMod().getCurrentNode();
     }
 
     protected final MethodNode getSelectedMethod() {
-        return JByteMod.instance.getCurrentMethod();
+        return Main.INSTANCE.getJByteMod().getCurrentMethod();
     }
 
 }

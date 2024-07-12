@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.lists.AdressList;
 import me.grax.jbytemod.ui.lists.ErrorList;
 import me.grax.jbytemod.ui.lists.MyCodeList;
@@ -17,7 +17,7 @@ public class MyCodeEditor extends JPanel {
         this.add(cl, BorderLayout.CENTER);
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        p.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, JByteMod.border));
+        p.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("nimbusBorder")));
         p.add(new AdressList(cl), BorderLayout.CENTER);
         this.add(p, BorderLayout.WEST);
         this.add(new ErrorList(jbm, cl), BorderLayout.EAST);

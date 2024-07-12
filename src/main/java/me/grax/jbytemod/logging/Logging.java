@@ -1,7 +1,8 @@
 package me.grax.jbytemod.logging;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.ui.NotificationManager;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.PrintStream;
@@ -68,8 +69,8 @@ public class Logging extends PrintStream {
 
         @Override
         public void run() {
-            JByteMod inst = JByteMod.instance;
-            if (inst != null) {
+            JByteMod inst = Main.INSTANCE.getJByteMod();
+            if (inst != null && inst.getPageEndPanel() != null) {
                 inst.getPageEndPanel().setTip(text);
                 try {
                     Thread.sleep(2000);

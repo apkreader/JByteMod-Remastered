@@ -18,7 +18,6 @@ package com.javadeobfuscator.deobfuscator.utils;
 
 import com.google.common.base.*;
 import com.google.common.primitives.*;
-import me.grax.jbytemod.JByteMod;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.*;
@@ -28,8 +27,6 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.*;
-
-import static com.javadeobfuscator.deobfuscator.utils.Utils.*;
 
 public class TransformerHelper implements Opcodes {
     public static boolean isInvokeVirtual(AbstractInsnNode insn, String owner, String name, String desc) {
@@ -449,7 +446,7 @@ public class TransformerHelper implements Opcodes {
         try {
             return future.get(10, TimeUnit.SECONDS);
         } catch (InterruptedException | TimeoutException e) {
-            //JByteMod.LOGGER.debug("timed out while analyzing {} {}{}", classNode.name, methodNode.name, methodNode.desc);
+            // Main.INSTANCE.getLogger().debug("timed out while analyzing {} {}{}", classNode.name, methodNode.name, methodNode.desc);
             return null;
         } catch (ExecutionException e) {
             //LOGGER.debug("exception while analyzing {} {}{}", classNode.name, methodNode.name, methodNode.desc, e);

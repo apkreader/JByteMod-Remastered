@@ -1,7 +1,8 @@
 package de.xbrowniecodez.jbytemod.decompiler;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.decompiler.Decompiler;
 import me.grax.jbytemod.ui.DecompilerPanel;
 import org.jd.core.v1.ClassFileToJavaSourceDecompiler;
@@ -21,12 +22,12 @@ public class JDCoreDecompiler extends Decompiler {
     Loader loader = new Loader() {
         @Override
         public byte[] load(String internalName) {
-            return BytecodeUtils.getClassNodeBytes(JByteMod.instance.getJarArchive().getClasses().get(internalName));
+            return BytecodeUtils.getClassNodeBytes(Main.INSTANCE.getJByteMod().getJarArchive().getClasses().get(internalName));
         }
 
         @Override
         public boolean canLoad(String internalName) {
-            return Objects.nonNull(JByteMod.instance.getJarArchive().getClasses().get(internalName));
+            return Objects.nonNull(Main.INSTANCE.getJByteMod().getJarArchive().getClasses().get(internalName));
         }
     };
 

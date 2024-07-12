@@ -1,10 +1,10 @@
 package me.grax.jbytemod.utils.task;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
 import de.xbrowniecodez.jbytemod.utils.ClassUtils;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.JarArchive;
-import me.grax.jbytemod.discord.Discord;
 import me.grax.jbytemod.ui.PageEndPanel;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import me.grax.jbytemod.utils.FileUtils;
@@ -39,7 +39,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
             this.othersFile = 0;
             this.startTime = System.currentTimeMillis();
             this.jarSize = countFiles(this.input = new ZipFile(input, "UTF-8"));
-            JByteMod.LOGGER.log(jarSize + " files to load!");
+             Main.INSTANCE.getLogger().log(jarSize + " files to load!");
             this.jbm = jbm;
             this.jpb = jbm.getPageEndPanel();
             this.ja = ja;
@@ -47,7 +47,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
             // clean old cache
             // ja.setClasses(null);
             this.maxMem = Runtime.getRuntime().maxMemory();
-            this.memoryWarning = JByteMod.ops.get("memory_warning").getBoolean();
+            this.memoryWarning = Main.INSTANCE.getJByteMod().getOptions().get("memory_warning").getBoolean();
         } catch (IOException e) {
             new ErrorDisplay(e);
         }
@@ -77,7 +77,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     public void loadFiles(ZipFile jar) throws IOException {
         long mem = Runtime.getRuntime().totalMemory();
         if (mem / (double) maxMem > 0.75) {
-            JByteMod.LOGGER.warn("Memory usage is high: " + Math.round((mem / (double) maxMem * 100d)) + "%");
+             Main.INSTANCE.getLogger().warn("Memory usage is high: " + Math.round((mem / (double) maxMem * 100d)) + "%");
         }
         System.gc();
         Map<String, ClassNode> classes = new HashMap<String, ClassNode>();
@@ -85,7 +85,8 @@ public class LoadTask extends SwingWorker<Void, Integer> {
 
         final Enumeration<ZipEntry> entries = jar.getEntries();
         while (entries.hasMoreElements()) {
-            readJar(jar, entries.nextElement(), classes, otherFiles);
+            if(file.getName().endsWith(".jar"))
+                readJar(jar, entries.nextElement(), classes, otherFiles);
         }
         jar.close();
         ja.setClasses(classes);
@@ -95,15 +96,17 @@ public class LoadTask extends SwingWorker<Void, Integer> {
         for(String name : otherFiles.keySet()){
             if(name.endsWith(".class") || name.endsWith(".class/")) junkClasses++;
         }
+    }
 
-        return;
+    private void updateProgress(int num) {
+        int progress = (int) (((float) loaded++ / (float) num) * 100f);
+        publish(progress);
     }
 
     private void readJar(ZipFile jar, ZipEntry zipEntry, Map<String, ClassNode> classes,
                          Map<String, byte[]> otherFiles) {
         long startTime = System.currentTimeMillis();
-        int progress = (int) (((float) loaded++ / (float) jarSize) * 100f);
-        publish(progress);
+        updateProgress(jarSize);
 
         String name = zipEntry.getName();
         try (InputStream jis = jar.getInputStream(zipEntry)) {
@@ -120,7 +123,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
             handleMemoryWarning(startTime, bytes);
         } catch (Exception e) {
             e.printStackTrace();
-            JByteMod.LOGGER.err("Failed loading file");
+             Main.INSTANCE.getLogger().err("Failed loading file");
         }
     }
 
@@ -129,7 +132,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
             try {
                 if (ClassUtils.isClassFileFormat(bytes)) {
                     final ClassNode cn = BytecodeUtils.getClassNodeFromBytes(bytes);
-                    int rate = JByteMod.ops.get("bad_class_check").getBoolean() ? FileUtils.isBadClass(cn) : 0;
+                    int rate = Main.INSTANCE.getJByteMod().getOptions().get("bad_class_check").getBoolean() ? FileUtils.isBadClass(cn) : 0;
 
                     if (rate <= 80) {
                         classes.put(cn.name, cn);
@@ -166,7 +169,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
             double memoryUsage = Runtime.getRuntime().totalMemory() / (double) maxMem;
 
             if (timeDiff > 60 * 3 * 1000 && memoryUsage > 0.95) {
-                JByteMod.LOGGER.logNotification(JByteMod.res.getResource("memory_full"));
+                 Main.INSTANCE.getLogger().logNotification(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("memory_full"));
                 publish(100);
                 this.cancel(true);
             }
@@ -177,18 +180,18 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     @Override
     protected void process(List<Integer> chunks) {
         int i = chunks.get(chunks.size() - 1);
-        JByteMod.instance.getDiscord().updatePresence("Loading " + file.getName() + " (" + i + "%)", "");
+        Main.INSTANCE.getDiscord().updatePresence("Loading " + file.getName() + " (" + i + "%)", "");
         jpb.setValue(i);
         super.process(chunks);
     }
 
     @Override
     protected void done() {
-        JByteMod.instance.setLastEditFile(file.getName());
-        JByteMod.instance.getDiscord().updatePresence("Working on " + file.getName(), "Idle ...");
-        JByteMod.LOGGER.log("Successfully loaded file!");
+        Main.INSTANCE.getJByteMod().setLastEditFile(file.getName());
+        Main.INSTANCE.getDiscord().updatePresence("Working on " + file.getName(), "Idle ...");
+        Main.INSTANCE.getLogger().log("Successfully loaded file!");
         jbm.refreshTree();
-        JByteMod.LOGGER.log("Tree refreshed.");
-        JByteMod.LOGGER.log("Loaded classes in " + (System.currentTimeMillis() - startTime) + "ms" + ", bypassed " + othersFile + " files because I can't load them. (Include " + junkClasses + " junk classes.)");
+        Main.INSTANCE.getLogger().log("Tree refreshed.");
+        Main.INSTANCE.getLogger().log("Loaded classes in " + (System.currentTimeMillis() - startTime) + "ms" + ", bypassed " + othersFile + " files because I can't load them. (Include " + junkClasses + " junk classes.)");
     }
 }

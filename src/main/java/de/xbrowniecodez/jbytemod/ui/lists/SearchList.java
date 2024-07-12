@@ -1,6 +1,7 @@
 package de.xbrowniecodez.jbytemod.ui.lists;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.lists.entries.SearchEntry;
 import me.grax.jbytemod.utils.list.LazyListModel;
 import me.grax.jbytemod.utils.task.search.LdcTask;
@@ -12,7 +13,6 @@ import org.objectweb.asm.tree.MethodNode;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -42,15 +42,15 @@ public class SearchList extends JList<SearchEntry> {
         if (selectedEntry == null) return;
 
         JPopupMenu menu = new JPopupMenu();
-        JMenuItem goToDeclarationItem = new JMenuItem(JByteMod.res.getResource("go_to_dec"));
+        JMenuItem goToDeclarationItem = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("go_to_dec"));
         goToDeclarationItem.addActionListener(createGoToDeclarationAction(selectedEntry));
         menu.add(goToDeclarationItem);
 
-        JMenuItem selectTreeItem = new JMenuItem(JByteMod.res.getResource("select_tree"));
+        JMenuItem selectTreeItem = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("select_tree"));
         selectTreeItem.addActionListener(createSelectTreeAction(selectedEntry));
         menu.add(selectTreeItem);
 
-        JMenuItem copyTextItem = new JMenuItem(JByteMod.res.getResource("copy_text"));
+        JMenuItem copyTextItem = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("copy_text"));
         copyTextItem.addActionListener(createCopyTextAction(selectedEntry));
         menu.add(copyTextItem);
 

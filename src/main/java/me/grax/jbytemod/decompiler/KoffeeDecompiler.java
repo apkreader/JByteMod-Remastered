@@ -5,7 +5,7 @@ import codes.som.anthony.koffee.disassembler.ClassDisassemblyKt;
 import codes.som.anthony.koffee.disassembler.MethodDisassemblyKt;
 import codes.som.anthony.koffee.disassembler.util.DisassemblyContext;
 import codes.som.anthony.koffee.disassembler.util.SourceCodeGenerator;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.DecompilerPanel;
 import org.objectweb.asm.tree.MethodNode;
 

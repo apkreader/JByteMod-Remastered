@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui.ifs;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.JAccessHelper;
 import me.grax.jbytemod.ui.JAnnotationEditor;
 import me.grax.jbytemod.ui.dialogue.ClassDialogue;
@@ -31,7 +31,7 @@ public class MNSettings extends MyInternalFrame {
         final JPanel labels = new JPanel(new GridLayout(0, 1));
         panel.add(labels, "West");
         panel.add(input, "Center");
-        panel.add(new JLabel(JByteMod.res.getResource("ref_warn")), "South");
+        panel.add(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("ref_warn")), "South");
         labels.add(new JLabel("Method Name:"));
         JTextField name = new JTextField(mn.name);
         input.add(name);
@@ -57,14 +57,14 @@ public class MNSettings extends MyInternalFrame {
         maxS.setValue(mn.maxStack);
         input.add(maxS);
         labels.add(new JLabel("Annotations:"));
-        JButton annotations = new JButton(JByteMod.res.getResource("edit"));
+        JButton annotations = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
         annotations.addActionListener(a -> {
             if (!JAnnotationEditor.isOpen("visibleAnnotations"))
                 new JAnnotationEditor("Annotations", mn, "visibleAnnotations").setVisible(true);
         });
         input.add(annotations);
         labels.add(new JLabel("Invisible Annotations:"));
-        JButton invisAnnotations = new JButton(JByteMod.res.getResource("edit"));
+        JButton invisAnnotations = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
         invisAnnotations.addActionListener(a -> {
             if (!JAnnotationEditor.isOpen("invisibleAnnotations"))
                 new JAnnotationEditor("Invisible Annotations", mn, "invisibleAnnotations").setVisible(true);
@@ -92,7 +92,7 @@ public class MNSettings extends MyInternalFrame {
                     mn.signature = sig;
                 }
                 if (refresh) {
-                    JByteMod.instance.getJarTree().refreshMethod(cn, mn);
+                    Main.INSTANCE.getJByteMod().getJarTree().refreshMethod(cn, mn);
                 }
             }
         });

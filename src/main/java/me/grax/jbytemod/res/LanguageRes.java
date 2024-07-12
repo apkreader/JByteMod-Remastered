@@ -1,6 +1,6 @@
 package me.grax.jbytemod.res;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -19,10 +19,10 @@ public class LanguageRes {
     private final HashMap<String, String> defaultMap = new HashMap<>();
 
     public LanguageRes() {
-        JByteMod.LOGGER.log("Reading Language XML..");
+        Main.INSTANCE.getLogger().log("Reading Language XML..");
         this.readXML(map, getXML());
         this.readXML(defaultMap, LanguageRes.class.getResourceAsStream("/locale/en.xml"));
-        JByteMod.LOGGER.log("Successfully loaded " + map.size() + " local resources and " + defaultMap.size() + " default resources");
+        Main.INSTANCE.getLogger().log("Successfully loaded " + map.size() + " local resources and " + defaultMap.size() + " default resources");
     }
 
 
@@ -50,7 +50,7 @@ public class LanguageRes {
                 }
             }
         } catch (Exception e) {
-            JByteMod.LOGGER.err("Failed to load resources: " + e.getMessage());
+             Main.INSTANCE.getLogger().err("Failed to load resources: " + e.getMessage());
             e.printStackTrace();
             new ErrorDisplay(e);
         }
@@ -62,10 +62,10 @@ public class LanguageRes {
     /*
     InputStream is = LanguageRes.class.getResourceAsStream("/locale/" + this.getLanguage() + ".xml");
     if (is == null) {
-      JByteMod.LOGGER.warn("Locale not found, using default en.xml");
+       Main.INSTANCE.getLogger().warn("Locale not found, using default en.xml");
       is = LanguageRes.class.getResourceAsStream("/locale/en.xml");
       if (is == null) {
-        JByteMod.LOGGER.err("en.xml not found!");
+         Main.INSTANCE.getLogger().err("en.xml not found!");
       }
     }
     return is;

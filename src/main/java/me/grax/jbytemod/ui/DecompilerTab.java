@@ -1,9 +1,10 @@
 package me.grax.jbytemod.ui;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.decompiler.ASMifierDecompiler;
 import de.xbrowniecodez.jbytemod.decompiler.JDCoreDecompiler;
 import de.xbrowniecodez.jbytemod.decompiler.VineflowerDecompiler;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.decompiler.*;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.objectweb.asm.tree.ClassNode;
@@ -27,7 +28,7 @@ public class DecompilerTab extends JPanel {
         this.jbm = jbm;
         this.dp = new DecompilerPanel();
         this.label = new JLabel(decompiler + " Decompiler");
-        jbm.setDP(dp);
+        jbm.setDecompilerPanel(dp);
         this.setLayout(new BorderLayout());
 
         JPanel topPanel = new JPanel(new GridLayout(1, 2));
@@ -51,7 +52,7 @@ public class DecompilerTab extends JPanel {
         compile.setVisible(false);
         rightPanel.add(compile);
 
-        JButton reload = new JButton(JByteMod.res.getResource("reload"));
+        JButton reload = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("reload"));
         reload.addActionListener(e -> decompile(Decompiler.last, Decompiler.lastMn, true));
         rightPanel.add(reload);
         

@@ -1,7 +1,8 @@
 package me.grax.jbytemod.utils.attach;
 
+import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.JarArchive;
 import me.grax.jbytemod.utils.asm.Loader;
 import me.lpk.util.JarUtils;
@@ -28,7 +29,7 @@ public class RuntimeJarArchive extends JarArchive {
         try {
             loadNames(JByteMod.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
             loadNames(JarUtils.getRT().getAbsolutePath());
-            JByteMod.LOGGER.log("Successfully loaded system class names");
+             Main.INSTANCE.getLogger().log("Successfully loaded system class names");
         } catch (Exception e1) {
             e1.printStackTrace();
         }

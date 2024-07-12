@@ -1,6 +1,7 @@
 package me.grax.jbytemod.utils.task.search;
 
-import me.grax.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.PageEndPanel;
 import de.xbrowniecodez.jbytemod.ui.lists.SearchList;
 import me.grax.jbytemod.ui.lists.entries.SearchEntry;
@@ -89,6 +90,6 @@ public class LdcTask extends SwingWorker<Void, Integer> {
 
     @Override
     protected void done() {
-        JByteMod.LOGGER.log("Search finished!");
+         Main.INSTANCE.getLogger().log("Search finished!");
     }
 }
