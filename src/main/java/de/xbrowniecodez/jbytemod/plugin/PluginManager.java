@@ -1,5 +1,6 @@
 package de.xbrowniecodez.jbytemod.plugin;
 
+import de.xbrowniecodez.jbytemod.utils.Utils;
 import lombok.Getter;
 import me.grax.jbytemod.JByteMod;
 
@@ -15,7 +16,7 @@ import java.util.zip.ZipFile;
 public class PluginManager {
 
     private final ArrayList<Plugin> plugins = new ArrayList<>();
-    private final File pluginFolder = new File(JByteMod.workingDir, "plugins");
+    private final File pluginFolder = new File(Utils.getWorkingDirectory(), "plugins");
 
     public PluginManager(JByteMod jbm) {
         if (pluginFolder.exists() && pluginFolder.isDirectory()) {

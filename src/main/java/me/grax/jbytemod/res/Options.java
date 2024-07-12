@@ -1,6 +1,7 @@
 package me.grax.jbytemod.res;
 
 import com.strobel.decompiler.DecompilerSettings;
+import de.xbrowniecodez.jbytemod.utils.Utils;
 import me.grax.jbytemod.JByteMod;
 import me.grax.jbytemod.decompiler.CFRDecompiler;
 
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 public class Options {
-    private static final File propFile = new File(JByteMod.workingDir, JByteMod.configPath);
+    private final File propFile = new File(Utils.getWorkingDirectory(), "jbytemod-remastered.cfg");
 
     public List<Option> bools = new ArrayList<>();
     public List<Option> defaults = new ArrayList<>(Arrays.asList(new Option("sort_methods", false, Type.BOOLEAN),

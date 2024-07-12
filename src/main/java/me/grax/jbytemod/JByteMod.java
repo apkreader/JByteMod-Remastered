@@ -45,15 +45,14 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class JByteMod extends JFrame {
 	public static final Version version = new Version(Utils.readPropertiesFile().getProperty("version"));
     private static final String jbytemod = "JByteMod Remastered v" + version;
-    
-    public static File workingDir = new File(".");
-    public static String configPath = "jbyte-remastered.cfg";
+
     public static Logging LOGGER;
     public static LanguageRes res;
     public static Options ops;
@@ -147,6 +146,9 @@ public class JByteMod extends JFrame {
 
     public void initializeFrame(boolean agent) {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        Arrays.stream(getWindowListeners()).forEach(windowListener -> {
+            System.out.println(windowListener.toString());
+        });
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
@@ -212,8 +214,6 @@ public class JByteMod extends JFrame {
             printHelpAndExit();
         }
 
-        configureWorkingDirectory(cmd);
-        configureConfigPath(cmd);
         initialize();
 
         EventQueue.invokeLater(() -> {
@@ -256,22 +256,6 @@ public class JByteMod extends JFrame {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(jbytemod, buildCommandLineOptions());
         System.exit(0);
-    }
-
-    private static void configureWorkingDirectory(CommandLine cmd) {
-        if (cmd.hasOption("d")) {
-            workingDir = new File(cmd.getOptionValue("d"));
-            if (!(workingDir.exists() && workingDir.isDirectory())) {
-                printHelpAndExit();
-            }
-            JByteMod.LOGGER.err("Specified working dir set");
-        }
-    }
-
-    private static void configureConfigPath(CommandLine cmd) {
-        if (cmd.hasOption("c")) {
-            configPath = cmd.getOptionValue("c");
-        }
     }
 
     private static void initializeLookAndFeel() {
