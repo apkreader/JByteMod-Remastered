@@ -1,0 +1,20 @@
+kind: pipeline
+type: docker
+name: default
+steps:
+  - name: authenticate
+    image: robertstettner/drone-mvn-auth
+    volumes:
+      - name: cache
+        path: /root/.m2
+    settings:
+      servers:
+        from_secret: nexus
+  - name: build
+    image: "maven:3.9.7-amazoncorretto-8"
+    volumes:
+      - name: cache
+        path: /root/.m2
+    commands:
+      - export M2_HOME=/usr/share/maven
+      - mvn package -gs settings.xml
