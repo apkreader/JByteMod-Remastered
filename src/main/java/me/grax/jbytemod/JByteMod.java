@@ -141,7 +141,7 @@ public class JByteMod extends JFrame {
         initializeFrame(agent);
     }
 
-    private void initializeFrame(boolean agent) {
+    public void initializeFrame(boolean agent) {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
