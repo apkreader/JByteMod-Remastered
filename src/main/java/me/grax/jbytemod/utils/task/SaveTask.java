@@ -14,14 +14,15 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
 public class SaveTask extends SwingWorker<Void, Integer> {
 
-    private File output;
-    private PageEndPanel jpb;
-    private JarArchive file;
+    private final File output;
+    private final PageEndPanel jpb;
+    private final JarArchive file;
 
     public SaveTask(JByteMod jbm, File output, JarArchive file) {
         this.output = output;
@@ -42,10 +43,10 @@ public class SaveTask extends SwingWorker<Void, Integer> {
                     CustomClassWriter writer = new CustomClassWriter(flags);
                     node.accept(writer);
                     publish(50);
-                     Main.INSTANCE.getLogger().log("Saving..");
-                    Files.write(this.output.toPath(), writer.toByteArray());
+                    Main.INSTANCE.getLogger().log("Saving..");
+                    Files.write(new File(this.output.toString().replace(".jar", ".class")).toPath(), writer.toByteArray());
                     publish(100);
-                     Main.INSTANCE.getLogger().log("Saving successful!");
+                    Main.INSTANCE.getLogger().log("Saving successful!");
                     return null;
                 }
 
@@ -78,7 +79,7 @@ public class SaveTask extends SwingWorker<Void, Integer> {
 
     public void saveAsJarNew(Map<String, byte[]> outBytes, String fileName) {
         try {
-            ZipOutputStream out = new ZipOutputStream(new java.io.FileOutputStream(fileName));
+            ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(Paths.get(fileName)));
             out.setEncoding("UTF-8");
             for (String entry : outBytes.keySet()) {
                 out.putNextEntry(new ZipEntry(entry));
@@ -86,9 +87,7 @@ public class SaveTask extends SwingWorker<Void, Integer> {
                     out.write(outBytes.get(entry));
                 out.closeEntry();
             }
-            if (out != null) {
-                out.close();
-            }
+            out.close();
 
         } catch (IOException e) {
             e.printStackTrace();
