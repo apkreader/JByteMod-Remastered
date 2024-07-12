@@ -1,5 +1,6 @@
 package de.xbrowniecodez.jbytemod.plugin;
 
+import lombok.Getter;
 import me.grax.jbytemod.JByteMod;
 
 import java.io.File;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
+@Getter
 public class PluginManager {
 
     private final ArrayList<Plugin> plugins = new ArrayList<>();
