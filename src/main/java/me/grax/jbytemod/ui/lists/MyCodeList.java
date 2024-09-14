@@ -2,6 +2,7 @@ package me.grax.jbytemod.ui.lists;
 
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.ui.lists.AdressList;
 import me.grax.jbytemod.ui.JAnnotationEditor;
 import me.grax.jbytemod.ui.JSearch;
 import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;

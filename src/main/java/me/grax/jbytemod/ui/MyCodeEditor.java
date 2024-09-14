@@ -1,7 +1,7 @@
 package me.grax.jbytemod.ui;
 
 import de.xbrowniecodez.jbytemod.JByteMod;
-import me.grax.jbytemod.ui.lists.AdressList;
+import de.xbrowniecodez.jbytemod.ui.lists.AdressList;
 import me.grax.jbytemod.ui.lists.ErrorList;
 import me.grax.jbytemod.ui.lists.MyCodeList;
 
