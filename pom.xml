@@ -210,6 +210,11 @@
 			<version>3.0.2</version>
 		</dependency>
 		<dependency>
+			<groupId>com.github.weisj</groupId>
+			<artifactId>darklaf-native-utils</artifactId>
+			<version>3.0.2x</version>
+		</dependency>
+		<dependency>
 			<groupId>org.benf</groupId>
 			<artifactId>cfr</artifactId>
 			<version>${cfr.version}</version>
