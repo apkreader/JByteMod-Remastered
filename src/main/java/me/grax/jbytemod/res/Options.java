@@ -31,7 +31,7 @@ public class Options {
             new Option("remove_redundant", false, Type.BOOLEAN, "graph"), new Option("max_redundant_input", 2, Type.INT, "graph"),
             new Option("decompile_graph", true, Type.BOOLEAN, "graph"), new Option("primary_color", "#557799", Type.STRING, "color"),
             new Option("secondary_color", "#995555", Type.STRING, "color"),
-            new Option("discord_state", true, Type.BOOLEAN), new Option("auto_scan", false, Type.BOOLEAN),
+            new Option("discord_state", true, Type.BOOLEAN), new Option("check_update", true, Type.BOOLEAN), new Option("auto_scan", false, Type.BOOLEAN),
             new Option("bad_class_check", true, Type.BOOLEAN), new Option("use_dark_theme", true, Type.BOOLEAN, "style")));
 
     public Options() {

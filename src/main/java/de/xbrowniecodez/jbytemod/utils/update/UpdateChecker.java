@@ -10,6 +10,7 @@ import javax.swing.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import de.xbrowniecodez.jbytemod.JByteMod;
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.update.objects.Version;
 import de.xbrowniecodez.jbytemod.utils.update.ui.UpdateDialogFrame;
@@ -25,7 +26,9 @@ public class UpdateChecker {
 	}
 
 	public void check() {
-		 Main.INSTANCE.getLogger().log("Checking for updates...");
+		if(!Main.INSTANCE.getJByteMod().getOptions().get("check_update").getBoolean())
+			return;
+		Main.INSTANCE.getLogger().log("Checking for updates...");
 		JsonObject releaseInfo = fetchLatestReleaseInfo();
 		if (releaseInfo != null) {
 			latestVersion = new Version(releaseInfo.get("name").getAsString());

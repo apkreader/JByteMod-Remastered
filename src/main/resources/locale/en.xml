@@ -126,6 +126,7 @@
    <string name="attach_error">Is attach.dll located in the right place? Try using '-Djava.library.path'!</string>
    <string name="deobf_tools">Deobfuscation Tools</string>
    <string name="use_dark_theme">Dark Theme</string>
+   <string name="check_update">Check for updates</string>
 
    
    <!-- Decompiler Options -->
