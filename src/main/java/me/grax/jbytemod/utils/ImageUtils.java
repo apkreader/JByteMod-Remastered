@@ -1,12 +1,16 @@
 package me.grax.jbytemod.utils;
 
+import de.xbrowniecodez.jbytemod.Main;
+import lombok.experimental.UtilityClass;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+@UtilityClass
 public class ImageUtils {
-    private static final String watermark = "Created with JByteMod";
+    private final String watermark = "Created with " + Main.INSTANCE.getJByteMod().getTitle();
 
-    public static BufferedImage watermark(BufferedImage old) {
+    public BufferedImage watermark(BufferedImage old) {
         BufferedImage copy = copyImage(old);
         Graphics2D g2d = copy.createGraphics();
         g2d.setPaint(Color.black);
@@ -19,7 +23,7 @@ public class ImageUtils {
         return copy;
     }
 
-    private static BufferedImage copyImage(BufferedImage source) {
+    private BufferedImage copyImage(BufferedImage source) {
         BufferedImage b = new BufferedImage(source.getWidth() + 60, source.getHeight() + 60, source.getType());
         Graphics g = b.createGraphics();
         g.setColor(Color.WHITE);

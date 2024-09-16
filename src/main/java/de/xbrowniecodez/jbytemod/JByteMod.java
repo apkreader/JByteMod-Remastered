@@ -13,6 +13,7 @@ import me.grax.jbytemod.res.LanguageRes;
 import me.grax.jbytemod.res.Options;
 import me.grax.jbytemod.ui.*;
 import de.xbrowniecodez.jbytemod.ui.lists.LVPList;
+import me.grax.jbytemod.ui.graph.ControlFlowPanel;
 import me.grax.jbytemod.ui.lists.MyCodeList;
 import de.xbrowniecodez.jbytemod.ui.lists.SearchList;
 import de.xbrowniecodez.jbytemod.ui.lists.TCBList;
@@ -55,6 +56,7 @@ public class JByteMod extends JFrame {
     private PageEndPanel pageEndPanel;
     private SearchList searchList;
     private DecompilerPanel decompilerPanel;
+    private ControlFlowPanel controlFlowPanel;
     private TCBList tcbList;
     private MyTabbedPane tabbedPane;
     private InfoPanel infoPanel;
@@ -243,6 +245,7 @@ public class JByteMod extends JFrame {
         }
         tcbList.addNodes(cn, mn);
         lvpList.addNodes(cn, mn);
+        controlFlowPanel.setMethodNode(mn);
         decompilerPanel.setText("");
         tabbedPane.selectMethod(cn, mn);
         lastSelectedTreeEntries.put(cn, mn);

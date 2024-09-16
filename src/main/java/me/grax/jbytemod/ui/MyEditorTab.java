@@ -1,8 +1,10 @@
 package me.grax.jbytemod.ui;
 
-import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.JByteMod;
-import org.jetbrains.annotations.NotNull;
+import de.xbrowniecodez.jbytemod.Main;
+import lombok.Getter;
+import me.grax.jbytemod.discord.Discord;
+import me.grax.jbytemod.ui.graph.ControlFlowPanel;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -11,12 +13,16 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.Objects;
 
+@Getter
 public class MyEditorTab extends JPanel {
+    private final String analysisText = Main.INSTANCE.getJByteMod().getLanguageRes().getResource("analysis");
     private final JPanel code;
     private final JPanel info;
     private final DecompilerTab decompiler;
+    private final ControlFlowPanel analysis;
     private final JPanel center;
-    private boolean classSelected;
+    private final JButton codeButton;
+    private boolean classSelected = false;
 
     public MyEditorTab(JByteMod jbm) {
         setLayout(new BorderLayout());
@@ -31,23 +37,20 @@ public class MyEditorTab extends JPanel {
         InfoPanel sp = new InfoPanel(jbm);
         jbm.setInfoPanel(sp);
 
-        this.info = this.withBorder(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("settings")), sp);
+        this.info = this.withBorder(new JLabel(jbm.getLanguageRes().getResource("settings")), sp);
 
         this.decompiler = new DecompilerTab(jbm);
         this.decompiler.setName("decompiler");
 
+        jbm.setControlFlowPanel(this.analysis = new ControlFlowPanel(jbm));
+        this.analysis.setName("analysis");
+
         center.add(code);
 
-        JPanel selector = getSelectionPanel(jbm);
-        this.add(center, BorderLayout.CENTER);
-        this.add(selector, BorderLayout.PAGE_END);
-    }
-
-    private @NotNull JPanel getSelectionPanel(JByteMod jbm) {
         JPanel selector = new JPanel();
-        JButton codeBtn = new JButton("Code");
-        codeBtn.setSelected(true);
-        codeBtn.addActionListener(e -> showPanel(code));
+        codeButton = new JButton("Code");
+        codeButton.setSelected(true);
+        codeButton.addActionListener(e -> showPanel(code));
         JButton infoBtn = new JButton("Info");
         infoBtn.addActionListener(e -> showPanel(info));
         JButton decompilerBtn = new JButton("Decompiler");
@@ -55,12 +58,23 @@ public class MyEditorTab extends JPanel {
             showPanel(decompiler);
             decompiler.decompile(jbm.getCurrentNode(), jbm.getCurrentMethod(), false);
         });
+        JButton analysisBtn = new JButton(analysisText);
+        analysisBtn.addActionListener(e -> {
+            showPanel(analysis);
+            if (!classSelected) {
+                analysis.generateList();
+            } else {
+                analysis.clear();
+            }
+        });
 
-        selector.add(codeBtn);
+        selector.add(codeButton);
         selector.add(infoBtn);
         selector.add(decompilerBtn);
+        selector.add(analysisBtn);
         selector.setLayout(new FlowLayout(FlowLayout.LEFT));
-        return selector;
+        this.add(center, BorderLayout.CENTER);
+        this.add(selector, BorderLayout.PAGE_END);
     }
 
     private void showPanel(Component panel) {
@@ -90,19 +104,26 @@ public class MyEditorTab extends JPanel {
         Main.INSTANCE.getDiscord().updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name);
 
         String selectedComponentName = center.getComponent(0).getName();
-        if (Objects.nonNull(selectedComponentName)) {
-            if (selectedComponentName.equals("decompiler"))
+        if(Objects.nonNull(selectedComponentName)) {
+            if(selectedComponentName.equals("decompiler"))
                 decompiler.decompile(cn, null, false);
+            else if (selectedComponentName.equals("analysis"))
+                analysis.clear();
         }
+
+        this.classSelected = true;
     }
 
     public void selectMethod(ClassNode cn, MethodNode mn) {
         Main.INSTANCE.getDiscord().updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name + "." + mn.name);
 
         String selectedComponentName = center.getComponent(0).getName();
-        if (Objects.nonNull(selectedComponentName)) {
+        if(Objects.nonNull(selectedComponentName)) {
             if (selectedComponentName.equals("decompiler"))
                 decompiler.decompile(cn, mn, false);
+            else if (selectedComponentName.equals("analysis"))
+                analysis.generateList();
         }
+        this.classSelected = false;
     }
 }
