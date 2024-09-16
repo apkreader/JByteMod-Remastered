@@ -14,6 +14,7 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 -   **Advanced Bytecode Editing**: Intuitive interface for directly modifying Java bytecode.
 -   **Decompiler Integration**: Seamless integration with decompilers to view and edit Java source code.
 -   **Graphical Bytecode Viewer**: Visualize bytecode in a graphical format for easier comprehension.
+-   **Control Flow Visualization**: Generate and view control flow diagrams of methods to understand execution flow better.
 -   **Drag and Drop Functionality**: Easily drag and drop `.jar`, `.apk`, and `.class` files onto the window for quick access.
 -   **Search and Replace**: Effortlessly find and replace bytecode instructions.
 -   **Constant Pool Editor**: Manage and edit constant pool entries within class files.
@@ -49,6 +50,7 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 -   **Opening Files**: Use the drag and drop feature or navigate through `File` > `Open` to load `.jar`, `.apk`, or `.class` files.
 -   **Editing Bytecode**: Select a method from the left panel to view and modify its bytecode.
 -   **Decompiling**: Switch to the `Decompiler` tab to view and edit decompiled Java source code.
+-   **Generating Control Flow Diagrams**: In the `Analysis` tab, select a method to generate and view its control flow diagram, you can also save it by clicking `Save`.
 -   **Saving Changes**: After making edits, save your changes via `File` > `Save`.
 
 ### Contributing
