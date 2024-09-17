@@ -10,7 +10,6 @@
 JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array of features for decompiling, editing, and recompiling Java class files. This version includes improvements over the original JByteMod, making it a versatile tool for Java developers and enthusiasts.
 
 ## Features
--   **Android APK Support** (Decompile only at the moment)
 -   **Advanced Bytecode Editing**: Intuitive interface for directly modifying Java bytecode.
 -   **Decompiler Integration**: Seamless integration with decompilers to view and edit Java source code.
 -   **Graphical Bytecode Viewer**: Visualize bytecode in a graphical format for easier comprehension.
