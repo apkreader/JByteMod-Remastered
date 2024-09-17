@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum Decompilers {
-    CFR("CFR", Utils.readPropertiesFile().getProperty("cfr")), PROCYON("Procyon", Utils.readPropertiesFile().getProperty("procyon")), VINEFLOWER("Vineflower", Utils.readPropertiesFile().getProperty("vineflower")), JDCORE("JD-Core", Utils.readPropertiesFile().getProperty("jd-core")), KOFFEE("Koffee", "1.0"), ASMIFIER("ASMifier", Utils.readPropertiesFile().getProperty("asm"));
+    CFR("CFR", Utils.readPropertiesFile().getProperty("cfr")), PROCYON("Procyon", Utils.readPropertiesFile().getProperty("procyon")), VINEFLOWER("Vineflower", Utils.readPropertiesFile().getProperty("vineflower")), JDCORE("JD-Core", Utils.readPropertiesFile().getProperty("jd-core")), KOFFEE("Koffee", Utils.readPropertiesFile().getProperty("koffee")), ASMIFIER("ASMifier", Utils.readPropertiesFile().getProperty("asm"));
     private final String version;
     private final String name;
 
