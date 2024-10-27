@@ -49,7 +49,7 @@ public class TCBList extends JList<TCBEntry> {
         List<TCBEntry> selectedEntries = getSelectedValuesList();
         JPopupMenu menu = new JPopupMenu();
         if (!selectedEntries.isEmpty()) {
-            JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));
+            JMenuItem remove = new JMenuItem(selectedEntries.size() == 1 ?Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove") : Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove_all"));
             remove.addActionListener(this::removeSelectedEntries);
             menu.add(remove);
 

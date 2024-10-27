@@ -179,28 +179,24 @@ public class MyCodeList extends JList<InstrEntry> {
         JPopupMenu menu = new JPopupMenu();
         if (selected.size() > 1) {
             JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove_all"));
-            remove.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    for (InstrEntry sel : selected) {
-                        cn.fields.remove(((FieldEntry) sel).getFn());
-                    }
-                    MyCodeList.this.loadFields(cn);
+            remove.addActionListener(e -> {
+                for (InstrEntry sel : selected) {
+                    cn.fields.remove(((FieldEntry) sel).getFn());
                 }
+                MyCodeList.this.loadFields(cn);
             });
             menu.add(remove);
             menu.add(copyText());
             menu.show(jbm, (int) jbm.getMousePosition().getX(), (int) jbm.getMousePosition().getY());
         } else {
             JMenuItem edit = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
-            edit.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        new InsnEditDialogue(null, fle.getFn()).open();
-                    } catch (Exception e1) {
-                        new ErrorDisplay(e1);
-                    }
-                    MyCodeList.this.loadFields(cn);
+            edit.addActionListener(e -> {
+                try {
+                    new InsnEditDialogue(null, fle.getFn()).open();
+                } catch (Exception e1) {
+                    new ErrorDisplay(e1);
                 }
+                MyCodeList.this.loadFields(cn);
             });
             menu.add(edit);
             JMenuItem remove = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("remove"));

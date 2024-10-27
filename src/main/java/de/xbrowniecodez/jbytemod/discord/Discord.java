@@ -1,4 +1,4 @@
-package me.grax.jbytemod.discord;
+package de.xbrowniecodez.jbytemod.discord;
 
 import java.time.OffsetDateTime;
 
@@ -9,7 +9,6 @@ import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
 import de.xbrowniecodez.jbytemod.Main;
 import lombok.Getter;
-import lombok.SneakyThrows;
 
 @Getter
 public class Discord {
@@ -23,7 +22,6 @@ public class Discord {
         new Thread(this::init).start();
     }
 
-    @SneakyThrows
     private void init() {
         startTimestamp = OffsetDateTime.now();
         client = new IPCClient(Long.parseLong(applicationId));
@@ -40,7 +38,6 @@ public class Discord {
             Main.INSTANCE.getLogger().log("Successfully hooked discord");
         } catch (Exception e) {
             Main.INSTANCE.getLogger().err("Failed to hook discord");
-            e.printStackTrace();
         }
     }
 

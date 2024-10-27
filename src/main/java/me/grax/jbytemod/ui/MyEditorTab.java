@@ -3,7 +3,6 @@ package me.grax.jbytemod.ui;
 import de.xbrowniecodez.jbytemod.JByteMod;
 import de.xbrowniecodez.jbytemod.Main;
 import lombok.Getter;
-import me.grax.jbytemod.discord.Discord;
 import me.grax.jbytemod.ui.graph.ControlFlowPanel;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;

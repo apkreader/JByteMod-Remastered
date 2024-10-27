@@ -3,7 +3,7 @@ package de.xbrowniecodez.jbytemod;
 import de.xbrowniecodez.jbytemod.utils.update.UpdateChecker;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import me.grax.jbytemod.discord.Discord;
+import de.xbrowniecodez.jbytemod.discord.Discord;
 import me.grax.jbytemod.logging.Logging;
 
 import me.grax.jbytemod.utils.FileUtils;

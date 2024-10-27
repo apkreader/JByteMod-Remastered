@@ -17,6 +17,7 @@
 package com.javadeobfuscator.deobfuscator.analyzer;
 
 import com.javadeobfuscator.deobfuscator.analyzer.frame.Frame;
+import lombok.Getter;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public class AnalyzerResult {
     public static final AnalyzerResult EMPTY_RESULT;
 
@@ -37,10 +39,6 @@ public class AnalyzerResult {
     private Map<Frame, AbstractInsnNode> reverse;
     protected int maxLocals;
     protected int maxStack;
-
-    public Map<AbstractInsnNode, List<Frame>> getFrames() {
-        return frames;
-    }
 
     public AbstractInsnNode getInsnNode(Frame frame) {
         if (reverse == null) {
@@ -58,9 +56,5 @@ public class AnalyzerResult {
             mapping = reverseMapping;
         }
         return mapping;
-    }
-
-    public int getMaxLocals() {
-        return maxLocals;
     }
 }

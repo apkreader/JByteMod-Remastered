@@ -3,6 +3,7 @@ package com.javadeobfuscator.deobfuscator.analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -572,7 +573,7 @@ public class ArgsAnalyzer
 		FORWARDS,
 		BACKWARDS;
 	}
-	
+	@Getter
 	public static class Result
 	{
 		private final int diff;
@@ -584,21 +585,6 @@ public class ArgsAnalyzer
 			this.diff = diff;
 			this.firstArgInsn = firstArgInsn;
 			this.skippedDups = skippedDups;
-		}
-		
-		public int getDiff()
-		{
-			return diff;
-		}
-		
-		public AbstractInsnNode getFirstArgInsn()
-		{
-			return firstArgInsn;
-		}
-		
-		public List<AbstractInsnNode> getSkippedDups()
-		{
-			return skippedDups;
 		}
 	}
 }
