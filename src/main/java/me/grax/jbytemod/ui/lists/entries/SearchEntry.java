@@ -1,16 +1,17 @@
 package me.grax.jbytemod.ui.lists.entries;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.grax.jbytemod.utils.InstrUtils;
 import me.grax.jbytemod.utils.TextUtils;
 import me.lpk.util.OpUtils;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 
+@Getter
+@Setter
 public class SearchEntry {
-    private ClassNode cn;
-    private MethodNode mn;
+    private ClassNode classNode;
+    private MethodNode methodNode;
     private String found;
     private String text;
 
@@ -21,49 +22,39 @@ public class SearchEntry {
         this.text = " ";
     }
 
-    public SearchEntry(ClassNode cn, MethodNode mn, String found) {
-        this.cn = cn;
-        this.mn = mn;
+    public SearchEntry(ClassNode classNode, MethodNode methodNode, String found) {
+        this.classNode = classNode;
+        this.methodNode = methodNode;
         this.found = found;
         this.text = TextUtils.toHtml(
-                InstrUtils.getDisplayClass(cn.name) + "." + TextUtils.escape(mn.name) + " - " + TextUtils.addTag("\"" + found + "\"", "font color=#559955"));
+                InstrUtils.getDisplayClass(classNode.name) + "." + TextUtils.escape(methodNode.name) + " - " + TextUtils.addTag("\"" + found + "\"", "font color=#559955"));
     }
 
-    public SearchEntry(ClassNode cn, MethodNode mn, FieldInsnNode fin) {
-        this(cn, mn, fin.owner, fin.name, fin.desc, fin.getOpcode());
+    public SearchEntry(ClassNode classNode, MethodNode methodNode, FieldInsnNode fin) {
+        this(classNode, methodNode, fin.owner, fin.name, fin.desc, fin.getOpcode());
     }
 
-    public SearchEntry(ClassNode cn, MethodNode mn, MethodInsnNode min) {
-        this(cn, mn, min.owner, min.name, min.desc, min.getOpcode());
+    public SearchEntry(ClassNode classNode, MethodNode methodNode, MethodInsnNode min) {
+        this(classNode, methodNode, min.owner, min.name, min.desc, min.getOpcode());
     }
 
-    public SearchEntry(ClassNode cn, MethodNode mn, String owner, String name, String desc, int opcode) {
-        this.cn = cn;
-        this.mn = mn;
+    public SearchEntry(ClassNode classNode, MethodNode methodNode, InvokeDynamicInsnNode idn) {
+        this.classNode = classNode;
+        this.methodNode = methodNode;
+        this.found = idn.name + idn.desc;
+        this.text = TextUtils.toHtml(
+                InstrUtils.getDisplayClass(classNode.name) + "." + TextUtils.escape(methodNode.name) + " - "
+                        + TextUtils.toBold("invokedynamic") + " " + TextUtils.escape(idn.name)
+                        + "(" + InstrUtils.getDisplayArgs(TextUtils.escape(idn.desc)) + ")");
+    }
+
+    public SearchEntry(ClassNode classNode, MethodNode methodNode, String owner, String name, String desc, int opcode) {
+        this.classNode = classNode;
+        this.methodNode = methodNode;
         this.found = owner + "." + name + desc;
-        this.text = TextUtils.toHtml(InstrUtils.getDisplayClass(cn.name) + "." + TextUtils.escape(mn.name) + " - "
+        this.text = TextUtils.toHtml(InstrUtils.getDisplayClass(classNode.name) + "." + TextUtils.escape(methodNode.name) + " - "
                 + TextUtils.toBold(OpUtils.getOpcodeText(opcode).toLowerCase()) + " " + InstrUtils.getDisplayClassRed(owner) + "." + TextUtils.escape(name)
                 + "(" + InstrUtils.getDisplayArgs(TextUtils.escape(desc)) + ")");
-    }
-
-    public ClassNode getCn() {
-        return cn;
-    }
-
-    public MethodNode getMn() {
-        return mn;
-    }
-
-    public String getFound() {
-        return found;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 
     @Override
