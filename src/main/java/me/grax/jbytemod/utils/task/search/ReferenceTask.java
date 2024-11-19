@@ -14,82 +14,95 @@ import java.util.List;
 
 public class ReferenceTask extends SwingWorker<Void, Integer> {
 
-    private SearchList sl;
-    private PageEndPanel jpb;
-    private JByteMod jbm;
-    private boolean exact;
-    private String owner;
-    private String name;
-    private String desc;
-    private boolean field;
+    private final SearchList searchList;
+    private final PageEndPanel progressBar;
+    private final JByteMod jByteMod;
+    private final boolean exactMatch;
+    private final String owner;
+    private final String name;
+    private final String descriptor;
+    private final boolean isFieldSearch;
 
-    public ReferenceTask(SearchList sl, JByteMod jbm, String owner, String name, String desc, boolean exact, boolean field) {
-        this.sl = sl;
-        this.jbm = jbm;
-        this.jpb = jbm.getPageEndPanel();
-        this.exact = exact;
+    public ReferenceTask(SearchList searchList, JByteMod jByteMod, String owner, String name, String descriptor, boolean exactMatch, boolean isFieldSearch) {
+        this.searchList = searchList;
+        this.jByteMod = jByteMod;
+        this.progressBar = jByteMod.getPageEndPanel();
+        this.exactMatch = exactMatch;
         this.owner = owner;
         this.name = name;
-        this.desc = desc;
-        this.field = field;
+        this.descriptor = descriptor;
+        this.isFieldSearch = isFieldSearch;
     }
 
     @Override
     protected Void doInBackground() throws Exception {
-        LazyListModel<SearchEntry> model = new LazyListModel<SearchEntry>();
-        Collection<ClassNode> values = jbm.getJarArchive().getClasses().values();
-        double size = values.size();
-        double i = 0;
-        boolean exact = this.exact;
-        for (ClassNode cn : values) {
-            for (MethodNode mn : cn.methods) {
-                for (AbstractInsnNode ain : mn.instructions) {
-                    if (field) {
-                        if (ain.getType() == AbstractInsnNode.FIELD_INSN) {
-                            FieldInsnNode fin = (FieldInsnNode) ain;
-                            if (exact) {
-                                if (fin.owner.equals(owner) && fin.name.equals(name) && fin.desc.equals(desc)) {
-                                    model.addElement(new SearchEntry(cn, mn, fin));
-                                }
-                            } else {
-                                if (fin.owner.contains(owner) && fin.name.contains(name) && fin.desc.contains(desc)) {
-                                    model.addElement(new SearchEntry(cn, mn, fin));
-                                }
-                            }
-                        }
-                    } else {
-                        if (ain.getType() == AbstractInsnNode.METHOD_INSN) {
-                            MethodInsnNode min = (MethodInsnNode) ain;
-                            if (exact) {
-                                if (min.owner.equals(owner) && min.name.equals(name) && min.desc.equals(desc)) {
-                                    model.addElement(new SearchEntry(cn, mn, min));
-                                }
-                            } else {
-                                if (min.owner.contains(owner) && min.name.contains(name) && min.desc.contains(desc)) {
-                                    model.addElement(new SearchEntry(cn, mn, min));
-                                }
-                            }
-                        }
+        LazyListModel<SearchEntry> model = new LazyListModel<>();
+        Collection<ClassNode> classes = jByteMod.getJarArchive().getClasses().values();
+        double totalClasses = classes.size();
+        int processedClasses = 0;
+
+        for (ClassNode classNode : classes) {
+            for (MethodNode methodNode : classNode.methods) {
+                processMethod(classNode, methodNode, model);
+            }
+            publish(getProgressPercentage(++processedClasses, totalClasses));
+        }
+
+        searchList.setModel(model);
+        publish(100); // Ensure progress is set to 100% on completion
+        return null;
+    }
+
+    private void processMethod(ClassNode classNode, MethodNode methodNode, LazyListModel<SearchEntry> model) {
+        for (AbstractInsnNode instruction : methodNode.instructions) {
+            if (isFieldSearch && instruction.getType() == AbstractInsnNode.FIELD_INSN) {
+                FieldInsnNode fin = (FieldInsnNode) instruction;
+                if (matches(fin.owner, fin.name, fin.desc)) {
+                    model.addElement(new SearchEntry(classNode, methodNode, fin));
+                }
+            } else if (!isFieldSearch) {
+                if (instruction.getType() == AbstractInsnNode.METHOD_INSN) {
+                    MethodInsnNode min = (MethodInsnNode) instruction;
+                    if (matches(min.owner, min.name, min.desc)) {
+                        model.addElement(new SearchEntry(classNode, methodNode, min));
+                    }
+                } else if (instruction.getType() == AbstractInsnNode.INVOKE_DYNAMIC_INSN) {
+                    InvokeDynamicInsnNode idn = (InvokeDynamicInsnNode) instruction;
+                    if (matchesDynamic(idn)) {
+                        model.addElement(new SearchEntry(classNode, methodNode, idn));
                     }
                 }
             }
-            publish(Math.min((int) (i++ / size * 100d) + 1, 100));
         }
-        sl.setModel(model);
-        publish(100);
-        return null;
+    }
+
+    private boolean matches(String instructionOwner, String instructionName, String instructionDesc) {
+        if (exactMatch) {
+            return owner.equals(instructionOwner) && name.equals(instructionName) && descriptor.equals(instructionDesc);
+        }
+        return instructionOwner.contains(owner) && instructionName.contains(name) && instructionDesc.contains(descriptor);
+    }
+
+    private boolean matchesDynamic(InvokeDynamicInsnNode idn) {
+        if (exactMatch) {
+            return idn.name.equals(name) && idn.desc.equals(descriptor);
+        }
+        return idn.name.contains(name) && idn.desc.contains(descriptor);
+    }
+
+    private int getProgressPercentage(double current, double total) {
+        return Math.min((int) (current / total * 100), 100);
     }
 
     @Override
     protected void process(List<Integer> chunks) {
-        int i = chunks.get(chunks.size() - 1);
-        jpb.setValue(i);
-        super.process(chunks);
+        int progress = chunks.get(chunks.size() - 1);
+        progressBar.setValue(progress);
     }
 
     @Override
     protected void done() {
-        jpb.setValue(100);
-         Main.INSTANCE.getLogger().log("Search finished!");
+        progressBar.setValue(100);
+        Main.INSTANCE.getLogger().log("Search finished!");
     }
 }
