@@ -40,7 +40,7 @@ public class UpdateDialogFrame extends JFrame {
     @SneakyThrows
     private void openDownloadLink(String version) {
         URI downloadUri = new URI(String.format(
-                "https://github.com/xBrownieCodezV2/JByteMod-Remastered/releases/download/%s/JByteMod-Remastered-%s.jar",
+                "https://github.com/apkreader/JByteMod-Remastered/releases/download/%s/JByteMod-Remastered-%s.jar",
                 version, version));
 
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
