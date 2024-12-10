@@ -1,11 +1,11 @@
 
 # JByteMod Remastered
 
-[![Build Status](https://ci.mdma.dev/api/badges/xBrownieCodezV2/JByteMod-Remastered/status.svg)](https://ci.mdma.dev/xBrownieCodezV2/JByteMod-Remastered)
-![GitHub Release](https://img.shields.io/github/v/release/xBrownieCodezV2/JByteMod-Remastered)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/681e07293b4c491fae53c3be6d8469fe)](https://app.codacy.com/gh/xBrownieCodezV2/JByteMod-Remastered/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/xBrownieCodezV2/JByteMod-Remastered)
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/xBrownieCodezV2/JByteMod-Remastered)
+[![Build Status](https://ci.mdma.dev/api/badges/apkreader/JByteMod-Remastered/status.svg)](https://ci.mdma.dev/apkreader/JByteMod-Remastered)
+![GitHub Release](https://img.shields.io/github/v/release/apkreader/JByteMod-Remastered)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/681e07293b4c491fae53c3be6d8469fe)](https://app.codacy.com/gh/apkreader/JByteMod-Remastered/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/apkreader/JByteMod-Remastered)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/apkreader/JByteMod-Remastered)
 
 JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array of features for decompiling, editing, and recompiling Java class files. This version includes improvements over the original JByteMod, making it a versatile tool for Java developers and enthusiasts.
 
@@ -29,7 +29,7 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 
 ### Download
 
-1.  Obtain the latest release of JByteMod Remastered from the [releases page](https://github.com/xBrownieCodezV2/JByteMod-Remastered/releases).
+1.  Obtain the latest release of JByteMod Remastered from the [releases page](https://github.com/apkreader/JByteMod-Remastered/releases).
 
 ### Usage
 
@@ -65,7 +65,7 @@ Contributions to JByteMod Remastered are encouraged! Follow these steps to contr
 
 ### Issues
 
-Report any bugs or suggest improvements on the [issue tracker](https://github.com/xBrownieCodezV2/JByteMod-Remastered/issues).
+Report any bugs or suggest improvements on the [issue tracker](https://github.com/apkreader/JByteMod-Remastered/issues).
 
 ## License
 
