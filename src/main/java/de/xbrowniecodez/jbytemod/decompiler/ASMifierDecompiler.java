@@ -73,7 +73,31 @@ public class ASMifierDecompiler extends Decompiler implements Opcodes {
         TraceClassVisitor visitor = new TraceClassVisitor(null, new ASMifier(), printWriter);
         classReader.accept(visitor, 0);
 
-        return output.toString();
+        return formatASMifierOutput(output.toString());
+    }
+
+    private static String formatASMifierOutput(String asmOutput) {
+        StringBuilder formattedOutput = new StringBuilder();
+        int indentLevel = 0;
+
+        for (String line : asmOutput.split("\n")) {
+            String trimmed = line.trim();
+
+            // adjust indentation for closing braces
+            if (trimmed.endsWith("};") || trimmed.endsWith("}")) {
+                indentLevel = Math.max(0, indentLevel - 1);
+            }
+
+            // apply indentation
+            formattedOutput.append("    ".repeat(indentLevel)).append(trimmed).append("\n");
+
+            // adjust indentation for opening braces
+            if (trimmed.endsWith("{")) {
+                indentLevel++;
+            }
+        }
+
+        return formattedOutput.toString();
     }
     
 }
