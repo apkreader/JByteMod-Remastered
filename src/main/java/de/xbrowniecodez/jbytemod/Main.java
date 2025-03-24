@@ -24,11 +24,11 @@ public enum Main {
     @SneakyThrows
     private void start(String[] args) {
         CommandLine cmd = parseCommandLine(args);
+        this.logger = new Logging();
+        this.jByteMod = new JByteMod(false);
         if (cmd.hasOption("help")) {
             this.printHelpAndExit();
         }
-        this.logger = new Logging();
-        this.jByteMod = new JByteMod(false);
         this.discord = new Discord("1184572566795468881");
         this.loadFileIfNeeded(cmd, jByteMod);
         SwingUtilities.invokeLater(() -> this.jByteMod.setVisible(true));
