@@ -15,7 +15,7 @@
 		<procyon.version>0.6.0</procyon.version>
 		<cfr.version>0.152</cfr.version>
 		<jd-core.version>1.1.3</jd-core.version>
-		<vineflower.version>1.11.0</vineflower.version>
+		<vineflower.version>1.11.1</vineflower.version>
 		<koffee.version>1.0.2</koffee.version>
 	</properties>
 
