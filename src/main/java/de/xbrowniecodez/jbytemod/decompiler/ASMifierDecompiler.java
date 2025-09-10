@@ -45,8 +45,6 @@ public class ASMifierDecompiler extends Decompiler implements Opcodes {
         ClassNode methodOnlyClass = new ClassNode(ASM9);
         methodOnlyClass.name = originalClass.name;
         methodOnlyClass.access = originalClass.access;
-        methodOnlyClass.sourceFile = originalClass.sourceFile;
-        methodOnlyClass.sourceDebug = methodOnlyClass.sourceFile;
 
         if (methodNode.name != null && methodNode.desc != null) {
             methodOnlyClass.methods.add(methodNode);
