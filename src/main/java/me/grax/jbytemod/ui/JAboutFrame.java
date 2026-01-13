@@ -7,6 +7,7 @@ import me.grax.jbytemod.utils.TextUtils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.time.Year;
 
 public class JAboutFrame extends JDialog {
 
@@ -33,11 +34,12 @@ public class JAboutFrame extends JDialog {
 
         JTextPane titlePane = new JTextPane();
         titlePane.setContentType("text/html");
+        int currentYear = Year.now().getValue();
         titlePane.setText(TextUtils.toHtml(
                 jbm.getTitle() +
                         "<br/>Copyright \u00A9 2016-2018 noverify<br/><br/>" +
                         "Copyright \u00A9 2019 Panda<br/><br/>" +
-                        "Copyright \u00A9 2020-2024 xBrownieCodez<br/><br/>" +
+                        "Copyright \u00A9 2020-" + currentYear + " xBrownieCodez<br/><br/>" +
                         "JByteMod by noverify, Reborn by Panda, Remastered by xBrownieCodez" +
                         "<br/><font color=\"#0000EE\"><u>https://github.com/xBrownieCodezV2/JByteMod-Remastered</u></font>"
         ));
