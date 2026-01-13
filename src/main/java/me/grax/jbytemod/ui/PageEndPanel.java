@@ -5,13 +5,14 @@ import de.xbrowniecodez.jbytemod.ui.MemoryBar;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.time.Year;
 
 /**
  * Panel displayed at the bottom of the page.
  */
 public class PageEndPanel extends JPanel {
-
-    private static final String COPYRIGHT_TEXT = "\u00A9 brownie 2020 - 2024";
+    private static final int currentYear = Year.now().getValue();
+    private static final String COPYRIGHT_TEXT = "\u00A9 brownie 2020 - " + currentYear;
     private JProgressBar progressBar;
     private JLabel percentLabel;
     private JLabel copyrightLabel;
