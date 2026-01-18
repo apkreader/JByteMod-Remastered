@@ -59,16 +59,16 @@ public class SearchList extends JList<SearchEntry> {
 
     private ActionListener createGoToDeclarationAction(SearchEntry selectedEntry) {
         return e -> {
-            ClassNode cn = selectedEntry.getClassNode();
-            MethodNode mn = selectedEntry.getMethodNode();
+            ClassNode cn = selectedEntry.getCn();
+            MethodNode mn = selectedEntry.getMn();
             jByteMod.selectMethod(cn, mn);
         };
     }
 
     private ActionListener createSelectTreeAction(SearchEntry selectedEntry) {
         return e -> {
-            ClassNode cn = selectedEntry.getClassNode();
-            MethodNode mn = selectedEntry.getMethodNode();
+            ClassNode cn = selectedEntry.getCn();
+            MethodNode mn = selectedEntry.getMn();
             jByteMod.treeSelection(cn, mn);
         };
     }
