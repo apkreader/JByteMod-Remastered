@@ -2,12 +2,14 @@ package de.xbrowniecodez.jbytemod.ui.lists;
 
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.JByteMod;
-import me.grax.jbytemod.ui.lists.entries.SearchEntry;
+import de.xbrowniecodez.jbytemod.ui.lists.entries.SearchEntry;
 import me.grax.jbytemod.utils.list.LazyListModel;
+import de.xbrowniecodez.jbytemod.utils.task.search.FieldValueTask;
 import me.grax.jbytemod.utils.task.search.LdcTask;
 import me.grax.jbytemod.utils.task.search.ReferenceTask;
 import me.grax.jbytemod.utils.task.search.SFTask;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
@@ -59,17 +61,31 @@ public class SearchList extends JList<SearchEntry> {
 
     private ActionListener createGoToDeclarationAction(SearchEntry selectedEntry) {
         return e -> {
-            ClassNode cn = selectedEntry.getCn();
-            MethodNode mn = selectedEntry.getMn();
-            jByteMod.selectMethod(cn, mn);
+            ClassNode cn = selectedEntry.getClassNode();
+            MethodNode mn = selectedEntry.getMethodNode();
+            FieldNode fn = selectedEntry.getFieldNode();
+            if (mn != null) {
+                jByteMod.selectMethod(cn, mn);
+            } else if (fn != null) {
+                jByteMod.selectField(cn, fn);
+            } else {
+                jByteMod.selectClass(cn);
+            }
         };
     }
 
     private ActionListener createSelectTreeAction(SearchEntry selectedEntry) {
         return e -> {
-            ClassNode cn = selectedEntry.getCn();
-            MethodNode mn = selectedEntry.getMn();
-            jByteMod.treeSelection(cn, mn);
+            ClassNode cn = selectedEntry.getClassNode();
+            MethodNode mn = selectedEntry.getMethodNode();
+            FieldNode fn = selectedEntry.getFieldNode();
+            if (mn != null) {
+                jByteMod.treeSelection(cn, mn);
+            } else if (fn != null) {
+                jByteMod.treeSelection(cn, fn);
+            } else {
+                jByteMod.treeSelection(cn);
+            }
         };
     }
 
@@ -82,6 +98,10 @@ public class SearchList extends JList<SearchEntry> {
 
     public void searchForConstant(String ldc, boolean exact, boolean cs, boolean regex) {
         new LdcTask(this, jByteMod, ldc, exact, cs, regex).execute();
+    }
+
+    public void searchForFieldValue(String val, boolean exact, boolean cs, boolean regex) {
+        new FieldValueTask(this, jByteMod, val, exact, cs, regex).execute();
     }
 
     public void searchForPatternRegex(Pattern p) {

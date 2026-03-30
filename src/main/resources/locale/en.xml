@@ -90,9 +90,13 @@
    <string name="analyze_errors">Display mistakes</string>
    <string name="jump_to_label">Zum Label springen</string>
    <string name="search_ldc">Search LDC</string>
+   <string name="search_field_value">Search Field Value</string>
    <string name="search_field">Search Field reference</string>
+
    <string name="search_method">Search Method reference</string>
    <string name="replace_ldc">Replace LDC</string>
+   <string name="replace_field_value">Replace Field Value</string>
+   <string name="annotation_default">Annotation Default</string>
    <string name="attach">Attach to process</string>
    <string name="decompile_graph">Decompile Graph</string>
    <string name="max_redundant_input">Max inputs for redundant blocks</string>

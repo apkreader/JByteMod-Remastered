@@ -40,7 +40,7 @@ public class UpdateChecker {
 
 	@SneakyThrows
 	private JsonObject fetchLatestReleaseInfo() {
-		URL url = new URL("https://api.github.com/repos/xBrownieCodezV2/JByteMod-Remastered/releases/latest");
+		URL url = new URL("https://api.github.com/repos/apkreader/JByteMod-Remastered/releases/latest");
 		URLConnection connection = url.openConnection();
 
 		try (InputStream inputStream = connection.getInputStream();

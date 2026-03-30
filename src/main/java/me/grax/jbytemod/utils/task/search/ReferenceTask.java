@@ -4,7 +4,7 @@ import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.ui.PageEndPanel;
 import de.xbrowniecodez.jbytemod.ui.lists.SearchList;
-import me.grax.jbytemod.ui.lists.entries.SearchEntry;
+import de.xbrowniecodez.jbytemod.ui.lists.entries.SearchEntry;
 import me.grax.jbytemod.utils.list.LazyListModel;
 import org.objectweb.asm.tree.*;
 

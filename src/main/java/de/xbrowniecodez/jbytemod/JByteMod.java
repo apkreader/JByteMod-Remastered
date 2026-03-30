@@ -25,6 +25,7 @@ import me.grax.jbytemod.utils.task.RetransformTask;
 import me.grax.jbytemod.utils.task.SaveTask;
 import me.lpk.util.OpUtils;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
@@ -276,5 +277,41 @@ public class JByteMod extends JFrame {
                 jarTree.repaint();
             }
         }).start();
+    }
+
+    public void treeSelection(ClassNode cn, FieldNode fn) {
+        treeSelection(cn);
+    }
+
+    public void treeSelection(ClassNode cn) {
+        new Thread(() -> {
+            DefaultTreeModel tm = (DefaultTreeModel) jarTree.getModel();
+            if (this.selectClassEntry(cn, tm, (SortedTreeNode) tm.getRoot())) {
+                jarTree.repaint();
+            }
+        }).start();
+    }
+
+    private boolean selectClassEntry(ClassNode cn, DefaultTreeModel tm, SortedTreeNode node) {
+        for (int i = 0; i < tm.getChildCount(node); i++) {
+            SortedTreeNode child = (SortedTreeNode) tm.getChild(node, i);
+            if (child.getClassNode() != null && child.getClassNode().name.equals(cn.name) && child.getMethodNode() == null) {
+                TreePath tp = new TreePath(tm.getPathToRoot(child));
+                jarTree.setSelectionPath(tp);
+                jarTree.scrollPathToVisible(tp);
+                return true;
+            }
+            if (!child.isLeaf()) {
+                if (selectClassEntry(cn, tm, child)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void selectField(ClassNode cn, FieldNode fn) {
+        selectClass(cn);
+        codeList.selectField(fn);
     }
 }

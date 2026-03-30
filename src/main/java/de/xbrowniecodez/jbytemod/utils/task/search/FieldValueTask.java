@@ -1,4 +1,4 @@
-package me.grax.jbytemod.utils.task.search;
+package de.xbrowniecodez.jbytemod.utils.task.search;
 
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.JByteMod;
@@ -7,48 +7,39 @@ import de.xbrowniecodez.jbytemod.ui.lists.SearchList;
 import de.xbrowniecodez.jbytemod.ui.lists.entries.SearchEntry;
 import me.grax.jbytemod.utils.TextUtils;
 import me.grax.jbytemod.utils.list.LazyListModel;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.FieldNode;
 
 import javax.swing.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class LdcTask extends SwingWorker<Void, Integer> {
+public class FieldValueTask extends SwingWorker<Void, Integer> {
 
     private PageEndPanel jpb;
     private JByteMod jbm;
-    private String ldc;
+    private String value;
     private boolean exact;
     private boolean caseSens;
     private Pattern pattern;
     private SearchList sl;
 
-    public LdcTask(SearchList sl, JByteMod jbm, String ldc, boolean exact, boolean caseSens, boolean regex) {
+    public FieldValueTask(SearchList sl, JByteMod jbm, String value, boolean exact, boolean caseSens, boolean regex) {
         this.sl = sl;
         this.jbm = jbm;
         this.jpb = jbm.getPageEndPanel();
         this.exact = exact;
         this.caseSens = caseSens;
         if (regex) {
-            this.pattern = Pattern.compile(ldc);
+            this.pattern = Pattern.compile(value);
         }
 
         if (!caseSens) {
-            this.ldc = ldc.toLowerCase();
+            this.value = value.toLowerCase();
         } else {
-            this.ldc = ldc;
+            this.value = value;
         }
-    }
-
-    public LdcTask(SearchList sl, JByteMod jbm, Pattern p) {
-        this.sl = sl;
-        this.jbm = jbm;
-        this.jpb = jbm.getPageEndPanel();
-        this.pattern = p;
     }
 
     @Override
@@ -60,17 +51,12 @@ public class LdcTask extends SwingWorker<Void, Integer> {
         boolean exact = this.exact;
         boolean regex = this.pattern != null;
         for (ClassNode cn : values) {
-            for (MethodNode mn : cn.methods) {
-                for (AbstractInsnNode ain : mn.instructions) {
-                    if (ain.getType() == AbstractInsnNode.LDC_INSN) {
-                        LdcInsnNode lin = (LdcInsnNode) ain;
-                        String cst = lin.cst.toString();
-                        if (!caseSens) {
-                            cst = cst.toLowerCase();
-                        }
-                        if (regex ? pattern.matcher(cst).matches() : (exact ? cst.equals(ldc) : cst.contains(ldc))) {
-                            model.addElement(new SearchEntry(cn, mn, TextUtils.escape(TextUtils.max(lin.cst.toString(), 100))));
-                        }
+            for (FieldNode fn : cn.fields) {
+                if (fn.value != null) {
+                    String valStr = fn.value.toString();
+                    String valStrLower = caseSens ? valStr : valStr.toLowerCase();
+                    if (regex ? pattern.matcher(valStr).matches() : (exact ? valStrLower.equals(value) : valStrLower.contains(value))) {
+                        model.addElement(new SearchEntry(cn, fn, TextUtils.escape(TextUtils.max(valStr, 100))));
                     }
                 }
             }
@@ -90,6 +76,6 @@ public class LdcTask extends SwingWorker<Void, Integer> {
 
     @Override
     protected void done() {
-         Main.INSTANCE.getLogger().log("Search finished!");
+        Main.INSTANCE.getLogger().log("Field value search finished!");
     }
 }

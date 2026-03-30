@@ -10,7 +10,7 @@ import me.grax.jbytemod.res.LanguageRes;
 import me.grax.jbytemod.res.Option;
 import me.grax.jbytemod.res.Options;
 import me.grax.jbytemod.ui.dialogue.ClassDialogue;
-import me.grax.jbytemod.ui.lists.entries.SearchEntry;
+import de.xbrowniecodez.jbytemod.ui.lists.entries.SearchEntry;
 import me.grax.jbytemod.utils.DeobfusacteUtils;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import me.grax.jbytemod.utils.TextUtils;
@@ -106,6 +106,16 @@ public class MyMenuBar extends JMenuBar {
         });
 
         search.add(ldc);
+        JMenuItem fieldValue = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("search_field_value"));
+        fieldValue.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                searchFieldValue();
+            }
+        });
+
+        search.add(fieldValue);
         JMenuItem field = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("search_field"));
         field.addActionListener(new ActionListener() {
 
@@ -136,6 +146,16 @@ public class MyMenuBar extends JMenuBar {
         });
 
         search.add(replace);
+        JMenuItem replaceFieldValue = new JMenuItem(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("replace_field_value"));
+        replaceFieldValue.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                replaceFieldValue();
+            }
+        });
+
+        search.add(replaceFieldValue);
         this.add(search);
         JMenu utils = new JMenu(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("utils"));
         JMenuItem accman = new JMenuItem("Access Helper");
@@ -695,6 +715,29 @@ public class MyMenuBar extends JMenuBar {
         }
     }
 
+    protected void searchFieldValue() {
+        final JPanel panel = new JPanel(new BorderLayout(5, 5));
+        final JPanel input = new JPanel(new GridLayout(0, 1));
+        final JPanel labels = new JPanel(new GridLayout(0, 1));
+        panel.add(labels, "West");
+        panel.add(input, "Center");
+        panel.add(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("big_string_warn")), "South");
+        labels.add(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("find")));
+        JTextField cst = new JTextField();
+        input.add(cst);
+        JCheckBox exact = new JCheckBox(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("exact"));
+        JCheckBox regex = new JCheckBox("Regex");
+        JCheckBox snstv = new JCheckBox(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("case_sens"));
+        labels.add(exact);
+        labels.add(regex);
+        input.add(snstv);
+        input.add(new JPanel());
+        if (JOptionPane.showConfirmDialog(this.jbm, panel, Main.INSTANCE.getJByteMod().getLanguageRes().getResource("search_field_value"), JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE, searchIcon) == JOptionPane.OK_OPTION && !cst.getText().isEmpty()) {
+            jbm.getSearchList().searchForFieldValue(cst.getText(), exact.isSelected(), snstv.isSelected(), regex.isSelected());
+        }
+    }
+
     protected void replaceLDC() {
         final JPanel panel = new JPanel(new BorderLayout(5, 5));
         final JPanel input = new JPanel(new GridLayout(0, 1));
@@ -778,6 +821,93 @@ public class MyMenuBar extends JMenuBar {
                 }
             }
              Main.INSTANCE.getLogger().log(i + " ldc's replaced");
+        }
+    }
+
+    protected void replaceFieldValue() {
+        final JPanel panel = new JPanel(new BorderLayout(5, 5));
+        final JPanel input = new JPanel(new GridLayout(0, 1));
+        final JPanel labels = new JPanel(new GridLayout(0, 1));
+        panel.add(labels, "West");
+        panel.add(input, "Center");
+        panel.add(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("big_string_warn")), "South");
+        labels.add(new JLabel("Find: "));
+        JTextField find = new JTextField();
+        input.add(find);
+        labels.add(new JLabel("Replace with: "));
+        JTextField with = new JTextField();
+        input.add(with);
+        JComboBox<String> type = new JComboBox<String>(new String[]{"String", "float", "double", "int", "long"});
+        type.setSelectedIndex(0);
+        labels.add(new JLabel("Type: "));
+        input.add(type);
+        JCheckBox exact = new JCheckBox(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("exact"));
+        JCheckBox cases = new JCheckBox(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("case_sens"));
+        labels.add(exact);
+        input.add(cases);
+        if (JOptionPane.showConfirmDialog(this.jbm, panel, Main.INSTANCE.getJByteMod().getLanguageRes().getResource("replace_field_value"), JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE, searchIcon) == JOptionPane.OK_OPTION && !find.getText().isEmpty()) {
+            int expectedType = type.getSelectedIndex();
+            boolean equal = exact.isSelected();
+            boolean ignoreCase = !cases.isSelected();
+            String findVal = find.getText();
+            if (ignoreCase) {
+                findVal = findVal.toLowerCase();
+            }
+            String replaceWith = with.getText();
+            int i = 0;
+            for (ClassNode cn : jbm.getJarArchive().getClasses().values()) {
+                for (FieldNode fn : cn.fields) {
+                    if (fn.value != null) {
+                        Object val = fn.value;
+                        int fType;
+                        if (val instanceof String) {
+                            fType = 0;
+                        } else if (val instanceof Float) {
+                            fType = 1;
+                        } else if (val instanceof Double) {
+                            fType = 2;
+                        } else if (val instanceof Integer) {
+                            fType = 3;
+                        } else if (val instanceof Long) {
+                            fType = 4;
+                        } else {
+                            fType = -1;
+                        }
+                        String valStr = val.toString();
+                        if (ignoreCase) {
+                            valStr = valStr.toLowerCase();
+                        }
+                        if (fType == expectedType) {
+                            if (equal ? valStr.equals(findVal) : valStr.contains(findVal)) {
+                                try {
+                                    switch (fType) {
+                                        case 0:
+                                            fn.value = replaceWith;
+                                            break;
+                                        case 1:
+                                            fn.value = Float.parseFloat(replaceWith);
+                                            break;
+                                        case 2:
+                                            fn.value = Double.parseDouble(replaceWith);
+                                            break;
+                                        case 3:
+                                            fn.value = Integer.parseInt(replaceWith);
+                                            break;
+                                        case 4:
+                                            fn.value = Long.parseLong(replaceWith);
+                                            break;
+                                    }
+                                    i++;
+                                } catch (Exception e) {
+                                     Main.INSTANCE.getLogger().err("Failed to parse replacement value: " + replaceWith);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+             Main.INSTANCE.getLogger().log(i + " field values replaced");
         }
     }
 
