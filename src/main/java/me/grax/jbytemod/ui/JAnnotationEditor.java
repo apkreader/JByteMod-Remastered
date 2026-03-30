@@ -141,7 +141,7 @@ public class JAnnotationEditor extends JFrame {
         }
     }
 
-    private static AnnotationNode editAnnotationWindow(AnnotationNode node) {
+    public static AnnotationNode editAnnotationWindow(AnnotationNode node) {
         List<Object> values = node != null ? node.values != null ? node.values : new ArrayList<>() : new ArrayList<>();
         JPanel mainPanel = new JPanel();
         JPanel leftText = new JPanel();
@@ -228,7 +228,7 @@ public class JAnnotationEditor extends JFrame {
         return false;
     }
 
-    private static class ValuesEditor {
+    public static class ValuesEditor {
         private List<Object> values;
         private List<Entry<Object, Object>> valuesMap;
         private Object value;
@@ -244,6 +244,7 @@ public class JAnnotationEditor extends JFrame {
         }
 
         public static Object editValuePair(Object value, String type) {
+
             JPanel mainPanel = new JPanel();
             JPanel leftText = new JPanel();
             JPanel rightInput = new JPanel();

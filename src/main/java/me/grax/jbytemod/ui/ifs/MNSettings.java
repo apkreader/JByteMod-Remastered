@@ -5,6 +5,7 @@ import me.grax.jbytemod.ui.JAccessHelper;
 import me.grax.jbytemod.ui.JAnnotationEditor;
 import me.grax.jbytemod.ui.dialogue.ClassDialogue;
 import me.grax.jbytemod.utils.gui.SwingUtils;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -13,6 +14,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MNSettings extends MyInternalFrame {
     /**
@@ -70,6 +73,14 @@ public class MNSettings extends MyInternalFrame {
                 new JAnnotationEditor("Invisible Annotations", mn, "invisibleAnnotations").setVisible(true);
         });
         input.add(invisAnnotations);
+
+        labels.add(new JLabel(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("annotation_default") + ":"));
+        JButton annotationDefault = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("edit"));
+        annotationDefault.addActionListener(a -> {
+            editAnnotationDefault(mn);
+        });
+        input.add(annotationDefault);
+
         this.add(panel, BorderLayout.CENTER);
         JButton update = new JButton("Update");
         update.addActionListener(new ActionListener() {
@@ -106,5 +117,99 @@ public class MNSettings extends MyInternalFrame {
             bounds = getBounds();
         }
         super.setVisible(aFlag);
+    }
+
+    private void editAnnotationDefault(MethodNode mn) {
+        Object value = mn.annotationDefault;
+        JPanel mainPanel = new JPanel();
+        JPanel leftText = new JPanel();
+        JPanel rightInput = new JPanel();
+
+        mainPanel.setLayout(new BorderLayout());
+        leftText.setLayout(new GridLayout(0, 1));
+        rightInput.setLayout(new GridLayout(0, 1));
+        mainPanel.add(leftText, BorderLayout.WEST);
+        mainPanel.add(rightInput, BorderLayout.CENTER);
+
+        leftText.add(new JLabel("Type: "));
+        JComboBox<String> type = new JComboBox<String>(new String[]{"None", "String", "Byte", "Boolean", "Character", "Short", "Integer", "Long", "Float",
+                "Double", "Type", "String[]", "AnnotationNode"});
+        rightInput.add(type);
+
+        if (value != null) {
+            type.setSelectedItem(JAnnotationEditor.getClassName(value));
+        } else {
+            type.setSelectedItem("None");
+        }
+
+        final Object[] wrapper = new Object[]{value};
+
+        JButton valuesButton = new JButton("Edit Value");
+        valuesButton.addActionListener(e -> {
+            String selectedType = (String) type.getSelectedItem();
+            if (selectedType.equals("None")) {
+                wrapper[0] = null;
+                return;
+            }
+            if (wrapper[0] == null || !JAnnotationEditor.getClassName(wrapper[0]).equals(selectedType)) {
+                wrapper[0] = createDefaultValue(selectedType);
+            }
+            if (selectedType.equals("AnnotationNode")) {
+                wrapper[0] = JAnnotationEditor.editAnnotationWindow((AnnotationNode) wrapper[0]);
+            } else {
+                wrapper[0] = JAnnotationEditor.ValuesEditor.editValuePair(wrapper[0], selectedType);
+            }
+        });
+        mainPanel.add(valuesButton, BorderLayout.SOUTH);
+
+        if (JOptionPane.showConfirmDialog(null, mainPanel, "Edit Annotation Default",
+                JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            String selectedType = (String) type.getSelectedItem();
+            if (selectedType.equals("None")) {
+                mn.annotationDefault = null;
+            } else {
+                if (wrapper[0] == null || !JAnnotationEditor.getClassName(wrapper[0]).equals(selectedType)) {
+                    wrapper[0] = createDefaultValue(selectedType);
+                }
+                if (selectedType.equals("Type") && wrapper[0] instanceof String) {
+                    try {
+                        wrapper[0] = org.objectweb.asm.Type.getType((String) wrapper[0]);
+                    } catch (Exception e) {
+                        Main.INSTANCE.getLogger().err("Failed to parse Type: " + wrapper[0]);
+                    }
+                }
+                mn.annotationDefault = wrapper[0];
+            }
+        }
+    }
+
+    private Object createDefaultValue(String type) {
+        switch (type) {
+            case "String":
+            case "Type":
+                return "";
+            case "Byte":
+                return (byte) 0;
+            case "Boolean":
+                return false;
+            case "Character":
+                return (char) 0;
+            case "Short":
+                return (short) 0;
+            case "Integer":
+                return 0;
+            case "Long":
+                return 0L;
+            case "Float":
+                return 0F;
+            case "Double":
+                return 0D;
+            case "String[]":
+                return new String[]{"", ""};
+            case "AnnotationNode":
+                return new AnnotationNode("");
+            default:
+                return null;
+        }
     }
 }
