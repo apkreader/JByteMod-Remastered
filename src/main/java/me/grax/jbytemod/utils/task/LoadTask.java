@@ -37,19 +37,32 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     private long startTime;
     private int othersFile;
     private int junkClasses;
+    private boolean useZipInputStream;
 
     public LoadTask(JByteMod jbm, File input, JarArchive ja) {
         try {
             this.othersFile = 0;
             this.startTime = System.currentTimeMillis();
-            this.jarSize = countFiles(this.input = new ZipFile(input, "UTF-8"));
-             Main.INSTANCE.getLogger().log(jarSize + " files to load!");
+            this.file = input;
             this.jbm = jbm;
             this.jpb = jbm.getPageEndPanel();
             this.ja = ja;
-            this.file = input;
-            // clean old cache
-            // ja.setClasses(null);
+
+            try {
+                this.input = new ZipFile(input, "UTF-8");
+                this.jarSize = countFiles(this.input);
+                Main.INSTANCE.getLogger().log(jarSize + " files to load!");
+            } catch (IOException e) {
+                if (e.getMessage() != null && e.getMessage().contains("central directory is empty")) {
+                    Main.INSTANCE.getLogger().warn(
+                            "ZipFile failed to read central directory. Falling back to ZipInputStream stream parsing...");
+                    this.useZipInputStream = true;
+                    this.jarSize = 1000; // generic size since we can't count sequentially easily
+                } else {
+                    throw e;
+                }
+            }
+
             this.maxMem = Runtime.getRuntime().maxMemory();
             this.memoryWarning = Main.INSTANCE.getJByteMod().getOptions().get("memory_warning").getBoolean();
         } catch (IOException e) {
@@ -60,7 +73,11 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     @Override
     protected Void doInBackground() throws Exception {
         publish(0);
-        this.loadFiles(input);
+        if (useZipInputStream) {
+            this.loadFilesFallback();
+        } else if (input != null) {
+            this.loadFiles(input);
+        }
         publish(100);
         return null;
     }
@@ -81,7 +98,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     public void loadFiles(ZipFile jar) throws IOException {
         long mem = Runtime.getRuntime().totalMemory();
         if (mem / (double) maxMem > 0.75) {
-             Main.INSTANCE.getLogger().warn("Memory usage is high: " + Math.round((mem / (double) maxMem * 100d)) + "%");
+            Main.INSTANCE.getLogger().warn("Memory usage is high: " + Math.round((mem / (double) maxMem * 100d)) + "%");
         }
         System.gc();
         Map<String, ClassNode> classes = new HashMap<String, ClassNode>();
@@ -89,7 +106,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
 
         final Enumeration<ZipEntry> entries = jar.getEntries();
         while (entries.hasMoreElements()) {
-            if(file.getName().endsWith(".jar"))
+            if (file.getName().endsWith(".jar"))
                 readJar(jar, entries.nextElement(), classes, otherFiles);
             else
                 readApk(jar, entries.nextElement(), classes, otherFiles);
@@ -99,21 +116,66 @@ public class LoadTask extends SwingWorker<Void, Integer> {
         ja.setOutput(otherFiles);
 
         this.othersFile = otherFiles.size();
-        for(String name : otherFiles.keySet()){
-            if(name.endsWith(".class") || name.endsWith(".class/")) junkClasses++;
+        for (String name : otherFiles.keySet()) {
+            if (name.endsWith(".class") || name.endsWith(".class/"))
+                junkClasses++;
+        }
+    }
+
+    public void loadFilesFallback() throws IOException {
+        long mem = Runtime.getRuntime().totalMemory();
+        if (mem / (double) maxMem > 0.75) {
+            Main.INSTANCE.getLogger().warn("Memory usage is high: " + Math.round((mem / (double) maxMem * 100d)) + "%");
+        }
+        System.gc();
+        Map<String, ClassNode> classes = new HashMap<String, ClassNode>();
+        Map<String, byte[]> otherFiles = new HashMap<String, byte[]>();
+
+        try (java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(new java.io.FileInputStream(file))) {
+            java.util.zip.ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.isDirectory())
+                    continue;
+                String name = entry.getName();
+                byte[] bytes = IOUtils.toByteArray(zis);
+
+                if (file.getName().endsWith(".jar")) {
+                    readJarBytes(name, bytes, classes, otherFiles);
+                } else {
+                    readApkBytes(name, bytes, classes, otherFiles);
+                }
+            }
+        }
+
+        ja.setClasses(classes);
+        ja.setOutput(otherFiles);
+
+        this.othersFile = otherFiles.size();
+        for (String name : otherFiles.keySet()) {
+            if (name.endsWith(".class") || name.endsWith(".class/"))
+                junkClasses++;
         }
     }
 
     private void readApk(ZipFile jar, ZipEntry zipEntry, Map<String, ClassNode> classes,
-                         Map<String, byte[]> otherFiles) {
-        Dex2Asm dex2ASM = new Dex2Asm();
-        long startTime = System.currentTimeMillis();
-
+            Map<String, byte[]> otherFiles) {
         String name = zipEntry.getName();
         try (InputStream jis = jar.getInputStream(zipEntry)) {
             byte[] bytes = IOUtils.toByteArray(jis);
+            readApkBytes(name, bytes, classes, otherFiles);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Main.INSTANCE.getLogger().err("Failed loading file: " + name);
+        }
+    }
 
-            if(name.startsWith("classes") && name.endsWith(".dex")) {
+    private void readApkBytes(String name, byte[] bytes, Map<String, ClassNode> classes,
+            Map<String, byte[]> otherFiles) {
+        Dex2Asm dex2ASM = new Dex2Asm();
+        long startTime = System.currentTimeMillis();
+
+        try {
+            if (name.startsWith("classes") && name.endsWith(".dex")) {
                 DexFileReader dexFileReader = new DexFileReader(bytes);
 
                 DexFileNode dexFileNode = new DexFileNode();
@@ -138,7 +200,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
             handleMemoryWarning(startTime, bytes);
         } catch (Exception e) {
             e.printStackTrace();
-             Main.INSTANCE.getLogger().err("Failed loading file");
+            Main.INSTANCE.getLogger().err("Failed loading APK file: " + name);
         }
     }
 
@@ -148,15 +210,26 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     }
 
     private void readJar(ZipFile jar, ZipEntry zipEntry, Map<String, ClassNode> classes,
-                         Map<String, byte[]> otherFiles) {
-        long startTime = System.currentTimeMillis();
-        int progress = (int) (((float) loaded++ / (float) jarSize) * 100f);
-        publish(progress);
-
+            Map<String, byte[]> otherFiles) {
         String name = zipEntry.getName();
         try (InputStream jis = jar.getInputStream(zipEntry)) {
             byte[] bytes = IOUtils.toByteArray(jis);
+            readJarBytes(name, bytes, classes, otherFiles);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Main.INSTANCE.getLogger().err("Failed loading file: " + name);
+        }
+    }
 
+    private void readJarBytes(String name, byte[] bytes, Map<String, ClassNode> classes,
+            Map<String, byte[]> otherFiles) {
+        long startTime = System.currentTimeMillis();
+        int progress = (int) (((float) loaded++ / (float) jarSize) * 100f);
+        if (progress > 99)
+            progress = 99; // cap for fallback stream sizing
+        publish(progress);
+
+        try {
             if (ClassUtils.isClassFileExt(name)) {
                 processClassFile(name, bytes, classes, otherFiles);
             } else if (name.equals("META-INF/MANIFEST.MF")) {
@@ -168,7 +241,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
             handleMemoryWarning(startTime, bytes);
         } catch (Exception e) {
             e.printStackTrace();
-             Main.INSTANCE.getLogger().err("Failed loading file");
+            Main.INSTANCE.getLogger().err("Failed loading file: " + name);
         }
     }
 
