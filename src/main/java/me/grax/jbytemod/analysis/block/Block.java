@@ -12,6 +12,9 @@ public class Block {
      **/
     private ArrayList<Block> input = new ArrayList<>();
 
+    private ArrayList<Block> exceptions = new ArrayList<>();
+    public java.util.HashMap<Block, String> exceptionTypes = new java.util.HashMap<>();
+
     private AbstractInsnNode endNode;
     private ArrayList<AbstractInsnNode> nodes = new ArrayList<>();
 
@@ -46,6 +49,14 @@ public class Block {
 
     public void setInput(ArrayList<Block> input) {
         this.input = input;
+    }
+
+    public ArrayList<Block> getExceptions() {
+        return exceptions;
+    }
+
+    public void setExceptions(ArrayList<Block> exceptions) {
+        this.exceptions = exceptions;
     }
 
     public LabelNode getLabel() {

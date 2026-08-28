@@ -29,6 +29,7 @@ import java.util.List;
 @Setter
 public class ControlFlowPanel extends JPanel {
 
+    private static final String EXCEPTION_COLOR = "#FFA500";
     private static final String EDGE_COLOR = "#111111";
     private static final String JUMP_COLOR = "#39698a";
     private static final String JUMP_COLOR_GREEN = "#388a47";
@@ -184,6 +185,22 @@ public class ControlFlowPanel extends JPanel {
             } else {
                 mxCell nextCell = addBlock(parent, nextBlock, (BlockVertex) cell.getValue());
                 graph.insertEdge(parent, null, null, cell, nextCell, "strokeColor=" + edgeColor + ";");
+            }
+        }
+        for (int i = 0; i < block.getExceptions().size(); i++) {
+            Block nextBlock = block.getExceptions().get(i);
+            String label = block.exceptionTypes.get(nextBlock);
+            if (label == null) {
+                label = "java/lang/Throwable";
+            } else if (label.contains("java/lang/")) {
+                label = label.replace("java/lang/", "");
+            }
+
+            if (nextBlock.equals(block)) {
+                graph.insertEdge(parent, null, label, cell, cell, "strokeColor=" + EXCEPTION_COLOR + ";dashed=1;");
+            } else {
+                mxCell nextCell = addBlock(parent, nextBlock, (BlockVertex) cell.getValue());
+                graph.insertEdge(parent, null, label, cell, nextCell, "strokeColor=" + EXCEPTION_COLOR + ";dashed=1;");
             }
         }
     }

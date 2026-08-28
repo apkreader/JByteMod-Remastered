@@ -4,6 +4,8 @@ import de.xbrowniecodez.jbytemod.Main;
 import lombok.Getter;
 import me.grax.jbytemod.analysis.block.Block;
 import me.grax.jbytemod.analysis.decompiler.code.ast.Expression;
+import me.grax.jbytemod.analysis.decompiler.code.ast.VarType;
+import me.grax.jbytemod.analysis.decompiler.code.ast.expressions.DebugStackExpression;
 import me.grax.jbytemod.analysis.decompiler.struct.Conversion;
 import me.grax.jbytemod.analysis.decompiler.struct.JVMStack;
 import me.grax.jbytemod.analysis.decompiler.syntax.nodes.NodeList;
@@ -11,6 +13,7 @@ import me.grax.jbytemod.utils.InstrUtils;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
 
 import java.util.ArrayList;
 
@@ -50,7 +53,21 @@ public class BlockVertex {
             try {
                 NodeList list = new NodeList();
                 JVMStack inputStack = null;
-                if (!input.isEmpty()) {
+                boolean isExceptionHandler = false;
+                if (methodNode != null && methodNode.tryCatchBlocks != null && !code.isEmpty()) {
+                    for (TryCatchBlockNode tcb : methodNode.tryCatchBlocks) {
+                        if (tcb.handler == code.get(0)) {
+                            isExceptionHandler = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isExceptionHandler) {
+                    inputStack = new JVMStack();
+                    inputStack.push(new DebugStackExpression(
+                            0, 1, VarType.OBJECT, "exception_"));
+                } else if (!input.isEmpty()) {
                     inputStack = input.get(0).getLeftOverStack();
                     assert (inputStack != null);
                 }

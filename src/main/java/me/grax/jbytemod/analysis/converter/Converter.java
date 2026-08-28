@@ -13,9 +13,11 @@ public class Converter implements Opcodes {
 
     private static final boolean DEBUG = false;
     private ArrayList<AbstractInsnNode> nodes;
+    private MethodNode mn;
 
     public Converter(MethodNode mn) {
         assert (mn.instructions != null && mn.instructions.size() > 0);
+        this.mn = mn;
         this.nodes = new ArrayList<>(Arrays.asList(mn.instructions.toArray()));
     }
 
@@ -139,6 +141,28 @@ public class Converter implements Opcodes {
                 blockAtNext.getInput().add(b);
             }
         }
+        if (this.mn != null && this.mn.tryCatchBlocks != null) {
+            for (TryCatchBlockNode tcb : this.mn.tryCatchBlocks) {
+                Block handlerBlock = correspBlock.get(tcb.handler);
+                if (handlerBlock != null) {
+                    Block startBlock = correspBlock.get(tcb.start);
+                    if (startBlock != null) {
+                        if (!startBlock.getExceptions().contains(handlerBlock)) {
+                            startBlock.getExceptions().add(handlerBlock);
+                            if (!handlerBlock.getInput().contains(startBlock)) {
+                                handlerBlock.getInput().add(startBlock);
+                            }
+                        }
+                        String type = tcb.type != null ? tcb.type : "java/lang/Throwable";
+                        String existing = startBlock.exceptionTypes.get(handlerBlock);
+                        if (existing == null || !existing.contains(type)) {
+                            startBlock.exceptionTypes.put(handlerBlock,
+                                    existing == null ? type : existing + ", " + type);
+                        }
+                    }
+                }
+            }
+        }
         Block first = correspBlock.get(nodes.get(0));
         assert (first != null);
         if (removeRedundant) {
@@ -197,6 +221,9 @@ public class Converter implements Opcodes {
         for (Block output : b.getOutput()) {
             calculateDepths(visited, blocks, output, depth);
         }
+        for (Block exception : b.getExceptions()) {
+            calculateDepths(visited, blocks, exception, depth);
+        }
     }
 
     private void removeNonsense(ArrayList<Block> visited, ArrayList<Block> blocks, Block b, int maxInputRemoveNonsense) {
@@ -220,12 +247,16 @@ public class Converter implements Opcodes {
         for (Block output : new ArrayList<>(b.getOutput())) {
             removeNonsense(visited, blocks, output, maxInputRemoveNonsense);
         }
+        for (Block exception : new ArrayList<>(b.getExceptions())) {
+            removeNonsense(visited, blocks, exception, maxInputRemoveNonsense);
+        }
     }
 
     private boolean isJumpBlock(Block b) {
         for (AbstractInsnNode ain : b.getNodes()) {
             int type = ain.getType();
-            if (type != AbstractInsnNode.LABEL && type != AbstractInsnNode.LINE && type != AbstractInsnNode.FRAME && type != AbstractInsnNode.JUMP_INSN) {
+            if (type != AbstractInsnNode.LABEL && type != AbstractInsnNode.LINE && type != AbstractInsnNode.FRAME
+                    && type != AbstractInsnNode.JUMP_INSN) {
                 return false;
             }
         }
@@ -246,6 +277,21 @@ public class Converter implements Opcodes {
                     b.getNodes().addAll(to.getNodes());
                     b.setEndNode(to.getEndNode());
                     b.setOutput(to.getOutput());
+                    for (Block exception : to.getExceptions()) {
+                        if (!b.getExceptions().contains(exception)) {
+                            b.getExceptions().add(exception);
+                            exception.getInput().add(b);
+                        }
+                        exception.getInput().remove(to);
+
+                        String type = to.exceptionTypes.get(exception);
+                        if (type != null) {
+                            String existing = b.exceptionTypes.get(exception);
+                            if (existing == null || !existing.contains(type)) {
+                                b.exceptionTypes.put(exception, existing == null ? type : existing + ", " + type);
+                            }
+                        }
+                    }
                     blocks.remove(to);
                     continue;
                 }
@@ -254,6 +300,9 @@ public class Converter implements Opcodes {
         }
         for (Block output : b.getOutput()) {
             simplifyBlock(simplified, blocks, output);
+        }
+        for (Block exception : b.getExceptions()) {
+            simplifyBlock(simplified, blocks, exception);
         }
     }
 
