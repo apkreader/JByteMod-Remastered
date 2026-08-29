@@ -2,6 +2,7 @@ package me.grax.jbytemod.ui.graph;
 
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxCellRenderer;
+import com.mxgraph.util.mxConstants;
 import de.xbrowniecodez.jbytemod.JByteMod;
 import de.xbrowniecodez.jbytemod.Main;
 import lombok.Getter;
@@ -42,7 +43,6 @@ public class ControlFlowPanel extends JPanel {
     private final List<Block> controlFlow = new ArrayList<>();
     private final CFGraph graph;
     private final CFGComponent graphComponent;
-    private JScrollPane scrollPane;
     private final HashMap<Block, mxCell> existingBlocks = new HashMap<>();
     private SwingWorker<ArrayList<Block>, Void> graphWorker;
     private long graphRequest;
@@ -54,17 +54,16 @@ public class ControlFlowPanel extends JPanel {
         graph = new CFGraph(backgroundColor);
         graphComponent = graph.getComponent();
 
-        setupUI(jbm, backgroundColor);
+        setupUI(jbm);
     }
 
-    private void setupUI(JByteMod jbm, Color backgroundColor) {
+    private void setupUI(JByteMod jbm) {
         JPanel labelPanel = createLabelPanel(jbm);
         this.add(labelPanel, BorderLayout.NORTH);
 
-        JPanel graphContainer = createGraphContainer(backgroundColor);
-        scrollPane = new JScrollPane(graphContainer);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        this.add(scrollPane, BorderLayout.CENTER);
+        graphComponent.getVerticalScrollBar().setUnitIncrement(16);
+        graphComponent.getHorizontalScrollBar().setUnitIncrement(16);
+        this.add(graphComponent, BorderLayout.CENTER);
     }
 
     private JPanel createLabelPanel(JByteMod jbm) {
@@ -92,14 +91,6 @@ public class ControlFlowPanel extends JPanel {
         JButton reloadButton = new JButton(jbm.getLanguageRes().getResource("reload"));
         reloadButton.addActionListener(e -> generateList());
         return reloadButton;
-    }
-
-    private JPanel createGraphContainer(Color backgroundColor) {
-        JPanel innerPanel = new JPanel(new BorderLayout(0, 0));
-        innerPanel.setBorder(new EmptyBorder(30, 30, 30, 30));
-        innerPanel.setBackground(backgroundColor);
-        innerPanel.add(graphComponent, BorderLayout.CENTER);
-        return innerPanel;
     }
 
     public void generateList() {
@@ -241,12 +232,25 @@ public class ControlFlowPanel extends JPanel {
             }
 
             if (nextBlock.equals(block)) {
-                graph.insertEdge(parent, null, label, cell, cell, "strokeColor=" + EXCEPTION_COLOR + ";dashed=1;");
+                markExceptionHandler(cell);
+                graph.insertEdge(parent, null, label, cell, cell, getExceptionEdgeStyle());
             } else {
                 mxCell nextCell = addBlock(parent, nextBlock, (BlockVertex) cell.getValue());
-                graph.insertEdge(parent, null, label, cell, nextCell, "strokeColor=" + EXCEPTION_COLOR + ";dashed=1;");
+                markExceptionHandler(nextCell);
+                graph.insertEdge(parent, null, label, cell, nextCell, getExceptionEdgeStyle());
             }
         }
+    }
+
+    private String getExceptionEdgeStyle() {
+        return "strokeColor=" + EXCEPTION_COLOR
+                + ";strokeWidth=2;dashed=1;fontColor=#FFD180;fontStyle=1;fontSize=12"
+                + ";labelBackgroundColor=#21252B;labelBorderColor=" + EXCEPTION_COLOR + ";";
+    }
+
+    private void markExceptionHandler(mxCell cell) {
+        graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, EXCEPTION_COLOR, new Object[]{cell});
+        graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, "2", new Object[]{cell});
     }
 
     private String getEdgeColor(Block block, int index) {

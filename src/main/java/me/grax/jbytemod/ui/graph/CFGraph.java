@@ -58,12 +58,10 @@ public class CFGraph extends mxGraph {
     }
 
     public static class CFGComponent extends mxGraphComponent {
-
-        private JScrollPane scrollPane;
-
         public CFGComponent(mxGraph graph, Color backgroundColor) {
             super(graph);
             this.getViewport().setBackground(backgroundColor);
+            this.getGraphControl().setBorder(new EmptyBorder(30, 30, 30, 30));
             this.setEnabled(false);
             this.setBorder(new EmptyBorder(0, 0, 0, 0));
             this.setZoomFactor(1.1);
@@ -142,11 +140,11 @@ public class CFGraph extends mxGraph {
                 } else {
                     zoomOut();
                 }
-            } else if (scrollPane != null) {
-                scrollPane.getVerticalScrollBar().setValue(
-                        scrollPane.getVerticalScrollBar().getValue() + e.getUnitsToScroll() * scrollPane.getVerticalScrollBar().getUnitIncrement()
-                );
+            } else {
+                JScrollBar scrollBar = e.isShiftDown() ? getHorizontalScrollBar() : getVerticalScrollBar();
+                scrollBar.setValue(scrollBar.getValue() + e.getUnitsToScroll() * scrollBar.getUnitIncrement());
             }
+            e.consume();
         }
 
         @Override
@@ -159,7 +157,7 @@ public class CFGraph extends mxGraph {
         @Override
         public void zoomOut() {
             double scale = getGraph().getView().getScale();
-            if (scrollPane != null && (scrollPane.getVerticalScrollBar().isVisible() || scale >= 1) && scale > 0.3) {
+            if ((getVerticalScrollBar().isVisible() || getHorizontalScrollBar().isVisible() || scale >= 1) && scale > 0.3) {
                 zoom(1 / zoomFactor);
             }
         }
