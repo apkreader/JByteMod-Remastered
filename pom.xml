@@ -9,11 +9,14 @@
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
 		<asm.version>9.10-SNAPSHOT</asm.version>
 		<procyon.version>0.6.0</procyon.version>
-		<cfr.version>0.152</cfr.version>
+		<cfr.version>master</cfr.version>
+		<cfr.ide.version>0.152</cfr.ide.version>
+		<cfr.source.root>${project.build.directory}/cfr-source</cfr.source.root>
+		<cfr.version.source>${project.build.directory}/generated-sources/cfr-version</cfr.version.source>
 		<jd-core.version>1.1.3</jd-core.version>
 		<vineflower.version>1.11.2</vineflower.version>
 		<koffee.version>1.0.2</koffee.version>
@@ -107,10 +110,11 @@
 			<artifactId>darklaf-native-utils</artifactId>
 			<version>3.0.2x</version>
 		</dependency>
+		<!-- Keeps CFR available to IDE builds that do not run generate-sources. -->
 		<dependency>
 			<groupId>org.benf</groupId>
 			<artifactId>cfr</artifactId>
-			<version>${cfr.version}</version>
+			<version>${cfr.ide.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.tools</groupId>
@@ -228,6 +232,80 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>prepare-cfr-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<!-- Remove the old location, which IDEs treated as one giant source root. -->
+								<delete dir="${project.build.directory}/generated-sources/cfr" />
+								<delete dir="${cfr.source.root}" />
+								<exec executable="git" failonerror="true">
+									<arg value="clone" />
+									<arg value="--depth=1" />
+									<arg value="--single-branch" />
+									<arg value="--branch" />
+									<arg value="master" />
+									<arg value="https://github.com/leibnitz27/cfr.git" />
+									<arg value="${cfr.source.root}" />
+								</exec>
+								<exec executable="git" failonerror="true"
+									 output="${project.build.directory}/cfr-commit.txt">
+									<arg value="-C" />
+									<arg value="${cfr.source.root}" />
+									<arg value="rev-parse" />
+									<arg value="--short=7" />
+									<arg value="HEAD" />
+								</exec>
+								<loadfile property="cfr.commit.short"
+									 srcfile="${project.build.directory}/cfr-commit.txt">
+									<filterchain>
+										<striplinebreaks />
+									</filterchain>
+								</loadfile>
+								<echo message="Building CFR master at ${cfr.commit.short}" />
+								<mkdir dir="${cfr.version.source}/org/benf/cfr/reader/util" />
+								<copy file="${cfr.source.root}/src-templates/org/benf/cfr/reader/util/CfrVersionInfo.java"
+									 tofile="${cfr.version.source}/org/benf/cfr/reader/util/CfrVersionInfo.java" />
+								<replaceregexp file="${cfr.version.source}/org/benf/cfr/reader/util/CfrVersionInfo.java"
+									 match="[$][{]project[.]version[}]" replace="master-SNAPSHOT" byline="true" />
+								<replaceregexp file="${cfr.version.source}/org/benf/cfr/reader/util/CfrVersionInfo.java"
+									 match="[$][{]git[.]commit[.]id[.]abbrev[}]" replace="${cfr.commit.short}" byline="true" />
+								<replaceregexp file="${cfr.version.source}/org/benf/cfr/reader/util/CfrVersionInfo.java"
+									 match="[$][{]git[.]dirty[}]" replace="false" byline="true" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.6.1</version>
+				<executions>
+					<execution>
+						<id>add-cfr-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${cfr.source.root}/src</source>
+								<source>${cfr.version.source}</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.4.2</version>
 				<configuration>
@@ -247,6 +325,12 @@
 				<configuration>
 					<minimizeJar>false</minimizeJar>
 					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<!-- CFR is compiled as project source, dont shade the IDE fallback jar. -->
+					<artifactSet>
+						<excludes>
+							<exclude>org.benf:cfr</exclude>
+						</excludes>
+					</artifactSet>
 				</configuration>
 				<executions>
 					<execution>
@@ -310,7 +394,7 @@
 									<overWrite>true</overWrite>
 									<outputDirectory>${project.build.directory}/classes</outputDirectory>
 									<excludes>
-										**/ModuleWriter.class, **/ClassWriter.class, **/SymbolTable.class, **/Symbol.class
+										module-info.class, META-INF/versions/**/module-info.class, **/ModuleWriter.class, **/ClassWriter.class, **/SymbolTable.class, **/Symbol.class
 									</excludes>
 								</artifactItem>
 								<artifactItem>
@@ -321,7 +405,7 @@
 									<overWrite>true</overWrite>
 									<outputDirectory>${project.build.directory}/classes</outputDirectory>
 									<excludes>
-										**/AbstractInsnNode.class, **/LdcInsnNode.class, **/InsnNode.class, **/IntInsnNode.class, **/LabelNode.class, **/MethodInsnNode.class, **/FieldInsnNode.class, **/VarInsnNode.class, **/TypeInsnNode.class, **/MultiANewArrayInsnNode.class, **/IincInsnNode.class, **/JumpInsnNode.class, **/InvokeDynamicInsnNode.class, **/TableSwitchInsnNode.class, **/LookupSwitchInsnNode.class, **/LineNumberNode.class, */FrameNode.class
+										module-info.class, META-INF/versions/**/module-info.class, **/AbstractInsnNode.class, **/LdcInsnNode.class, **/InsnNode.class, **/IntInsnNode.class, **/LabelNode.class, **/MethodInsnNode.class, **/FieldInsnNode.class, **/VarInsnNode.class, **/TypeInsnNode.class, **/MultiANewArrayInsnNode.class, **/IincInsnNode.class, **/JumpInsnNode.class, **/InvokeDynamicInsnNode.class, **/TableSwitchInsnNode.class, **/LookupSwitchInsnNode.class, **/LineNumberNode.class, */FrameNode.class
 									</excludes>
 								</artifactItem>
 							</artifactItems>

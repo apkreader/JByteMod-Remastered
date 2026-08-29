@@ -94,11 +94,6 @@ public class CFRDecompiler extends Decompiler {
         return dcCommonState;
     }
 
-    private static String hackWaterMark(String string) {
-        if (string.length() < 1) return string;
-        return string.contains("<Could not determine version>") ? string.substring(61) : string.substring(37);
-    }
-
     public String decompile(byte[] b, MethodNode mn) {
         try {
             HashMap<String, String> ops = new HashMap<>();
@@ -158,8 +153,7 @@ public class CFRDecompiler extends Decompiler {
                     }
                 }
             }
-            String decompilation = runner.getDecompilationFor(cn.name);
-            return hackWaterMark(decompilation);
+            return runner.getDecompilationFor(cn.name);
         } catch (Exception e) {
             e.printStackTrace();
             StringWriter sw = new StringWriter();

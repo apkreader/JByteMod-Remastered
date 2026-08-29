@@ -42,15 +42,11 @@ public class DecompilerTab extends JPanel {
         jbm.setDecompilerPanel(dp);
         this.setLayout(new BorderLayout());
 
-        JPanel topPanel = new JPanel(new GridLayout(1, 2));
+        JPanel topPanel = new JPanel(new BorderLayout(8, 0));
         topPanel.setBorder(new EmptyBorder(1, 5, 5, 1));
+        topPanel.add(label, BorderLayout.CENTER);
 
-        JPanel labelPanel = new JPanel(new GridLayout());
-        labelPanel.add(label);
-
-        JPanel rightPanel = new JPanel(new GridLayout(1, 5));
-        for (int i = 0; i < 3; i++)
-            rightPanel.add(new JPanel());
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
 
         JComboBox<Decompilers> decompilerCombo = new JComboBox<>(Decompilers.values());
         decompilerCombo.addActionListener(e -> {
@@ -65,10 +61,15 @@ public class DecompilerTab extends JPanel {
 
         JButton reload = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("reload"));
         reload.addActionListener(e -> decompile(Decompiler.last, Decompiler.lastMn, true));
+
+        int controlHeight = Math.max(decompilerCombo.getPreferredSize().height, reload.getPreferredSize().height);
+        Dimension comboSize = decompilerCombo.getPreferredSize();
+        Dimension reloadSize = reload.getPreferredSize();
+        decompilerCombo.setPreferredSize(new Dimension(comboSize.width, controlHeight));
+        reload.setPreferredSize(new Dimension(reloadSize.width, controlHeight));
         rightPanel.add(reload);
-        
-        labelPanel.add(rightPanel);
-        topPanel.add(labelPanel, BorderLayout.CENTER);
+
+        topPanel.add(rightPanel, BorderLayout.EAST);
         this.add(topPanel, BorderLayout.NORTH);
 
         JScrollPane scp = new RTextScrollPane(dp);
