@@ -20,11 +20,7 @@ public class TCBList extends JList<TCBEntry> {
     private ClassNode currentClassNode;
     private MethodNode currentMethodNode;
 
-    public void addNodes(ClassNode cn, MethodNode mn) {
-        this.currentClassNode = cn;
-        this.currentMethodNode = mn;
-        DefaultListModel<TCBEntry> model = createListModel(mn);
-        setModel(model);
+    public TCBList() {
         setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         addMouseListener(new MouseAdapter() {
@@ -35,6 +31,13 @@ public class TCBList extends JList<TCBEntry> {
                 }
             }
         });
+    }
+
+    public void addNodes(ClassNode cn, MethodNode mn) {
+        this.currentClassNode = cn;
+        this.currentMethodNode = mn;
+        DefaultListModel<TCBEntry> model = createListModel(mn);
+        setModel(model);
     }
 
     private DefaultListModel<TCBEntry> createListModel(MethodNode mn) {

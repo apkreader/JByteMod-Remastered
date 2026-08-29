@@ -48,7 +48,7 @@ public class BlockVertex {
         if (setupText) {
             return;
         }
-        text = "";
+        StringBuilder textBuilder = new StringBuilder();
         if (Main.INSTANCE.getJByteMod().getOptions().get("decompile_graph").getBoolean()) {
             try {
                 NodeList list = new NodeList();
@@ -75,21 +75,23 @@ public class BlockVertex {
                 c.convert(block);
                 leftOverStack = c.getStack();
                 for (Expression e : list) {
-                    text += e.toString() + "\n";
+                    textBuilder.append(e).append('\n');
                 }
             } catch (Exception e) {
+                textBuilder.setLength(0);
                 for (AbstractInsnNode ain : code) {
-                    text += InstrUtils.toString(ain) + "\n";
+                    textBuilder.append(InstrUtils.toString(ain)).append('\n');
                 }
-                text += "\n<i>";
+                textBuilder.append("\n<i>");
                 //text += ExceptionUtilities.getStackTraceString(e);
             }
         }
-        if (text.trim().isEmpty()) {
+        if (textBuilder.toString().trim().isEmpty()) {
             for (AbstractInsnNode ain : code) {
-                text += InstrUtils.toString(ain) + "\n";
+                textBuilder.append(InstrUtils.toString(ain)).append('\n');
             }
         }
+        text = textBuilder.toString();
         setupText = true;
     }
 

@@ -14,6 +14,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class DecompilerTab extends JPanel {
     private static File tempDir = new File(System.getProperty("java.io.tmpdir"));
@@ -23,9 +26,17 @@ public class DecompilerTab extends JPanel {
     private JLabel label;
     private JByteMod jbm;
     private JButton compile = new JButton("Compile");
+    private final ExecutorService decompilerExecutor;
+    private Future<?> decompilerTask;
+    private long decompilerRequest;
 
     public DecompilerTab(JByteMod jbm) {
         this.jbm = jbm;
+        this.decompilerExecutor = Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r, "JByteMod decompiler");
+            thread.setDaemon(true);
+            return thread;
+        });
         this.dp = new DecompilerPanel();
         this.label = new JLabel(decompiler + " Decompiler");
         jbm.setDecompilerPanel(dp);
@@ -94,10 +105,54 @@ public class DecompilerTab extends JPanel {
                 break;
         }
         d.setNode(cn, mn);
-        if (deleteCache) {
-            d.deleteCache();
+
+        final Decompiler selectedDecompiler = d;
+        final long request;
+        synchronized (this) {
+            decompilerRequest++;
+            request = decompilerRequest;
+            if (decompilerTask != null) {
+                decompilerTask.cancel(true);
+            }
         }
-        d.start();
+
+        dp.setDecompilerText("Loading...");
+        Future<?> task = decompilerExecutor.submit(() -> {
+            String output;
+            try {
+                if (deleteCache) {
+                    selectedDecompiler.deleteCache();
+                }
+                output = selectedDecompiler.decompileNode();
+            } catch (Throwable throwable) {
+                output = "Failed to decompile, reason: " + throwable;
+            }
+            final String result = output;
+            SwingUtilities.invokeLater(() -> {
+                synchronized (DecompilerTab.this) {
+                    if (request != decompilerRequest) {
+                        return;
+                    }
+                }
+                dp.setDecompilerText(result);
+            });
+        });
+
+        synchronized (this) {
+            if (request == decompilerRequest) {
+                decompilerTask = task;
+            } else {
+                task.cancel(true);
+            }
+        }
+    }
+
+    public synchronized void cancelDecompilation() {
+        decompilerRequest++;
+        if (decompilerTask != null) {
+            decompilerTask.cancel(true);
+            decompilerTask = null;
+        }
     }
 
     public void compile(ClassNode cn, MethodNode mn) {

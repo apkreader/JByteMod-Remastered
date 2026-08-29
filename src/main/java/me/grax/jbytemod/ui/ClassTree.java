@@ -25,11 +25,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ClassTree extends JTree implements IDropUser {
 
-    private static ArrayList<Object> expandedNodes = new ArrayList<>();
+    private final Set<String> expandedNodes = new HashSet<>();
     private JByteMod jbm;
     private DefaultTreeModel model;
     private HashMap<String, SortedTreeNode> preloadMap;
@@ -57,6 +59,7 @@ public class ClassTree extends JTree implements IDropUser {
         this.setModel(model);
         this.setTransferHandler(new JarDropHandler(this, 0));
         this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        addListener();
     }
 
     public void refreshTree(JarArchive jar) {
@@ -104,7 +107,6 @@ public class ClassTree extends JTree implements IDropUser {
         boolean sort = Main.INSTANCE.getJByteMod().getOptions().get("sort_methods").getBoolean();
         sort(tm, root, sort);
         tm.reload();
-        addListener();
         if (!expandedNodes.isEmpty()) {
             expandSaved(root);
         }
@@ -123,10 +125,7 @@ public class ClassTree extends JTree implements IDropUser {
 
     public void expandSaved(SortedTreeNode node) {
         TreePath tp = new TreePath(node.getPath());
-        if (node.getClassNode() != null && expandedNodes.contains(node.getClassNode())) {
-            super.expandPath(tp);
-        }
-        if (expandedNodes.contains(tp.toString())) {
+        if (expandedNodes.contains(expansionKey(node, tp))) {
             super.expandPath(tp);
         }
         if (node.getChildCount() >= 0) {
@@ -140,23 +139,22 @@ public class ClassTree extends JTree implements IDropUser {
     @Override
     public void expandPath(TreePath path) {
         SortedTreeNode stn = (SortedTreeNode) path.getLastPathComponent();
-        if (stn.getClassNode() != null) {
-            expandedNodes.add(stn.getClassNode());
-        } else {
-            expandedNodes.add(path.toString());
-        }
+        expandedNodes.add(expansionKey(stn, path));
         super.expandPath(path);
     }
 
     @Override
     public void collapsePath(TreePath path) {
         SortedTreeNode stn = (SortedTreeNode) path.getLastPathComponent();
-        if (stn.getClassNode() != null) {
-            expandedNodes.remove(stn.getClassNode());
-        } else {
-            expandedNodes.remove(path.toString());
-        }
+        expandedNodes.remove(expansionKey(stn, path));
         super.collapsePath(path);
+    }
+
+    private String expansionKey(SortedTreeNode node, TreePath path) {
+        if (node.getClassNode() != null) {
+            return "class:" + node.getClassNode().name;
+        }
+        return "path:" + path;
     }
 
     private void addListener() {

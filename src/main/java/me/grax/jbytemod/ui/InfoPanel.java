@@ -34,12 +34,7 @@ public class InfoPanel extends JPanel {
     }
 
     public void selectMethod(ClassNode cn, MethodNode mn) {
-        for (Component c : deskPane.getComponents()) {
-            if (c instanceof MyInternalFrame) {
-                c.setVisible(false);
-            }
-        }
-        deskPane.removeAll();
+        clearFrames();
         deskPane.add(new TCBFrame(jbm.getTcbList()));
         deskPane.add(new LVPFrame(jbm.getLvpList()));
         deskPane.add(new MNSettings(cn, mn));
@@ -48,14 +43,17 @@ public class InfoPanel extends JPanel {
     }
 
     public void selectClass(ClassNode cn) {
-        for (Component c : deskPane.getComponents()) {
-            if (c instanceof MyInternalFrame) {
-                c.setVisible(false);
-            }
-        }
-        deskPane.removeAll();
+        clearFrames();
         deskPane.add(new CNSettings(cn));
         this.repaint();
+    }
+
+    private void clearFrames() {
+        for (JInternalFrame frame : deskPane.getAllFrames()) {
+            frame.setVisible(false);
+            frame.dispose();
+        }
+        deskPane.removeAll();
     }
 
     class DeskMan extends DefaultDesktopManager {

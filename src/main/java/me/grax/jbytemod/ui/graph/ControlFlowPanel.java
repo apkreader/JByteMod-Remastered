@@ -29,6 +29,7 @@ import java.util.List;
 @Setter
 public class ControlFlowPanel extends JPanel {
 
+    private static final int MAX_GRAPH_BLOCKS = 1000;
     private static final String EXCEPTION_COLOR = "#FFA500";
     private static final String EDGE_COLOR = "#111111";
     private static final String JUMP_COLOR = "#39698a";
@@ -43,6 +44,8 @@ public class ControlFlowPanel extends JPanel {
     private final CFGComponent graphComponent;
     private JScrollPane scrollPane;
     private final HashMap<Block, mxCell> existingBlocks = new HashMap<>();
+    private SwingWorker<ArrayList<Block>, Void> graphWorker;
+    private long graphRequest;
 
     public ControlFlowPanel(JByteMod jbm) {
         Color backgroundColor = jbm.getOptions().get("use_dark_theme").getBoolean() ? new Color(33, 37, 43) : Color.WHITE;
@@ -100,24 +103,65 @@ public class ControlFlowPanel extends JPanel {
     }
 
     public void generateList() {
-        if (methodNode == null || methodNode.instructions.size() == 0) {
-            clear();
+        final MethodNode targetMethod = methodNode;
+        final long request;
+        synchronized (this) {
+            graphRequest++;
+            request = graphRequest;
+            if (graphWorker != null) {
+                graphWorker.cancel(true);
+            }
+        }
+
+        if (targetMethod == null || targetMethod.instructions.size() == 0) {
+            clearGraph();
             return;
         }
 
-        controlFlow.clear();
-        Converter converter = new Converter(methodNode);
-        try {
-            controlFlow.addAll(converter.convert(Main.INSTANCE.getJByteMod().getOptions().get("simplify_graph").getBoolean(),
-                    Main.INSTANCE.getJByteMod().getOptions().get("remove_redundant").getBoolean(),
-                    true, Main.INSTANCE.getJByteMod().getOptions().get("max_redundant_input").getInteger()));
-        } catch (Exception e) {
-            new ErrorDisplay(e);
-            clear();
-            return;
-        }
+        final boolean simplify = Main.INSTANCE.getJByteMod().getOptions().get("simplify_graph").getBoolean();
+        final boolean removeRedundant = Main.INSTANCE.getJByteMod().getOptions().get("remove_redundant").getBoolean();
+        final int maxRedundantInput = Main.INSTANCE.getJByteMod().getOptions().get("max_redundant_input").getInteger();
 
-        updateGraph();
+        SwingWorker<ArrayList<Block>, Void> worker = new SwingWorker<ArrayList<Block>, Void>() {
+            @Override
+            protected ArrayList<Block> doInBackground() {
+                return new Converter(targetMethod).convert(simplify, removeRedundant, true, maxRedundantInput);
+            }
+
+            @Override
+            protected void done() {
+                synchronized (ControlFlowPanel.this) {
+                    if (isCancelled() || request != graphRequest || targetMethod != methodNode) {
+                        return;
+                    }
+                    graphWorker = null;
+                }
+
+                try {
+                    ArrayList<Block> blocks = get();
+                    if (blocks.size() > MAX_GRAPH_BLOCKS) {
+                        throw new IllegalArgumentException("Control flow graph has too many blocks to render ("
+                                + blocks.size() + ", maximum " + MAX_GRAPH_BLOCKS + ")");
+                    }
+                    controlFlow.clear();
+                    controlFlow.addAll(blocks);
+                    updateGraph();
+                } catch (Exception e) {
+                    new ErrorDisplay(e);
+                    clearGraph();
+                }
+            }
+        };
+
+        synchronized (this) {
+            if (request == graphRequest) {
+                graphWorker = worker;
+            } else {
+                worker.cancel(true);
+                return;
+            }
+        }
+        worker.execute();
     }
 
     private void updateGraph() {
@@ -142,7 +186,7 @@ public class ControlFlowPanel extends JPanel {
 
     private void applyLayout() {
         PatchedHierarchicalLayout layout = new PatchedHierarchicalLayout(graph);
-        layout.setFineTuning(true);
+        layout.setFineTuning(controlFlow.size() <= 250);
         layout.setIntraCellSpacing(25d);
         layout.setInterRankCellSpacing(80d);
         layout.setDisableEdgeStyle(true);
@@ -216,9 +260,22 @@ public class ControlFlowPanel extends JPanel {
     }
 
     public void clear() {
+        synchronized (this) {
+            graphRequest++;
+            if (graphWorker != null) {
+                graphWorker.cancel(true);
+                graphWorker = null;
+            }
+        }
+        clearGraph();
+    }
+
+    private void clearGraph() {
         graph.getModel().beginUpdate();
         try {
             graph.removeCells(graph.getChildCells(graph.getDefaultParent(), true, true));
+            existingBlocks.clear();
+            controlFlow.clear();
         } finally {
             graph.getModel().endUpdate();
         }

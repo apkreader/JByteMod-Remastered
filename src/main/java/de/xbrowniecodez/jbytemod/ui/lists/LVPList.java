@@ -20,13 +20,9 @@ public class LVPList extends JList<LVPEntry> {
     private ClassNode currentClassNode;
     private MethodNode currentMethodNode;
 
-    public void addNodes(ClassNode cn, MethodNode mn) {
-        this.currentClassNode = cn;
-        this.currentMethodNode = mn;
-        DefaultListModel<LVPEntry> model = createListModel(mn);
-        setModel(model);
+    public LVPList() {
         setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION); // Allow multiple selections
+        setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -35,6 +31,13 @@ public class LVPList extends JList<LVPEntry> {
                 }
             }
         });
+    }
+
+    public void addNodes(ClassNode cn, MethodNode mn) {
+        this.currentClassNode = cn;
+        this.currentMethodNode = mn;
+        DefaultListModel<LVPEntry> model = createListModel(mn);
+        setModel(model);
     }
 
     private DefaultListModel<LVPEntry> createListModel(MethodNode mn) {

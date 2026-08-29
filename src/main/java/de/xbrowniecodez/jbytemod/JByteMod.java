@@ -9,6 +9,7 @@ import lombok.Setter;
 import de.xbrowniecodez.jbytemod.plugin.Plugin;
 import de.xbrowniecodez.jbytemod.plugin.PluginManager;
 import me.grax.jbytemod.JarArchive;
+import me.grax.jbytemod.decompiler.Decompiler;
 import me.grax.jbytemod.res.LanguageRes;
 import me.grax.jbytemod.res.Options;
 import me.grax.jbytemod.ui.*;
@@ -142,6 +143,8 @@ public class JByteMod extends JFrame {
      */
     public void loadFile(File input) {
         this.filePath = input;
+        lastSelectedTreeEntries.clear();
+        Decompiler.clearCache();
         String ap = input.getAbsolutePath();
 
         try {
@@ -207,6 +210,10 @@ public class JByteMod extends JFrame {
         }
         this.currentNode = cn;
         this.currentMethod = null;
+        Decompiler.clearCache();
+        decompilerPanel.setDecompilerText("");
+        controlFlowPanel.setMethodNode(null);
+        controlFlowPanel.clear();
         infoPanel.selectClass(cn);
         codeList.loadFields(cn);
         tabbedPane.selectClass(cn);
@@ -241,6 +248,7 @@ public class JByteMod extends JFrame {
         OpUtils.clearLabelCache();
         this.currentNode = cn;
         this.currentMethod = mn;
+        Decompiler.clearCache();
         infoPanel.selectMethod(cn, mn);
         if (!codeList.loadInstructions(mn)) {
             codeList.setSelectedIndex(-1);
@@ -248,7 +256,7 @@ public class JByteMod extends JFrame {
         tcbList.addNodes(cn, mn);
         lvpList.addNodes(cn, mn);
         controlFlowPanel.setMethodNode(mn);
-        decompilerPanel.setText("");
+        decompilerPanel.setDecompilerText("");
         tabbedPane.selectMethod(cn, mn);
         lastSelectedTreeEntries.put(cn, mn);
         if (lastSelectedTreeEntries.size() > 5) {

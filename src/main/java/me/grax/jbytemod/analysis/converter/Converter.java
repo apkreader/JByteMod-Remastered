@@ -8,6 +8,8 @@ import org.objectweb.asm.tree.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Converter implements Opcodes {
 
@@ -166,7 +168,7 @@ public class Converter implements Opcodes {
         Block first = correspBlock.get(nodes.get(0));
         assert (first != null);
         if (removeRedundant) {
-            ArrayList<Block> visited = new ArrayList<>();
+            Set<Block> visited = new HashSet<>();
             removeNonsense(visited, blocks, first, maxInputRemoveNonsense);
             for (Block b : new ArrayList<>(blocks)) {
                 if (b.getInput().isEmpty()) {
@@ -175,7 +177,7 @@ public class Converter implements Opcodes {
             }
         }
         if (simplify) {
-            ArrayList<Block> visited = new ArrayList<>();
+            Set<Block> visited = new HashSet<>();
             simplifyBlock(visited, blocks, first);
             for (Block b : new ArrayList<>(blocks)) {
                 if (b.getInput().isEmpty()) {
@@ -184,7 +186,7 @@ public class Converter implements Opcodes {
             }
         }
         if (DEBUG) {
-            ArrayList<Block> visited = new ArrayList<>();
+            Set<Block> visited = new HashSet<>();
             calculateDepths(visited, blocks, first, 0);
             for (Block b : blocks) {
                 if (b.getInput().isEmpty()) {
@@ -195,7 +197,7 @@ public class Converter implements Opcodes {
         return blocks;
     }
 
-    private void calculateDepths(ArrayList<Block> visited, ArrayList<Block> blocks, Block b, int depth) {
+    private void calculateDepths(Set<Block> visited, ArrayList<Block> blocks, Block b, int depth) {
         if (visited.contains(b)) {
             return;
         }
@@ -226,7 +228,7 @@ public class Converter implements Opcodes {
         }
     }
 
-    private void removeNonsense(ArrayList<Block> visited, ArrayList<Block> blocks, Block b, int maxInputRemoveNonsense) {
+    private void removeNonsense(Set<Block> visited, ArrayList<Block> blocks, Block b, int maxInputRemoveNonsense) {
         if (visited.contains(b)) {
             return;
         }
@@ -263,7 +265,7 @@ public class Converter implements Opcodes {
         return true;
     }
 
-    private void simplifyBlock(ArrayList<Block> simplified, ArrayList<Block> blocks, Block b) {
+    private void simplifyBlock(Set<Block> simplified, ArrayList<Block> blocks, Block b) {
         if (simplified.contains(b)) {
             return;
         }
@@ -272,11 +274,17 @@ public class Converter implements Opcodes {
             if (b.getOutput().size() == 1) {
                 Block to = b.getOutput().get(0);
                 //also optimizes unnecessary gotos
-                if (to.getInput().size() == 1 && !isFirst(to)) {
+                if (to != b && blocks.contains(to) && to.getInput().size() == 1 && !isFirst(to)) {
                     assert (to.getInput().get(0) == b);
                     b.getNodes().addAll(to.getNodes());
                     b.setEndNode(to.getEndNode());
-                    b.setOutput(to.getOutput());
+                    b.setOutput(new ArrayList<>(to.getOutput()));
+                    for (Block output : b.getOutput()) {
+                        output.getInput().remove(to);
+                        if (!output.getInput().contains(b)) {
+                            output.getInput().add(b);
+                        }
+                    }
                     for (Block exception : to.getExceptions()) {
                         if (!b.getExceptions().contains(exception)) {
                             b.getExceptions().add(exception);

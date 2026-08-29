@@ -159,7 +159,6 @@ public class CFRDecompiler extends Decompiler {
                 }
             }
             String decompilation = runner.getDecompilationFor(cn.name);
-            System.gc(); //cfr has a performance bug
             return hackWaterMark(decompilation);
         } catch (Exception e) {
             e.printStackTrace();

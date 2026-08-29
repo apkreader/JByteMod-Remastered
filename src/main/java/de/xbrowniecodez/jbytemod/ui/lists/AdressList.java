@@ -29,16 +29,18 @@ public class AdressList extends JList<String> {
     }
 
     public void updateAdr() {
-        LazyListModel<String> lm = new LazyListModel<>();
         LazyListModel<InstrEntry> clm = (LazyListModel<InstrEntry>) myCodeList.getModel();
+        final int size = clm.getSize();
+        this.setModel(new AbstractListModel<String>() {
+            @Override
+            public int getSize() {
+                return size;
+            }
 
-        int numDigits = String.valueOf(clm.getSize() - 1).length();  // calculate based on max index
-
-        for (int i = 0; i < clm.getSize(); i++) {
-            String number = String.format("%05d", i);  // always 6 digits with leading zeros
-            lm.addElement(number);
-        }
-
-        this.setModel(lm);
+            @Override
+            public String getElementAt(int index) {
+                return String.format("%05d", index);
+            }
+        });
     }
 }

@@ -6,13 +6,13 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-public abstract class Decompiler extends Thread {
+public abstract class Decompiler implements Runnable {
     /**
      * Do not reload if we already know the output
      */
-    public static ClassNode last;
-    public static MethodNode lastMn;
-    public static String lastOutput;
+    public static volatile ClassNode last;
+    public static volatile MethodNode lastMn;
+    public static volatile String lastOutput;
     protected JByteMod jbm;
     protected ClassNode cn;
     protected DecompilerPanel dp;
@@ -30,18 +30,27 @@ public abstract class Decompiler extends Thread {
     }
 
     public Decompiler deleteCache() {
-        last = null;
+        clearCache();
         return this;
+    }
+
+    public static void clearCache() {
+        last = null;
+        lastMn = null;
+        lastOutput = null;
     }
 
     @Override
     public final void run() {
-        dp.setText("Loading...");
+        dp.setDecompilerText("Loading...");
+        dp.setDecompilerText(decompileNode());
+    }
+
+    public final String decompileNode() {
         if (cn == null) {
-            dp.setText("ClassNode is null.");
-            return;
+            return "ClassNode is null.";
         }
-        dp.setText(lastOutput = this.decompile(cn, mn));
+        return lastOutput = this.decompile(cn, mn);
     }
 
     protected String decompile(ClassNode cn, MethodNode mn) {

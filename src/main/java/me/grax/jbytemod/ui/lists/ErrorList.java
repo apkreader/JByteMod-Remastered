@@ -8,22 +8,36 @@ import me.grax.jbytemod.analysis.errors.Mistake;
 import me.grax.jbytemod.ui.lists.entries.InstrEntry;
 import me.grax.jbytemod.utils.list.LazyListModel;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class ErrorList extends JList<Mistake> {
     private MyCodeList cl;
     private ImageIcon warning;
     private ListCellRenderer<? super Mistake> oldRenderer;
     private JByteMod jbm;
+    private final ExecutorService analyzerExecutor;
+    private Future<?> analyzerTask;
+    private long analyzerRequest;
 
     public ErrorList(JByteMod jbm, MyCodeList cl) {
         super(new DefaultListModel<Mistake>());
         this.jbm = jbm;
+        this.analyzerExecutor = Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r, "JByteMod error analyzer");
+            thread.setDaemon(true);
+            return thread;
+        });
         this.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
         this.warning = new ImageIcon(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/resources/warning.png")));
         this.cl = cl;
@@ -67,26 +81,63 @@ public class ErrorList extends JList<Mistake> {
 
 
     public void updateErrors() {
-        if (Main.INSTANCE.getJByteMod().getOptions().get("analyze_errors").getBoolean() && jbm.getCurrentMethod() != null) {
-            LazyListModel<Mistake> lm = new LazyListModel<Mistake>();
-            LazyListModel<InstrEntry> clm = (LazyListModel<InstrEntry>) cl.getModel();
-            if (clm.getSize() > 1000) {
-                 Main.INSTANCE.getLogger().warn("Not analyzing mistakes, too many instructions!");
+        final long request;
+        synchronized (this) {
+            analyzerRequest++;
+            request = analyzerRequest;
+            if (analyzerTask != null) {
+                analyzerTask.cancel(true);
+                analyzerTask = null;
+            }
+        }
+
+        setModel(new LazyListModel<Mistake>());
+        if (!Main.INSTANCE.getJByteMod().getOptions().get("analyze_errors").getBoolean()
+                || jbm.getCurrentMethod() == null) {
+            return;
+        }
+
+        LazyListModel<InstrEntry> codeModel = (LazyListModel<InstrEntry>) cl.getModel();
+        if (codeModel.getSize() > 1000) {
+            Main.INSTANCE.getLogger().warn("Not analyzing mistakes, too many instructions!");
+            return;
+        }
+
+        final ClassNode classNode = jbm.getCurrentNode();
+        final MethodNode methodNode = jbm.getCurrentMethod();
+        final ArrayList<AbstractInsnNode> instructions = new ArrayList<>();
+        for (int i = 0; i < codeModel.getSize(); i++) {
+            instructions.add(codeModel.getElementAt(i).getInstr());
+        }
+
+        Future<?> task = analyzerExecutor.submit(() -> {
+            HashMap<AbstractInsnNode, Mistake> mistakes = new ErrorAnalyzer(classNode, methodNode).findErrors();
+            if (Thread.currentThread().isInterrupted()) {
                 return;
             }
-            ErrorAnalyzer ea = new ErrorAnalyzer(jbm.getCurrentNode(), jbm.getCurrentMethod());
-            HashMap<AbstractInsnNode, Mistake> mistakes = ea.findErrors();
-            for (int i = 0; i < clm.getSize(); i++) {
-                AbstractInsnNode ain = clm.getElementAt(i).getInstr();
-                if (mistakes.containsKey(ain)) {
-                    lm.addElement(mistakes.get(ain));
-                } else {
-                    lm.addElement(new EmptyMistake());
-                }
+
+            LazyListModel<Mistake> result = new LazyListModel<>();
+            for (AbstractInsnNode instruction : instructions) {
+                Mistake mistake = mistakes.get(instruction);
+                result.addElement(mistake == null ? new EmptyMistake() : mistake);
             }
-            this.setModel(lm);
-        } else {
-            this.setModel(new LazyListModel<Mistake>());
+
+            SwingUtilities.invokeLater(() -> {
+                synchronized (ErrorList.this) {
+                    if (request != analyzerRequest || jbm.getCurrentMethod() != methodNode) {
+                        return;
+                    }
+                }
+                setModel(result);
+            });
+        });
+
+        synchronized (this) {
+            if (request == analyzerRequest) {
+                analyzerTask = task;
+            } else {
+                task.cancel(true);
+            }
         }
     }
 
