@@ -18,7 +18,7 @@
 		<cfr.source.root>${project.build.directory}/cfr-source</cfr.source.root>
 		<cfr.version.source>${project.build.directory}/generated-sources/cfr-version</cfr.version.source>
 		<jd-core.version>1.1.3</jd-core.version>
-		<vineflower.version>1.11.2</vineflower.version>
+		<vineflower.version>1.12.0</vineflower.version>
 		<koffee.version>1.0.2</koffee.version>
 	</properties>
 
