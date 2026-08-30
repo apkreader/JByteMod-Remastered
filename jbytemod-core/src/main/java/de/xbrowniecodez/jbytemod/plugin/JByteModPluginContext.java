@@ -234,6 +234,18 @@ public final class JByteModPluginContext implements PluginContext {
     }
 
     @Override
+    public void setAttachedJvmFrozen(boolean frozen) throws Exception {
+        attachedArchive().setFrozen(frozen);
+        runOnEdt(() -> jByteMod.getToolBar().showAttachedJvmFrozen(frozen));
+    }
+
+    @Override
+    public void terminateAttachedJvm() throws Exception {
+        attachedArchive().terminate();
+        runOnEdt(jByteMod::completeAttachedJvmTermination);
+    }
+
+    @Override
     public String decompile(ClassNode classNode, MethodNode method, String decompilerId) {
         String id = Objects.requireNonNull(decompilerId, "decompilerId").trim().toLowerCase(Locale.ROOT);
         Decompiler decompiler = switch (id) {

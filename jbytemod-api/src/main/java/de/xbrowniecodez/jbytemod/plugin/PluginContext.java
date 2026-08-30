@@ -33,6 +33,10 @@ public interface PluginContext {
 
     int applyChangesToAttachedJvm() throws Exception;
 
+    void setAttachedJvmFrozen(boolean frozen) throws Exception;
+
+    void terminateAttachedJvm() throws Exception;
+
     String decompile(ClassNode classNode, MethodNode method, String decompilerId);
 
     void selectClass(ClassNode classNode);

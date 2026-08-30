@@ -301,20 +301,25 @@ public class JByteMod extends JFrame {
             protected void done() {
                 try {
                     get();
-                    setJMenuBar(myMenuBar = new MyMenuBar(JByteMod.this, false));
-                    if (pluginManager != null) myMenuBar.addPluginMenu(pluginManager.getPlugins());
-                    Container contentPane = getContentPane();
-                    contentPane.remove(toolBar);
-                    contentPane.add(toolBar = new MyToolBar(JByteMod.this), BorderLayout.PAGE_START);
-                    setTitleSuffix("Target terminated");
-                    revalidate();
-                    repaint();
+                    completeAttachedJvmTermination();
                 } catch (Exception exception) {
                     Throwable cause = exception.getCause() == null ? exception : exception.getCause();
                     new ErrorDisplay(cause);
                 }
             }
         }.execute();
+    }
+
+    public void completeAttachedJvmTermination() {
+        lastEditFile = "terminated process snapshot";
+        setJMenuBar(myMenuBar = new MyMenuBar(this, false));
+        if (pluginManager != null) myMenuBar.addPluginMenu(pluginManager.getPlugins());
+        Container contentPane = getContentPane();
+        contentPane.remove(toolBar);
+        contentPane.add(toolBar = new MyToolBar(this), BorderLayout.PAGE_START);
+        setTitleSuffix("Target terminated");
+        revalidate();
+        repaint();
     }
 
     public void refreshTree() {

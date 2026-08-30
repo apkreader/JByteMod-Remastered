@@ -14,6 +14,9 @@ import java.util.concurrent.ExecutionException;
 
 public class MyToolBar extends JToolBar {
     private MyMenuBar menubar;
+    private JButton reloadButton;
+    private JButton applyButton;
+    private JToggleButton freezeButton;
 
     public MyToolBar(JByteMod jbm) {
         this.menubar = (MyMenuBar) jbm.getJMenuBar();
@@ -30,18 +33,18 @@ public class MyToolBar extends JToolBar {
                 }
             }));
         } else {
-            JButton reload = makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("reload"), getIcon("refresh"), e -> {
+            reloadButton = makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("reload"), getIcon("refresh"), e -> {
                 jbm.refreshAgentClasses();
             });
-            this.add(reload);
-            JButton apply = makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("apply"), getIcon("save"), e -> {
+            this.add(reloadButton);
+            applyButton = makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("apply"), getIcon("save"), e -> {
                 jbm.applyChangesAgent();
             });
-            this.add(apply);
+            this.add(applyButton);
             if (jbm.getJarArchive() instanceof RemoteJarArchive) {
-                JToggleButton freeze = makeNavigationToggleButton("Freeze connected JVM", createFreezeIcon());
-                freeze.addActionListener(e -> setFrozen(jbm, freeze, reload, apply));
-                this.add(freeze);
+                freezeButton = makeNavigationToggleButton("Freeze connected JVM", createFreezeIcon());
+                freezeButton.addActionListener(e -> setFrozen(jbm));
+                this.add(freezeButton);
                 this.add(makeNavigationButton("Terminate connected JVM", createTerminateIcon(), e -> {
                     jbm.terminateAttachedJvm();
                 }));
@@ -174,15 +177,15 @@ public class MyToolBar extends JToolBar {
         return button;
     }
 
-    private void setFrozen(JByteMod jbm, JToggleButton button, JButton... targetActions) {
+    private void setFrozen(JByteMod jbm) {
         if (!(jbm.getJarArchive() instanceof RemoteJarArchive archive)) {
-            button.setSelected(false);
+            freezeButton.setSelected(false);
             return;
         }
 
-        boolean frozen = button.isSelected();
-        button.setEnabled(false);
-        setEnabled(targetActions, false);
+        boolean frozen = freezeButton.isSelected();
+        freezeButton.setEnabled(false);
+        setTargetActionsEnabled(false);
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
@@ -195,26 +198,35 @@ public class MyToolBar extends JToolBar {
                 boolean succeeded = false;
                 try {
                     get();
-                    button.setToolTipText(frozen ? "Resume connected JVM" : "Freeze connected JVM");
-                    button.setIcon(frozen ? createResumeIcon() : createFreezeIcon());
+                    showAttachedJvmFrozen(frozen);
                     succeeded = true;
                 } catch (InterruptedException exception) {
                     Thread.currentThread().interrupt();
-                    button.setSelected(!frozen);
+                    freezeButton.setSelected(!frozen);
                 } catch (ExecutionException exception) {
-                    button.setSelected(!frozen);
+                    freezeButton.setSelected(!frozen);
                     Throwable cause = exception.getCause() == null ? exception : exception.getCause();
                     new ErrorDisplay(cause);
                 } finally {
-                    button.setEnabled(true);
-                    if (!frozen || !succeeded) setEnabled(targetActions, true);
+                    freezeButton.setEnabled(true);
+                    if (!frozen || !succeeded) setTargetActionsEnabled(true);
                 }
             }
         }.execute();
     }
 
-    private void setEnabled(JButton[] buttons, boolean enabled) {
-        for (JButton button : buttons) button.setEnabled(enabled);
+    public void showAttachedJvmFrozen(boolean frozen) {
+        if (freezeButton == null) return;
+        freezeButton.setSelected(frozen);
+        freezeButton.setToolTipText(frozen ? "Resume connected JVM" : "Freeze connected JVM");
+        freezeButton.setIcon(frozen ? createResumeIcon() : createFreezeIcon());
+        freezeButton.setEnabled(true);
+        setTargetActionsEnabled(!frozen);
+    }
+
+    private void setTargetActionsEnabled(boolean enabled) {
+        if (reloadButton != null) reloadButton.setEnabled(enabled);
+        if (applyButton != null) applyButton.setEnabled(enabled);
     }
 
     protected JButton makeNavigationButton(String action, Icon i, ActionListener a) {
