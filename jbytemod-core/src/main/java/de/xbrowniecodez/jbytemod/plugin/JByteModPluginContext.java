@@ -63,7 +63,8 @@ public final class JByteModPluginContext implements PluginContext {
         ArchiveType type = archive instanceof RemoteJarArchive ? ArchiveType.REMOTE_JVM
                 : archive instanceof RuntimeJarArchive ? ArchiveType.CURRENT_JVM
                 : archive.isSingleEntry() ? ArchiveType.CLASS : ArchiveType.ARCHIVE;
-        int resourceCount = archive.getOutput() == null ? 0 : archive.getOutput().size();
+        int resourceCount = type == ArchiveType.ARCHIVE && archive.getOutput() != null
+                ? archive.getOutput().size() : 0;
         return new ArchiveInfo(type, resourceCount, jByteMod.getLastEditFile());
     }
 
@@ -72,6 +73,50 @@ public final class JByteModPluginContext implements PluginContext {
         JarArchive archive = jByteMod.getJarArchive();
         return archive == null || archive.getClasses() == null
                 ? Collections.emptyMap() : archive.getClasses();
+    }
+
+    @Override
+    public List<String> getResourceNames() {
+        JarArchive archive = editableResourceArchive();
+        synchronized (archive) {
+            return archive.getOutput().keySet().stream().sorted().toList();
+        }
+    }
+
+    @Override
+    public byte[] getResource(String path) {
+        JarArchive archive = editableResourceArchive();
+        String normalizedPath = normalizeResourcePath(path);
+        synchronized (archive) {
+            byte[] bytes = archive.getOutput().get(normalizedPath);
+            return bytes == null ? null : Arrays.copyOf(bytes, bytes.length);
+        }
+    }
+
+    @Override
+    public void putResource(String path, byte[] bytes) {
+        JarArchive archive = editableResourceArchive();
+        String normalizedPath = normalizeResourcePath(path);
+        byte[] copy = Arrays.copyOf(Objects.requireNonNull(bytes, "bytes"), bytes.length);
+        synchronized (archive) {
+            archive.getOutput().put(normalizedPath, copy);
+            if ("META-INF/MANIFEST.MF".equalsIgnoreCase(normalizedPath)) {
+                archive.setJarManifest(Arrays.copyOf(copy, copy.length));
+            }
+        }
+    }
+
+    @Override
+    public boolean removeResource(String path) {
+        JarArchive archive = editableResourceArchive();
+        String normalizedPath = normalizeResourcePath(path);
+        synchronized (archive) {
+            boolean removed = archive.getOutput().remove(normalizedPath) != null;
+            if (removed && "META-INF/MANIFEST.MF".equalsIgnoreCase(normalizedPath)) {
+                archive.setJarManifest(null);
+            }
+            return removed;
+        }
     }
 
     @Override
@@ -335,7 +380,7 @@ public final class JByteModPluginContext implements PluginContext {
 
     @Override
     public void updateTree() {
-        jByteMod.refreshTree();
+        runOnEdt(jByteMod::refreshTree);
     }
 
     @Override
@@ -363,6 +408,39 @@ public final class JByteModPluginContext implements PluginContext {
             return archive;
         }
         throw new IllegalStateException("JByteMod is not attached to a remote JVM");
+    }
+
+    private JarArchive editableResourceArchive() {
+        JarArchive archive = jByteMod.getJarArchive();
+        if (archive == null || archive.getClasses() == null) {
+            throw new IllegalStateException("No archive is open in JByteMod");
+        }
+        if (archive instanceof RemoteJarArchive || archive instanceof RuntimeJarArchive || archive.isSingleEntry()) {
+            throw new IllegalStateException("The active view does not contain editable archive resources");
+        }
+        if (archive.getOutput() == null) {
+            archive.setOutput(new HashMap<>());
+        }
+        return archive;
+    }
+
+    private static String normalizeResourcePath(String path) {
+        String normalized = Objects.requireNonNull(path, "path").replace('\\', '/');
+        if (normalized.isBlank() || normalized.startsWith("/") || normalized.endsWith("/")
+                || normalized.indexOf('\0') >= 0
+                || (normalized.length() > 1 && Character.isLetter(normalized.charAt(0))
+                && normalized.charAt(1) == ':')) {
+            throw new IllegalArgumentException("Invalid archive resource path: " + path);
+        }
+        for (String segment : normalized.split("/", -1)) {
+            if (segment.isEmpty() || ".".equals(segment) || "..".equals(segment)) {
+                throw new IllegalArgumentException("Invalid archive resource path: " + path);
+            }
+        }
+        if (normalized.toLowerCase(Locale.ROOT).endsWith(".class")) {
+            throw new IllegalArgumentException("Class entries must be edited through the class API");
+        }
+        return normalized;
     }
 
     private void setProgress(int value) {
