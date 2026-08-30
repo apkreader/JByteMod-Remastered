@@ -1013,6 +1013,11 @@ public class MyMenuBar extends JMenuBar {
                 jmi.setPreferredSize(new Dimension(preferredSize.width + 20, preferredSize.height));
                 pluginMenu.add(jmi);
             }
+            pluginMenu.addSeparator();
+            JMenuItem manage = new JMenuItem("Manage Plugins...");
+            manage.addActionListener(event -> new PluginManagerDialog(jbm, plugins,
+                    jbm.getPluginManager().getPluginFolder()).setVisible(true));
+            pluginMenu.add(manage);
             this.add(pluginMenu);
         }
     }
