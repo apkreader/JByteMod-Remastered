@@ -61,7 +61,7 @@ public class AttachTask extends SwingWorker<RemoteJarArchive, Integer> {
             progress.accept(22);
             RemoteAgentConnection connection = listener.accept(token);
             try {
-                RemoteJarArchive archive = new RemoteJarArchive(connection,
+                RemoteJarArchive archive = new RemoteJarArchive(connection, Long.parseLong(vm.id()),
                         value -> progress.accept(25 + value * 74 / 100));
                 progress.accept(100);
                 return archive;

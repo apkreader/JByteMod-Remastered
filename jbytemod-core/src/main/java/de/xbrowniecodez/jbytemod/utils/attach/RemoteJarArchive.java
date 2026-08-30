@@ -15,15 +15,18 @@ import java.util.function.IntConsumer;
 
 public final class RemoteJarArchive extends JarArchive implements Closeable {
     private final RemoteAgentConnection connection;
+    private final long processId;
+    private boolean frozen;
 
-    public RemoteJarArchive(RemoteAgentConnection connection) throws Exception {
-        this(connection, progress -> {
+    public RemoteJarArchive(RemoteAgentConnection connection, long processId) throws Exception {
+        this(connection, processId, progress -> {
         });
     }
 
-    public RemoteJarArchive(RemoteAgentConnection connection, IntConsumer progress) throws Exception {
+    public RemoteJarArchive(RemoteAgentConnection connection, long processId, IntConsumer progress) throws Exception {
         super(new HashMap<>(), new HashMap<>());
         this.connection = connection;
+        this.processId = processId;
         refresh(progress);
     }
 
@@ -65,12 +68,34 @@ public final class RemoteJarArchive extends JarArchive implements Closeable {
         return connection.redefineClasses(classes);
     }
 
-    public void terminate() throws Exception {
+    public synchronized void terminate() throws Exception {
+        if (frozen) setFrozen(false);
         connection.terminate();
     }
 
+    public synchronized void setFrozen(boolean frozen) throws Exception {
+        if (this.frozen == frozen) return;
+        ProcessSuspender.setSuspended(processId, frozen);
+        this.frozen = frozen;
+    }
+
     @Override
-    public void close() throws IOException {
-        connection.close();
+    public synchronized void close() throws IOException {
+        IOException failure = null;
+        if (frozen) {
+            try {
+                ProcessSuspender.setSuspended(processId, false);
+                frozen = false;
+            } catch (IOException exception) {
+                failure = exception;
+            }
+        }
+        try {
+            connection.close();
+        } catch (IOException exception) {
+            if (failure == null) failure = exception;
+            else failure.addSuppressed(exception);
+        }
+        if (failure != null) throw failure;
     }
 }
