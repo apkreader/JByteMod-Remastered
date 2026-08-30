@@ -62,7 +62,14 @@ Building requires JDK 21 or newer, Maven, Git, and an internet connection:
 mvn package
 ```
 
+The repository is a Maven reactor with two modules:
+
+- `jbytemod-api` contains the standalone plugin API.
+- `jbytemod-core` contains the desktop application.
+
 The package build downloads the current CFR `master` branch, records its commit in the displayed CFR version, compiles it from source, and includes it in the final JByteMod jar.
+
+The application is written to `jbytemod-core/target/JByteMod-Remastered-<version>.jar`. The plugin API is written to `jbytemod-api/target/jbytemod-api-<version>.jar` for third-party plugin projects.
 
 
 ### Getting Started

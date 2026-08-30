@@ -22,10 +22,12 @@ public class PluginManager implements Closeable {
     private final ArrayList<Plugin> plugins = new ArrayList<>();
     private final File pluginFolder = new File(Utils.getWorkingDirectory(), "plugins");
     private final JByteMod jByteMod;
+    private final PluginContext pluginContext;
     private URLClassLoader classLoader;
 
     public PluginManager(JByteMod jbm) {
         this.jByteMod = jbm;
+        this.pluginContext = new JByteModPluginContext(jbm);
         if (!pluginFolder.exists() && !pluginFolder.mkdirs()) {
             Main.INSTANCE.getLogger().err("Could not create plugin folder: " + pluginFolder);
             return;
@@ -75,7 +77,7 @@ public class PluginManager implements Closeable {
             if (loadedClass != Plugin.class && Plugin.class.isAssignableFrom(loadedClass)
                     && !Modifier.isAbstract(loadedClass.getModifiers())) {
                 Plugin pluginInstance = (Plugin) loadedClass.getDeclaredConstructor().newInstance();
-                pluginInstance.attach(jByteMod);
+                pluginInstance.attach(pluginContext);
                 pluginInstance.init();
                 this.plugins.add(pluginInstance);
             }
