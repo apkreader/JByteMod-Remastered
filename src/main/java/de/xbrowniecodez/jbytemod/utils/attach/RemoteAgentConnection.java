@@ -19,7 +19,7 @@ public final class RemoteAgentConnection implements Closeable {
     private RemoteAgentConnection(Socket socket) throws IOException {
         this.socket = socket;
         this.socket.setTcpNoDelay(true);
-        this.socket.setSoTimeout(30000);
+        this.socket.setSoTimeout(120000);
         this.input = new DataInputStream(socket.getInputStream());
         this.output = new DataOutputStream(socket.getOutputStream());
     }

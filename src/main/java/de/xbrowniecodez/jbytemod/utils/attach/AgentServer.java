@@ -7,15 +7,22 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.instrument.ClassDefinition;
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class AgentServer {
     static final String PROTOCOL = "JByteMod-Agent/1";
@@ -95,17 +102,32 @@ public final class AgentServer {
     private static void sendClasses(DataOutputStream output, Instrumentation instrumentation) throws Exception {
         Map<String, byte[]> classes = new LinkedHashMap<>();
         Map<String, Class<?>> runtimeClasses = new LinkedHashMap<>();
+        List<Class<?>> candidates = new ArrayList<>();
+        Map<Class<?>, String> names = new IdentityHashMap<>();
         ClassLoader agentLoader = AgentServer.class.getClassLoader();
         for (Class<?> runtimeClass : instrumentation.getAllLoadedClasses()) {
             String name = runtimeClass.getName().replace('.', '/');
-            if (!isReadable(runtimeClass, name, instrumentation, agentLoader) || classes.containsKey(name)) continue;
+            if (!isReadable(runtimeClass, name, instrumentation, agentLoader)) continue;
 
-            try (InputStream stream = runtimeClass.getResourceAsStream("/" + name + ".class")) {
-                if (stream != null) {
-                    classes.put(name, readAllBytes(stream));
-                    runtimeClasses.put(name, runtimeClass);
+            candidates.add(runtimeClass);
+            names.put(runtimeClass, name);
+        }
+
+        Map<Class<?>, byte[]> captured = captureClassBytes(candidates, instrumentation);
+        for (Class<?> runtimeClass : candidates) {
+            String name = names.get(runtimeClass);
+            if (classes.containsKey(name)) continue;
+
+            byte[] bytes = captured.get(runtimeClass);
+            if (bytes == null) {
+                try (InputStream stream = runtimeClass.getResourceAsStream("/" + name + ".class")) {
+                    if (stream != null) bytes = readAllBytes(stream);
+                } catch (Exception ignored) {
                 }
-            } catch (Exception ignored) {
+            }
+            if (bytes != null) {
+                classes.put(name, bytes);
+                runtimeClasses.put(name, runtimeClass);
             }
         }
         exposedClasses = runtimeClasses;
@@ -118,6 +140,47 @@ public final class AgentServer {
             output.write(entry.getValue());
         }
         output.flush();
+    }
+
+    private static Map<Class<?>, byte[]> captureClassBytes(List<Class<?>> classes,
+                                                            Instrumentation instrumentation) {
+        if (classes.isEmpty() || !instrumentation.isRetransformClassesSupported()) return Map.of();
+
+        Set<Class<?>> targets = new HashSet<>(classes);
+        Map<Class<?>, byte[]> captured = new ConcurrentHashMap<>();
+        ClassFileTransformer transformer = new ClassFileTransformer() {
+            @Override
+            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+                if (classBeingRedefined != null && targets.contains(classBeingRedefined)) {
+                    captured.put(classBeingRedefined, classfileBuffer.clone());
+                }
+                return null;
+            }
+        };
+
+        instrumentation.addTransformer(transformer, true);
+        try {
+            for (int start = 0; start < classes.size(); start += 100) {
+                Class<?>[] batch = classes.subList(start, Math.min(start + 100, classes.size()))
+                        .toArray(Class<?>[]::new);
+                try {
+                    instrumentation.retransformClasses(batch);
+                } catch (Throwable ignored) {
+                    Arrays.stream(batch)
+                            .filter(runtimeClass -> !captured.containsKey(runtimeClass))
+                            .forEach(runtimeClass -> {
+                                try {
+                                    instrumentation.retransformClasses(runtimeClass);
+                                } catch (Throwable ignoredClass) {
+                                }
+                            });
+                }
+            }
+        } finally {
+            instrumentation.removeTransformer(transformer);
+        }
+        return captured;
     }
 
     private static void redefineClasses(DataInputStream input, DataOutputStream output,
@@ -161,7 +224,6 @@ public final class AgentServer {
         return runtimeClass.getClassLoader() != agentLoader
                 && !runtimeClass.isHidden()
                 && !runtimeClass.isArray()
-                && !name.contains("$$")
                 && instrumentation.isModifiableClass(runtimeClass)
                 && !name.startsWith("java/")
                 && !name.startsWith("javax/")
