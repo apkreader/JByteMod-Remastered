@@ -131,6 +131,9 @@ public class JByteMod extends JFrame {
     private void handleWindowClosing(boolean agent) {
         if (JOptionPane.showConfirmDialog(JByteMod.this, languageRes.getResource("exit_warn"), languageRes.getResource("is_sure"),
                 JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            if (pluginManager != null) {
+                pluginManager.close();
+            }
             if (agent) {
                 dispose();
             } else {
@@ -222,6 +225,9 @@ public class JByteMod extends JFrame {
     }
 
     private void notifyPlugins() {
+        if (pluginManager == null || jarArchive == null || jarArchive.getClasses() == null) {
+            return;
+        }
         for (Plugin p : pluginManager.getPlugins()) {
             p.loadFile(jarArchive.getClasses());
         }
@@ -348,6 +354,7 @@ public class JByteMod extends JFrame {
         } else {
             this.setPluginManager(new PluginManager(this));
             this.myMenuBar.addPluginMenu(pluginManager.getPlugins());
+            notifyPlugins();
         }
         super.setVisible(b);
     }

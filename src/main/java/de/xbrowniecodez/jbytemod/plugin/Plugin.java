@@ -1,19 +1,23 @@
 package de.xbrowniecodez.jbytemod.plugin;
 
-import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.JByteMod;
 import lombok.Getter;
 import lombok.Setter;
+import me.grax.jbytemod.JarArchive;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
+import java.util.Collections;
 import java.util.Map;
+
 @Getter
 @Setter
 public abstract class Plugin {
     protected String name;
     protected String version;
     protected String author;
+    private JByteMod jByteMod;
 
     public Plugin(String name, String version, String author) {
         this.name = name;
@@ -21,36 +25,49 @@ public abstract class Plugin {
         this.author = author;
     }
 
-    public abstract void init();
+    final void attach(JByteMod jByteMod) {
+        this.jByteMod = jByteMod;
+    }
 
-    public abstract void loadFile(Map<String, ClassNode> map);
+    public void init() {
+    }
 
-    public abstract boolean isClickable();
+    public void loadFile(Map<String, ClassNode> map) {
+    }
 
-    public abstract void menuClick();
+    public boolean isClickable() {
+        return false;
+    }
+
+    public void menuClick() {
+    }
+
+    public void shutdown() {
+    }
 
     protected final Map<String, ClassNode> getCurrentFile() {
-        return Main.INSTANCE.getJByteMod().getJarArchive().getClasses();
+        JarArchive archive = jByteMod.getJarArchive();
+        return archive == null || archive.getClasses() == null ? Collections.emptyMap() : archive.getClasses();
     }
 
     protected final void updateTree() {
-        Main.INSTANCE.getJByteMod().refreshTree();
+        jByteMod.refreshTree();
     }
 
     protected final JMenuBar getMenu() {
-        return Main.INSTANCE.getJByteMod().getMyMenuBar();
+        return jByteMod.getMyMenuBar();
     }
 
     protected final JTree getTree() {
-        return Main.INSTANCE.getJByteMod().getJarTree();
+        return jByteMod.getJarTree();
     }
 
     protected final ClassNode getSelectedNode() {
-        return Main.INSTANCE.getJByteMod().getCurrentNode();
+        return jByteMod.getCurrentNode();
     }
 
     protected final MethodNode getSelectedMethod() {
-        return Main.INSTANCE.getJByteMod().getCurrentMethod();
+        return jByteMod.getCurrentMethod();
     }
 
 }
