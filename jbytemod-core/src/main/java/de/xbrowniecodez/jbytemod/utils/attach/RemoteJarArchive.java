@@ -1,6 +1,9 @@
 package de.xbrowniecodez.jbytemod.utils.attach;
 
 import de.xbrowniecodez.jbytemod.Main;
+import de.xbrowniecodez.jbytemod.plugin.JvmClassLoaderInfo;
+import de.xbrowniecodez.jbytemod.plugin.JvmRuntimeInfo;
+import de.xbrowniecodez.jbytemod.plugin.JvmThreadInfo;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
 import me.grax.jbytemod.JarArchive;
 import org.objectweb.asm.ClassWriter;
@@ -11,6 +14,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.function.IntConsumer;
 
 public final class RemoteJarArchive extends JarArchive implements Closeable {
@@ -66,6 +70,34 @@ public final class RemoteJarArchive extends JarArchive implements Closeable {
 
     public int redefine(Map<String, byte[]> classes) throws Exception {
         return connection.redefineClasses(classes);
+    }
+
+    public synchronized JvmRuntimeInfo getRuntimeInfo() throws Exception {
+        requireRunning();
+        return connection.getRuntimeInfo(frozen);
+    }
+
+    public synchronized List<JvmThreadInfo> getThreads(int maxStackDepth) throws Exception {
+        requireRunning();
+        return connection.getThreads(maxStackDepth);
+    }
+
+    public synchronized List<JvmClassLoaderInfo> getClassLoaders() throws Exception {
+        requireRunning();
+        return connection.getClassLoaders();
+    }
+
+    public synchronized Map<String, String> getSystemProperties() throws Exception {
+        requireRunning();
+        return connection.getSystemProperties();
+    }
+
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    private void requireRunning() {
+        if (frozen) throw new IllegalStateException("Resume the attached JVM before inspecting it");
     }
 
     public synchronized void terminate() throws Exception {

@@ -1,5 +1,9 @@
 package de.xbrowniecodez.jbytemod.utils.attach;
 
+import de.xbrowniecodez.jbytemod.plugin.JvmClassLoaderInfo;
+import de.xbrowniecodez.jbytemod.plugin.JvmRuntimeInfo;
+import de.xbrowniecodez.jbytemod.plugin.JvmThreadInfo;
+
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,6 +13,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.IntConsumer;
 
@@ -73,6 +79,81 @@ public final class RemoteAgentConnection implements Closeable {
         output.flush();
         checkResponse();
         socket.close();
+    }
+
+    public synchronized JvmRuntimeInfo getRuntimeInfo(boolean frozen) throws Exception {
+        output.writeByte(AgentServer.COMMAND_RUNTIME_INFO);
+        output.flush();
+        checkResponse();
+        return new JvmRuntimeInfo(
+                AgentServer.readString(input), AgentServer.readString(input), AgentServer.readString(input),
+                AgentServer.readString(input), AgentServer.readString(input), AgentServer.readString(input),
+                input.readLong(), input.readLong(), input.readInt(),
+                input.readLong(), input.readLong(), input.readLong(),
+                input.readLong(), input.readLong(), input.readLong(),
+                input.readInt(), input.readLong(), input.readLong(),
+                input.readInt(), input.readInt(), input.readInt(), input.readLong(), frozen);
+    }
+
+    public synchronized List<JvmThreadInfo> getThreads(int maxStackDepth) throws Exception {
+        if (maxStackDepth < 0 || maxStackDepth > 256) {
+            throw new IllegalArgumentException("maxStackDepth must be between 0 and 256");
+        }
+        output.writeByte(AgentServer.COMMAND_THREADS);
+        output.writeInt(maxStackDepth);
+        output.flush();
+        checkResponse();
+        int count = readCount("thread", 100_000);
+        List<JvmThreadInfo> threads = new ArrayList<>(count);
+        for (int index = 0; index < count; index++) {
+            long id = input.readLong();
+            String name = AgentServer.readString(input);
+            String state = AgentServer.readString(input);
+            boolean daemon = input.readBoolean();
+            int priority = input.readInt();
+            String lockName = readNullableString();
+            String lockOwnerName = readNullableString();
+            int stackDepth = readCount("stack frame", 256);
+            List<String> stack = new ArrayList<>(stackDepth);
+            for (int frame = 0; frame < stackDepth; frame++) stack.add(AgentServer.readString(input));
+            threads.add(new JvmThreadInfo(id, name, state, daemon, priority, lockName, lockOwnerName, stack));
+        }
+        return List.copyOf(threads);
+    }
+
+    public synchronized List<JvmClassLoaderInfo> getClassLoaders() throws Exception {
+        output.writeByte(AgentServer.COMMAND_CLASS_LOADERS);
+        output.flush();
+        checkResponse();
+        int count = readCount("class loader", 100_000);
+        List<JvmClassLoaderInfo> loaders = new ArrayList<>(count);
+        for (int index = 0; index < count; index++) {
+            loaders.add(new JvmClassLoaderInfo(AgentServer.readString(input), AgentServer.readString(input),
+                    AgentServer.readString(input), readNullableString(), input.readInt(), input.readBoolean()));
+        }
+        return List.copyOf(loaders);
+    }
+
+    public synchronized Map<String, String> getSystemProperties() throws Exception {
+        output.writeByte(AgentServer.COMMAND_SYSTEM_PROPERTIES);
+        output.flush();
+        checkResponse();
+        int count = readCount("system property", 100_000);
+        Map<String, String> properties = new LinkedHashMap<>(count);
+        for (int index = 0; index < count; index++) {
+            properties.put(AgentServer.readString(input), AgentServer.readString(input));
+        }
+        return Map.copyOf(properties);
+    }
+
+    private int readCount(String type, int maximum) throws IOException {
+        int count = input.readInt();
+        if (count < 0 || count > maximum) throw new IOException("Invalid " + type + " count: " + count);
+        return count;
+    }
+
+    private String readNullableString() throws Exception {
+        return input.readBoolean() ? AgentServer.readString(input) : null;
     }
 
     private void checkResponse() throws Exception {

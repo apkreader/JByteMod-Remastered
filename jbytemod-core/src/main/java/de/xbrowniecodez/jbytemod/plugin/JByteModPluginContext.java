@@ -295,6 +295,26 @@ public final class JByteModPluginContext implements PluginContext {
     }
 
     @Override
+    public JvmRuntimeInfo getAttachedJvmRuntimeInfo() throws Exception {
+        return attachedArchive().getRuntimeInfo();
+    }
+
+    @Override
+    public List<JvmThreadInfo> getAttachedJvmThreads(int maxStackDepth) throws Exception {
+        return attachedArchive().getThreads(maxStackDepth);
+    }
+
+    @Override
+    public List<JvmClassLoaderInfo> getAttachedJvmClassLoaders() throws Exception {
+        return attachedArchive().getClassLoaders();
+    }
+
+    @Override
+    public Map<String, String> getAttachedJvmSystemProperties() throws Exception {
+        return attachedArchive().getSystemProperties();
+    }
+
+    @Override
     public String decompile(ClassNode classNode, MethodNode method, String decompilerId) {
         String id = Objects.requireNonNull(decompilerId, "decompilerId").trim().toLowerCase(Locale.ROOT);
         Decompiler decompiler = switch (id) {
