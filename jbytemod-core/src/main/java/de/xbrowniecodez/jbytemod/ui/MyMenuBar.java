@@ -1017,6 +1017,8 @@ public class MyMenuBar extends JMenuBar {
             JMenuItem manage = new JMenuItem("Manage Plugins...");
             manage.addActionListener(event -> new PluginManagerDialog(jbm, plugins,
                     jbm.getPluginManager().getPluginFolder()).setVisible(true));
+            Dimension manageSize = manage.getPreferredSize();
+            manage.setPreferredSize(new Dimension(Math.max(manageSize.width, 160), manageSize.height));
             pluginMenu.add(manage);
             this.add(pluginMenu);
         }
