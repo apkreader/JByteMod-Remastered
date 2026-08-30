@@ -580,7 +580,7 @@ public class MyMenuBar extends JMenuBar {
                     vm = AttachUtils.getVirtualMachine(Integer.parseInt(pid));
                 }
             } else {
-                JProcessSelection gui = new JProcessSelection(list);
+                JProcessSelection gui = new JProcessSelection(jbm, list);
                 gui.setVisible(true);
                 if (gui.getPid() != 0) {
                     vm = AttachUtils.getVirtualMachine(gui.getPid());
