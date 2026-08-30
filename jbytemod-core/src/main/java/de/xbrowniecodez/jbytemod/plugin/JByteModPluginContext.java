@@ -1,5 +1,7 @@
 package de.xbrowniecodez.jbytemod.plugin;
 
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 import de.xbrowniecodez.jbytemod.JByteMod;
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.decompiler.ASMifierDecompiler;
@@ -8,11 +10,13 @@ import de.xbrowniecodez.jbytemod.decompiler.VineflowerDecompiler;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
 import de.xbrowniecodez.jbytemod.utils.attach.RemoteJarArchive;
 import de.xbrowniecodez.jbytemod.utils.attach.RuntimeJarArchive;
+import de.xbrowniecodez.jbytemod.utils.task.AttachTask;
 import me.grax.jbytemod.JarArchive;
 import me.grax.jbytemod.decompiler.CFRDecompiler;
 import me.grax.jbytemod.decompiler.Decompiler;
 import me.grax.jbytemod.decompiler.KoffeeDecompiler;
 import me.grax.jbytemod.decompiler.ProcyonDecompiler;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -20,7 +24,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -72,6 +79,79 @@ public final class JByteModPluginContext implements PluginContext {
     @Override
     public List<String> getDecompilerIds() {
         return List.of("cfr", "procyon", "vineflower", "jd-core", "koffee", "asmifier");
+    }
+
+    @Override
+    public List<JvmProcess> listJvmProcesses() {
+        String currentPid = Long.toString(ProcessHandle.current().pid());
+        List<JvmProcess> processes = new ArrayList<>();
+        for (VirtualMachineDescriptor descriptor : VirtualMachine.list()) {
+            if (!descriptor.id().equals(currentPid)) {
+                processes.add(new JvmProcess(descriptor.id(), descriptor.displayName()));
+            }
+        }
+        return processes;
+    }
+
+    @Override
+    public void attachToJvm(String pid) throws Exception {
+        String normalizedPid = Objects.requireNonNull(pid, "pid").trim();
+        if (normalizedPid.isEmpty()) {
+            throw new IllegalArgumentException("PID must not be empty");
+        }
+        if (normalizedPid.equals(Long.toString(ProcessHandle.current().pid()))) {
+            throw new IllegalArgumentException("Cannot attach JByteMod to itself");
+        }
+
+        RemoteJarArchive archive = AttachTask.attach(VirtualMachine.attach(normalizedPid), this::setProgress);
+        boolean connected = false;
+        try {
+            runOnEdt(() -> jByteMod.connectToAgent(archive));
+            connected = true;
+        } finally {
+            if (!connected) {
+                archive.close();
+            }
+        }
+    }
+
+    @Override
+    public void refreshAttachedJvm() throws Exception {
+        RemoteJarArchive archive = attachedArchive();
+        setProgress(0);
+        archive.refresh(value -> setProgress(Math.min(value, 99)));
+        Decompiler.clearCache();
+        runOnEdt(jByteMod::refreshTree);
+        setProgress(100);
+    }
+
+    @Override
+    public int applyChangesToAttachedJvm() throws Exception {
+        RemoteJarArchive archive = attachedArchive();
+        int writerFlags = jByteMod.getOptions().get("compute_maxs").getBoolean()
+                ? ClassWriter.COMPUTE_MAXS : 0;
+        Map<String, byte[]> replacements = new HashMap<>();
+        synchronized (archive) {
+            Map<String, byte[]> original = archive.getOutput();
+            int processed = 0;
+            int size = archive.getClasses().size();
+            setProgress(0);
+            for (Map.Entry<String, ClassNode> entry : archive.getClasses().entrySet()) {
+                byte[] bytes = BytecodeUtils.getClassNodeBytes(entry.getValue(), writerFlags);
+                if (!Arrays.equals(bytes, original.get(entry.getKey()))) {
+                    replacements.put(entry.getKey(), bytes);
+                }
+                processed++;
+                setProgress(size == 0 ? 80 : processed * 80 / size);
+            }
+            if (!replacements.isEmpty()) {
+                archive.redefine(replacements);
+                original.putAll(replacements);
+            }
+        }
+        setProgress(100);
+        Main.INSTANCE.getLogger().log("Successfully retransformed " + replacements.size() + " classes");
+        return replacements.size();
     }
 
     @Override
@@ -185,6 +265,17 @@ public final class JByteModPluginContext implements PluginContext {
     @Override
     public MethodNode getSelectedMethod() {
         return jByteMod.getCurrentMethod();
+    }
+
+    private RemoteJarArchive attachedArchive() {
+        if (jByteMod.getJarArchive() instanceof RemoteJarArchive archive) {
+            return archive;
+        }
+        throw new IllegalStateException("JByteMod is not attached to a remote JVM");
+    }
+
+    private void setProgress(int value) {
+        SwingUtilities.invokeLater(() -> jByteMod.getPageEndPanel().setValue(value));
     }
 
     private static void runOnEdt(Runnable runnable) {

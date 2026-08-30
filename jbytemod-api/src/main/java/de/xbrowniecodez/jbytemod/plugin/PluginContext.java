@@ -21,6 +21,14 @@ public interface PluginContext {
 
     List<String> getDecompilerIds();
 
+    List<JvmProcess> listJvmProcesses();
+
+    void attachToJvm(String pid) throws Exception;
+
+    void refreshAttachedJvm() throws Exception;
+
+    int applyChangesToAttachedJvm() throws Exception;
+
     String decompile(ClassNode classNode, MethodNode method, String decompilerId);
 
     void selectClass(ClassNode classNode);

@@ -16,6 +16,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.function.IntConsumer;
 
 public class AttachTask extends SwingWorker<RemoteJarArchive, Integer> {
 
@@ -31,19 +32,23 @@ public class AttachTask extends SwingWorker<RemoteJarArchive, Integer> {
 
     @Override
     protected RemoteJarArchive doInBackground() throws Exception {
-        publish(1);
+        return attach(vm, this::publish);
+    }
+
+    public static RemoteJarArchive attach(VirtualMachine vm, IntConsumer progress) throws Exception {
+        progress.accept(1);
         File temp = File.createTempFile("jvm", ".jar");
         temp.deleteOnExit();
         File errorFile = new File(temp.getAbsolutePath() + ".error.log");
         errorFile.deleteOnExit();
         try (RemoteAgentConnection.Listener listener = RemoteAgentConnection.listen()) {
             InjectUtils.createAgentJar(temp);
-            publish(12);
+            progress.accept(12);
             String token = UUID.randomUUID().toString();
             String encodedPath = Base64.getUrlEncoder().withoutPadding()
                     .encodeToString(temp.getAbsolutePath().getBytes(StandardCharsets.UTF_8));
             String options = encodedPath + ";" + listener.getPort() + ";" + token;
-            publish(18);
+            progress.accept(18);
             try {
                 vm.loadAgent(temp.getAbsolutePath(), options);
             } catch (Exception exception) {
@@ -53,12 +58,12 @@ public class AttachTask extends SwingWorker<RemoteJarArchive, Integer> {
                 }
                 throw exception;
             }
-            publish(22);
+            progress.accept(22);
             RemoteAgentConnection connection = listener.accept(token);
             try {
                 RemoteJarArchive archive = new RemoteJarArchive(connection,
-                        progress -> publish(25 + progress * 74 / 100));
-                publish(100);
+                        value -> progress.accept(25 + value * 74 / 100));
+                progress.accept(100);
                 return archive;
             } catch (Exception exception) {
                 connection.close();
