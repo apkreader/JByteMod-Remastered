@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class LoadTask extends SwingWorker<Void, Integer> {
 
@@ -39,35 +40,31 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     private int junkClasses;
     private boolean useZipInputStream;
 
-    public LoadTask(JByteMod jbm, File input, JarArchive ja) {
+    public LoadTask(JByteMod jbm, File input, JarArchive ja) throws IOException {
+        this.othersFile = 0;
+        this.startTime = System.currentTimeMillis();
+        this.file = input;
+        this.jbm = jbm;
+        this.jpb = jbm.getPageEndPanel();
+        this.ja = ja;
+
         try {
-            this.othersFile = 0;
-            this.startTime = System.currentTimeMillis();
-            this.file = input;
-            this.jbm = jbm;
-            this.jpb = jbm.getPageEndPanel();
-            this.ja = ja;
-
-            try {
-                this.input = new ZipFile(input, "UTF-8");
-                this.jarSize = countFiles(this.input);
-                Main.INSTANCE.getLogger().log(jarSize + " files to load!");
-            } catch (IOException e) {
-                if (e.getMessage() != null && e.getMessage().contains("central directory is empty")) {
-                    Main.INSTANCE.getLogger().warn(
-                            "ZipFile failed to read central directory. Falling back to ZipInputStream stream parsing...");
-                    this.useZipInputStream = true;
-                    this.jarSize = 1000; // generic size since we can't count sequentially easily
-                } else {
-                    throw e;
-                }
-            }
-
-            this.maxMem = Runtime.getRuntime().maxMemory();
-            this.memoryWarning = Main.INSTANCE.getJByteMod().getOptions().get("memory_warning").getBoolean();
+            this.input = new ZipFile(input, "UTF-8");
+            this.jarSize = countFiles(this.input);
+            Main.INSTANCE.getLogger().log(jarSize + " files to load!");
         } catch (IOException e) {
-            new ErrorDisplay(e);
+            if (e.getMessage() != null && e.getMessage().contains("central directory is empty")) {
+                Main.INSTANCE.getLogger().warn(
+                        "ZipFile failed to read central directory. Falling back to ZipInputStream stream parsing...");
+                this.useZipInputStream = true;
+                this.jarSize = 1000; // generic size since we can't count sequentially easily
+            } else {
+                throw e;
+            }
         }
+
+        this.maxMem = Runtime.getRuntime().maxMemory();
+        this.memoryWarning = Main.INSTANCE.getJByteMod().getOptions().get("memory_warning").getBoolean();
     }
 
     @Override
@@ -307,13 +304,23 @@ public class LoadTask extends SwingWorker<Void, Integer> {
 
     @Override
     protected void done() {
-        Main.INSTANCE.getJByteMod().setLastEditFile(file.getName());
-        Main.INSTANCE.getLogger().log("Successfully loaded file!");
-        jbm.refreshTree();
-        if (jbm.getPluginManager() != null) {
-            jbm.getPluginManager().fileLoaded(ja.getClasses());
+        try {
+            get();
+            Main.INSTANCE.getJByteMod().setLastEditFile(file.getName());
+            Main.INSTANCE.getLogger().log("Successfully loaded file!");
+            jbm.refreshTree();
+            if (jbm.getPluginManager() != null) {
+                jbm.getPluginManager().fileLoaded(ja.getClasses());
+            }
+            Main.INSTANCE.getLogger().log("Tree refreshed.");
+            Main.INSTANCE.getLogger().log("Loaded classes in " + (System.currentTimeMillis() - startTime) + "ms"
+                    + ", bypassed " + othersFile + " files because I can't load them. (Include "
+                    + junkClasses + " junk classes.)");
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException exception) {
+            Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+            new ErrorDisplay(cause);
         }
-        Main.INSTANCE.getLogger().log("Tree refreshed.");
-        Main.INSTANCE.getLogger().log("Loaded classes in " + (System.currentTimeMillis() - startTime) + "ms" + ", bypassed " + othersFile + " files because I can't load them. (Include " + junkClasses + " junk classes.)");
     }
 }

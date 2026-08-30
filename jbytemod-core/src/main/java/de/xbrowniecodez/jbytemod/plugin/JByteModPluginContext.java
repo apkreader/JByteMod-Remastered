@@ -11,6 +11,7 @@ import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
 import de.xbrowniecodez.jbytemod.utils.attach.RemoteJarArchive;
 import de.xbrowniecodez.jbytemod.utils.attach.RuntimeJarArchive;
 import de.xbrowniecodez.jbytemod.utils.task.AttachTask;
+import de.xbrowniecodez.jbytemod.utils.task.LoadTask;
 import me.grax.jbytemod.JarArchive;
 import me.grax.jbytemod.decompiler.CFRDecompiler;
 import me.grax.jbytemod.decompiler.Decompiler;
@@ -23,7 +24,11 @@ import org.objectweb.asm.tree.MethodNode;
 import javax.swing.JMenuBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +37,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class JByteModPluginContext implements PluginContext {
     private final JByteMod jByteMod;
@@ -79,6 +86,45 @@ public final class JByteModPluginContext implements PluginContext {
     @Override
     public List<String> getDecompilerIds() {
         return List.of("cfr", "procyon", "vineflower", "jd-core", "koffee", "asmifier");
+    }
+
+    @Override
+    public void openFile(String path) throws Exception {
+        Path filePath = Path.of(Objects.requireNonNull(path, "path")).toAbsolutePath().normalize();
+        if (!Files.isRegularFile(filePath)) {
+            throw new IllegalArgumentException("File does not exist: " + filePath);
+        }
+        if (!Files.isReadable(filePath)) {
+            throw new IllegalArgumentException("File is not readable: " + filePath);
+        }
+
+        String fileName = filePath.getFileName().toString().toLowerCase(Locale.ROOT);
+        if (!fileName.endsWith(".jar") && !fileName.endsWith(".class") && !fileName.endsWith(".apk")) {
+            throw new IllegalArgumentException("Unsupported file type: " + filePath.getFileName());
+        }
+
+        AtomicReference<LoadTask> task = new AtomicReference<>();
+        AtomicReference<Exception> failure = new AtomicReference<>();
+        File file = filePath.toFile();
+        runOnEdt(() -> {
+            try {
+                task.set(jByteMod.loadFileChecked(file));
+            } catch (Exception exception) {
+                failure.set(exception);
+            }
+        });
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+        if (task.get() != null) {
+            try {
+                task.get().get();
+            } catch (ExecutionException exception) {
+                Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+                throw new IOException("Could not open " + filePath, cause);
+            }
+            runOnEdt(() -> jByteMod.setLastEditFile(file.getName()));
+        }
     }
 
     @Override

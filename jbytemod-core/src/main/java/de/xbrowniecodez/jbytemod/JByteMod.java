@@ -24,6 +24,7 @@ import me.grax.jbytemod.utils.ErrorDisplay;
 import de.xbrowniecodez.jbytemod.utils.gui.LookUtils;
 import de.xbrowniecodez.jbytemod.utils.attach.RemoteJarArchive;
 import de.xbrowniecodez.jbytemod.utils.task.AttachTask;
+import de.xbrowniecodez.jbytemod.utils.task.LoadTask;
 import de.xbrowniecodez.jbytemod.utils.task.RetransformTask;
 import me.grax.jbytemod.utils.task.SaveTask;
 import me.lpk.util.OpUtils;
@@ -43,6 +44,7 @@ import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 @Getter
 @Setter
@@ -186,40 +188,55 @@ public class JByteMod extends JFrame {
      * Load .jar, .class or .apk file
      */
     public void loadFile(File input) {
-        this.filePath = input;
-        lastSelectedTreeEntries.clear();
-        Decompiler.clearCache();
-        String ap = input.getAbsolutePath();
-
         try {
-            if (ap.endsWith(".jar") || ap.endsWith(".apk")) {
-                loadZipFile(input);
-            } else if (ap.endsWith(".class")) {
-                loadClassFile(input);
-            } else {
-                displayJarWarning();
-            }
-
-            notifyPlugins();
+            loadFileChecked(input);
         } catch (Throwable e) {
             new ErrorDisplay(e);
         }
     }
 
+    public LoadTask loadFileChecked(File input) throws Exception {
+        this.filePath = input;
+        lastSelectedTreeEntries.clear();
+        Decompiler.clearCache();
+        String ap = input.getAbsolutePath().toLowerCase(Locale.ROOT);
 
-    private void loadZipFile(File input) {
-        jarArchive = new JarArchive(this, input);
+        LoadTask task = null;
+        if (ap.endsWith(".jar") || ap.endsWith(".apk")) {
+            task = loadZipFile(input);
+        } else if (ap.endsWith(".class")) {
+            loadClassFile(input);
+            notifyPlugins();
+        } else {
+            throw new UnsupportedOperationException(languageRes.getResource("jar_warn"));
+        }
+        return task;
+    }
+
+    private LoadTask loadZipFile(File input) throws Exception {
+        JarArchive archive = new JarArchive(new HashMap<>(), new HashMap<>());
+        LoadTask task = new LoadTask(this, input, archive);
+        replaceArchive(archive);
+        task.execute();
         setTitleSuffix(input.getName());
+        return task;
     }
 
     private void loadClassFile(File input) throws Exception {
-        jarArchive = new JarArchive(BytecodeUtils.getClassNodeFromBytes(Files.readAllBytes(input.toPath())));
+        JarArchive archive = new JarArchive(BytecodeUtils.getClassNodeFromBytes(Files.readAllBytes(input.toPath())));
+        replaceArchive(archive);
         setTitleSuffix(input.getName());
         refreshTree();
     }
 
-    private void displayJarWarning() {
-        new ErrorDisplay(new UnsupportedOperationException(languageRes.getResource("jar_warn")));
+    private void replaceArchive(JarArchive archive) {
+        if (jarArchive instanceof RemoteJarArchive remoteArchive) {
+            try {
+                remoteArchive.close();
+            } catch (Exception ignored) {
+            }
+        }
+        jarArchive = archive;
     }
 
     private void notifyPlugins() {

@@ -21,6 +21,8 @@ public interface PluginContext {
 
     List<String> getDecompilerIds();
 
+    void openFile(String path) throws Exception;
+
     List<JvmProcess> listJvmProcesses();
 
     void attachToJvm(String pid) throws Exception;
