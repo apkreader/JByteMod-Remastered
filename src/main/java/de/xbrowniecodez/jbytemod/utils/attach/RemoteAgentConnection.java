@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.IntConsumer;
 
 public final class RemoteAgentConnection implements Closeable {
     private final Socket socket;
@@ -25,9 +26,14 @@ public final class RemoteAgentConnection implements Closeable {
     }
 
     public synchronized Map<String, byte[]> loadClasses() throws Exception {
+        return loadClasses(progress -> {
+        });
+    }
+
+    public synchronized Map<String, byte[]> loadClasses(IntConsumer progress) throws Exception {
         output.writeByte(AgentServer.COMMAND_LIST_CLASSES);
         output.flush();
-        checkResponse();
+        checkResponse(progress);
 
         int count = input.readInt();
         if (count < 0 || count > 100000) throw new IOException("Invalid class count: " + count);
@@ -41,7 +47,11 @@ public final class RemoteAgentConnection implements Closeable {
             byte[] bytes = input.readNBytes(length);
             if (bytes.length != length) throw new IOException("Target disconnected while loading " + name);
             classes.put(name, bytes);
+            if (i % 25 == 0 || i + 1 == count) {
+                progress.accept(count == 0 ? 100 : 80 + (i + 1) * 20 / count);
+            }
         }
+        if (count == 0) progress.accept(100);
         return classes;
     }
 
@@ -59,11 +69,23 @@ public final class RemoteAgentConnection implements Closeable {
     }
 
     private void checkResponse() throws Exception {
-        int response = input.readUnsignedByte();
-        if (response == AgentServer.RESPONSE_ERROR) {
-            throw new IOException("The target JVM rejected the request:\n\n" + AgentServer.readString(input));
+        checkResponse(progress -> {
+        });
+    }
+
+    private void checkResponse(IntConsumer progress) throws Exception {
+        while (true) {
+            int response = input.readUnsignedByte();
+            if (response == AgentServer.RESPONSE_PROGRESS) {
+                progress.accept(input.readUnsignedByte());
+                continue;
+            }
+            if (response == AgentServer.RESPONSE_ERROR) {
+                throw new IOException("The target JVM rejected the request:\n\n" + AgentServer.readString(input));
+            }
+            if (response != AgentServer.RESPONSE_OK) throw new IOException("Invalid agent response: " + response);
+            return;
         }
-        if (response != AgentServer.RESPONSE_OK) throw new IOException("Invalid agent response: " + response);
     }
 
     @Override

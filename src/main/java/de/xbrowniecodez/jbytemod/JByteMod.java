@@ -233,7 +233,7 @@ public class JByteMod extends JFrame {
             new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() throws Exception {
-                    remoteArchive.refresh();
+                    remoteArchive.refresh(progress -> pageEndPanel.setValue(Math.min(progress, 99)));
                     return null;
                 }
 

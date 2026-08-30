@@ -15,7 +15,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -31,6 +30,7 @@ public final class AgentServer {
     static final int COMMAND_CLOSE = 3;
     static final int RESPONSE_OK = 0;
     static final int RESPONSE_ERROR = 1;
+    static final int RESPONSE_PROGRESS = 2;
 
     private static volatile Socket connection;
     private static volatile Map<String, Class<?>> exposedClasses = Map.of();
@@ -100,6 +100,7 @@ public final class AgentServer {
     }
 
     private static void sendClasses(DataOutputStream output, Instrumentation instrumentation) throws Exception {
+        writeProgress(output, 0);
         Map<String, byte[]> classes = new LinkedHashMap<>();
         Map<String, Class<?>> runtimeClasses = new LinkedHashMap<>();
         List<Class<?>> candidates = new ArrayList<>();
@@ -112,9 +113,12 @@ public final class AgentServer {
             candidates.add(runtimeClass);
             names.put(runtimeClass, name);
         }
+        writeProgress(output, 5);
 
-        Map<Class<?>, byte[]> captured = captureClassBytes(candidates, instrumentation);
-        for (Class<?> runtimeClass : candidates) {
+        Map<Class<?>, byte[]> captured = captureClassBytes(candidates, instrumentation,
+                progress -> writeProgress(output, 5 + progress * 70 / 100));
+        for (int i = 0; i < candidates.size(); i++) {
+            Class<?> runtimeClass = candidates.get(i);
             String name = names.get(runtimeClass);
             if (classes.containsKey(name)) continue;
 
@@ -129,8 +133,12 @@ public final class AgentServer {
                 classes.put(name, bytes);
                 runtimeClasses.put(name, runtimeClass);
             }
+            if (i % 100 == 0 && !candidates.isEmpty()) {
+                writeProgress(output, 75 + (i + 1) * 5 / candidates.size());
+            }
         }
         exposedClasses = runtimeClasses;
+        writeProgress(output, 80);
 
         output.writeByte(RESPONSE_OK);
         output.writeInt(classes.size());
@@ -143,7 +151,8 @@ public final class AgentServer {
     }
 
     private static Map<Class<?>, byte[]> captureClassBytes(List<Class<?>> classes,
-                                                            Instrumentation instrumentation) {
+                                                            Instrumentation instrumentation,
+                                                            ProgressWriter progress) throws Exception {
         if (classes.isEmpty() || !instrumentation.isRetransformClassesSupported()) return Map.of();
 
         Set<Class<?>> targets = new HashSet<>(classes);
@@ -167,20 +176,26 @@ public final class AgentServer {
                 try {
                     instrumentation.retransformClasses(batch);
                 } catch (Throwable ignored) {
-                    Arrays.stream(batch)
-                            .filter(runtimeClass -> !captured.containsKey(runtimeClass))
-                            .forEach(runtimeClass -> {
-                                try {
-                                    instrumentation.retransformClasses(runtimeClass);
-                                } catch (Throwable ignoredClass) {
-                                }
-                            });
+                    for (Class<?> runtimeClass : batch) {
+                        if (captured.containsKey(runtimeClass)) continue;
+                        try {
+                            instrumentation.retransformClasses(runtimeClass);
+                        } catch (Throwable ignoredClass) {
+                        }
+                    }
                 }
+                progress.write(Math.min(100, (start + batch.length) * 100 / classes.size()));
             }
         } finally {
             instrumentation.removeTransformer(transformer);
         }
         return captured;
+    }
+
+    private static void writeProgress(DataOutputStream output, int progress) throws Exception {
+        output.writeByte(RESPONSE_PROGRESS);
+        output.writeByte(Math.max(0, Math.min(100, progress)));
+        output.flush();
     }
 
     private static void redefineClasses(DataInputStream input, DataOutputStream output,
@@ -258,5 +273,10 @@ public final class AgentServer {
         byte[] bytes = input.readNBytes(length);
         if (bytes.length != length) throw new IllegalStateException("Connection closed while reading a string");
         return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    @FunctionalInterface
+    private interface ProgressWriter {
+        void write(int progress) throws Exception;
     }
 }
