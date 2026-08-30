@@ -1003,11 +1003,14 @@ public class MyMenuBar extends JMenuBar {
         if (!plugins.isEmpty()) {
             JMenu pluginMenu = new JMenu("Plugins");
             for (Plugin p : plugins) {
-                JMenuItem jmi = new JMenuItem(p.getName() + " " + p.getVersion());
+                JMenuItem jmi = new JMenuItem(p.getName());
+                jmi.setToolTipText("Version " + p.getVersion() + " by " + p.getAuthor());
                 jmi.setEnabled(p.isClickable());
                 jmi.addActionListener(e -> {
                     p.menuClick();
                 });
+                Dimension preferredSize = jmi.getPreferredSize();
+                jmi.setPreferredSize(new Dimension(preferredSize.width + 20, preferredSize.height));
                 pluginMenu.add(jmi);
             }
             this.add(pluginMenu);
