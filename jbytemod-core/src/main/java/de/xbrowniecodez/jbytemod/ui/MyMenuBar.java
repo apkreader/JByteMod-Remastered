@@ -1003,7 +1003,7 @@ public class MyMenuBar extends JMenuBar {
         if (!plugins.isEmpty()) {
             JMenu pluginMenu = new JMenu("Plugins");
             for (Plugin p : plugins) {
-                JMenuItem jmi = new JMenuItem(p.getName());
+                JMenuItem jmi = new JMenuItem(p.getName() + " v" + p.getVersion());
                 jmi.setToolTipText("Version " + p.getVersion() + " by " + p.getAuthor());
                 jmi.setEnabled(p.isClickable());
                 jmi.addActionListener(e -> {
