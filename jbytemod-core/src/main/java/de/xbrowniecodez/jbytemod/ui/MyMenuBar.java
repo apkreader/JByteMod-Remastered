@@ -1000,7 +1000,7 @@ public class MyMenuBar extends JMenuBar {
     }
 
     public void addPluginMenu(ArrayList<Plugin> plugins) {
-        if (!plugins.isEmpty()) {
+        if (jbm.getPluginManager() != null && !jbm.getPluginManager().getAvailablePlugins().isEmpty()) {
             JMenu pluginMenu = new JMenu("Plugins");
             for (Plugin p : plugins) {
                 JMenuItem jmi = new JMenuItem(p.getName() + " v" + p.getVersion());
@@ -1015,8 +1015,7 @@ public class MyMenuBar extends JMenuBar {
             }
             pluginMenu.addSeparator();
             JMenuItem manage = new JMenuItem("Manage Plugins...");
-            manage.addActionListener(event -> new PluginManagerDialog(jbm, plugins,
-                    jbm.getPluginManager().getPluginFolder()).setVisible(true));
+            manage.addActionListener(event -> new PluginManagerDialog(jbm, jbm.getPluginManager()).setVisible(true));
             Dimension manageSize = manage.getPreferredSize();
             manage.setPreferredSize(new Dimension(Math.max(manageSize.width, 160), manageSize.height));
             pluginMenu.add(manage);
