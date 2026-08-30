@@ -277,6 +277,46 @@ public class JByteMod extends JFrame {
         this.refreshTree();
     }
 
+    public void terminateAttachedJvm() {
+        if (!(jarArchive instanceof RemoteJarArchive remoteArchive)) {
+            return;
+        }
+        int choice = JOptionPane.showConfirmDialog(this,
+                "Terminate the connected JVM? This will immediately stop the target application.",
+                "Terminate JVM",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (choice != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                remoteArchive.terminate();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    get();
+                    setJMenuBar(myMenuBar = new MyMenuBar(JByteMod.this, false));
+                    if (pluginManager != null) myMenuBar.addPluginMenu(pluginManager.getPlugins());
+                    Container contentPane = getContentPane();
+                    contentPane.remove(toolBar);
+                    contentPane.add(toolBar = new MyToolBar(JByteMod.this), BorderLayout.PAGE_START);
+                    setTitleSuffix("Target terminated");
+                    revalidate();
+                    repaint();
+                } catch (Exception exception) {
+                    Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+                    new ErrorDisplay(cause);
+                }
+            }
+        }.execute();
+    }
+
     public void refreshTree() {
         Main.INSTANCE.getLogger().log("Building tree..");
         this.jarTree.refreshTree(jarArchive);

@@ -68,6 +68,13 @@ public final class RemoteAgentConnection implements Closeable {
         return input.readInt();
     }
 
+    public synchronized void terminate() throws Exception {
+        output.writeByte(AgentServer.COMMAND_TERMINATE);
+        output.flush();
+        checkResponse();
+        socket.close();
+    }
+
     private void checkResponse() throws Exception {
         checkResponse(progress -> {
         });

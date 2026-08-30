@@ -65,6 +65,10 @@ public final class RemoteJarArchive extends JarArchive implements Closeable {
         return connection.redefineClasses(classes);
     }
 
+    public void terminate() throws Exception {
+        connection.terminate();
+    }
+
     @Override
     public void close() throws IOException {
         connection.close();

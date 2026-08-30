@@ -28,6 +28,7 @@ public final class AgentServer {
     static final int COMMAND_LIST_CLASSES = 1;
     static final int COMMAND_REDEFINE_CLASSES = 2;
     static final int COMMAND_CLOSE = 3;
+    static final int COMMAND_TERMINATE = 4;
     static final int RESPONSE_OK = 0;
     static final int RESPONSE_ERROR = 1;
     static final int RESPONSE_PROGRESS = 2;
@@ -84,6 +85,11 @@ public final class AgentServer {
                         sendClasses(output, instrumentation);
                     } else if (command == COMMAND_REDEFINE_CLASSES) {
                         redefineClasses(input, output, instrumentation);
+                    } else if (command == COMMAND_TERMINATE) {
+                        output.writeByte(RESPONSE_OK);
+                        output.flush();
+                        Runtime.getRuntime().halt(0);
+                        return;
                     } else {
                         throw new IllegalArgumentException("Unknown agent command: " + command);
                     }
