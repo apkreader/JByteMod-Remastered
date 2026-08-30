@@ -1,4 +1,4 @@
-package me.grax.jbytemod.ui;
+package de.xbrowniecodez.jbytemod.ui;
 
 import android.util.Patterns;
 import com.sun.tools.attach.VirtualMachine;
@@ -9,17 +9,17 @@ import de.xbrowniecodez.jbytemod.plugin.Plugin;
 import me.grax.jbytemod.res.LanguageRes;
 import me.grax.jbytemod.res.Option;
 import me.grax.jbytemod.res.Options;
+import me.grax.jbytemod.ui.*;
 import me.grax.jbytemod.ui.dialogue.ClassDialogue;
 import de.xbrowniecodez.jbytemod.ui.lists.entries.SearchEntry;
 import me.grax.jbytemod.utils.DeobfusacteUtils;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import me.grax.jbytemod.utils.TextUtils;
-import me.grax.jbytemod.utils.attach.AttachUtils;
-import me.grax.jbytemod.utils.gui.LookUtils;
+import de.xbrowniecodez.jbytemod.utils.attach.AttachUtils;
+import de.xbrowniecodez.jbytemod.utils.gui.LookUtils;
 import me.grax.jbytemod.utils.list.LazyListModel;
 import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.tree.*;
-import sun.tools.attach.WindowsAttachProvider;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -568,11 +568,10 @@ public class MyMenuBar extends JMenuBar {
     }
 
     protected void openProcessSelection() {
-        // I don't know why this can get none
-        // List<VirtualMachineDescriptor> list = VirtualMachine.list();
-        // Windows Only....
         try {
-            List<VirtualMachineDescriptor> list = new WindowsAttachProvider().listVirtualMachines();
+            List<VirtualMachineDescriptor> list = new ArrayList<>(VirtualMachine.list());
+            String currentPid = Long.toString(ProcessHandle.current().pid());
+            list.removeIf(descriptor -> descriptor.id().equals(currentPid));
             VirtualMachine vm = null;
 
             if (list.isEmpty()) {
@@ -593,8 +592,12 @@ public class MyMenuBar extends JMenuBar {
         } catch (UnsatisfiedLinkError exception) {
             JOptionPane.showMessageDialog(null, "Failed to attach. Please use JDK as runtime.");
         } catch (Throwable t) {
-            if (t.getMessage() != null) {
-                JOptionPane.showMessageDialog(null, "<" + t.getMessage() + "> " + Main.INSTANCE.getJByteMod().getLanguageRes().getResource("attach_error"));
+            Throwable cause = t;
+            while (cause.getCause() != null && cause.getCause() != cause) {
+                cause = cause.getCause();
+            }
+            if (cause.getMessage() != null) {
+                JOptionPane.showMessageDialog(null, "Failed to attach: " + cause.getMessage());
             } else {
                 new ErrorDisplay(t);
             }

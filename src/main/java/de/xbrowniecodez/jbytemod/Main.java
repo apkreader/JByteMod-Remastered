@@ -7,11 +7,14 @@ import de.xbrowniecodez.jbytemod.discord.Discord;
 import me.grax.jbytemod.logging.Logging;
 
 import me.grax.jbytemod.utils.FileUtils;
+import de.xbrowniecodez.jbytemod.utils.attach.RuntimeJarArchive;
 import org.apache.commons.cli.*;
 
 
 import javax.swing.*;
 import java.io.File;
+import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
 @Getter
 public enum Main {
     INSTANCE;
@@ -33,6 +36,42 @@ public enum Main {
         this.loadFileIfNeeded(cmd, jByteMod);
         SwingUtilities.invokeLater(() -> this.jByteMod.setVisible(true));
         this.updateChecker = new UpdateChecker();
+    }
+
+    public void startAgent(Instrumentation instrumentation) throws Exception {
+        this.logger = new Logging();
+        this.jByteMod = new JByteMod(true);
+        this.jByteMod.setAgentInstrumentation(instrumentation);
+        this.jByteMod.setJarArchive(new RuntimeJarArchive(instrumentation));
+        ClassLoader agentClassLoader = getClass().getClassLoader();
+        Runnable showWindow = () -> {
+            Thread thread = Thread.currentThread();
+            ClassLoader previousClassLoader = thread.getContextClassLoader();
+            thread.setContextClassLoader(agentClassLoader);
+            try {
+                this.jByteMod.setVisible(true);
+            } finally {
+                thread.setContextClassLoader(previousClassLoader);
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            showWindow.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(showWindow);
+            } catch (InvocationTargetException exception) {
+                Throwable cause = exception.getCause();
+                if (cause instanceof Exception nestedException) throw nestedException;
+                if (cause instanceof Error error) throw error;
+                throw exception;
+            }
+        }
+    }
+
+    public void updatePresence(String state, String details) {
+        if (discord != null) {
+            discord.updatePresence(state, details);
+        }
     }
 
     private CommandLine parseCommandLine(String[] args) {

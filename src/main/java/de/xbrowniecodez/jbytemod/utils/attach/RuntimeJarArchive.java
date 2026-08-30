@@ -1,11 +1,10 @@
-package me.grax.jbytemod.utils.attach;
+package de.xbrowniecodez.jbytemod.utils.attach;
 
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
 import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.JarArchive;
-import me.grax.jbytemod.utils.asm.Loader;
-import me.lpk.util.JarUtils;
+import de.xbrowniecodez.jbytemod.utils.asm.Loader;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.IOException;
@@ -21,6 +20,7 @@ public class RuntimeJarArchive extends JarArchive {
 
     private Instrumentation ins;
     private ArrayList<String> systemClasses;
+    private final Map<String, Class<?>> runtimeClasses = new HashMap<>();
 
     public RuntimeJarArchive(Instrumentation ins) {
         super(new HashMap<>(), new HashMap<>());
@@ -28,24 +28,23 @@ public class RuntimeJarArchive extends JarArchive {
         systemClasses = new ArrayList<String>();
         try {
             loadNames(JByteMod.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-            loadNames(JarUtils.getRT().getAbsolutePath());
-             Main.INSTANCE.getLogger().log("Successfully loaded system class names");
+            Main.INSTANCE.getLogger().log("Successfully loaded system class names");
         } catch (Exception e1) {
             e1.printStackTrace();
         }
     }
 
     private void loadNames(String path) throws IOException {
-        JarFile self = new JarFile(path);
-        Enumeration<JarEntry> e = self.entries();
-        while (e.hasMoreElements()) {
-            JarEntry entry = (JarEntry) e.nextElement();
-            String name = entry.getName();
-            if (name.endsWith(".class")) {
-                systemClasses.add(entry.getName().substring(0, name.length() - 6));
+        try (JarFile self = new JarFile(path)) {
+            Enumeration<JarEntry> e = self.entries();
+            while (e.hasMoreElements()) {
+                JarEntry entry = e.nextElement();
+                String name = entry.getName();
+                if (name.endsWith(".class")) {
+                    systemClasses.add(entry.getName().substring(0, name.length() - 6));
+                }
             }
         }
-        self.close();
     }
 
     @Override
@@ -53,14 +52,15 @@ public class RuntimeJarArchive extends JarArchive {
         for (Class<?> c : ins.getAllLoadedClasses()) {
             String name = c.getName().replace('.', '/');
             if (!isRT(name) && !classes.containsKey(name)) {
-                if (name.contains("$$") || systemClasses.contains(name) || name.contains("[") || !ins.isModifiableClass(c)) {
+                if (c.isHidden() || name.contains("$$") || systemClasses.contains(name) || name.contains("[") || !ins.isModifiableClass(c)) {
                     continue;
                 }
                 try {
-                    ClassNode cn = Loader.classToNode(name);
+                    ClassNode cn = Loader.classToNode(c);
                     if (cn != null) {
                         classes.put(name, cn);
                         output.put(name, BytecodeUtils.getClassNodeBytes(cn));
+                        runtimeClasses.put(name, c);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -68,6 +68,10 @@ public class RuntimeJarArchive extends JarArchive {
             }
         }
         return classes;
+    }
+
+    public Class<?> getRuntimeClass(String name) {
+        return runtimeClasses.get(name);
     }
 
     private boolean isRT(String name) {

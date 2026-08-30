@@ -1,5 +1,6 @@
 package me.grax.jbytemod.utils.asm;
 
+import de.xbrowniecodez.jbytemod.utils.asm.Loader;
 import me.lpk.util.AccessHelper;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;

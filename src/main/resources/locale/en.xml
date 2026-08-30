@@ -127,7 +127,7 @@
    <string name="auto_scan">Auto Scan File</string>
    <string name="bad_class_check">Bad Class Check</string>
    <string name="illegal_invisible_annotations">Illegal Invisible Annotations Remover</string>
-   <string name="attach_error">Is attach.dll located in the right place? Try using '-Djava.library.path'!</string>
+   <string name="attach_error">Make sure JByteMod is running on a full JDK with attach support.</string>
    <string name="deobf_tools">Deobfuscation Tools</string>
    <string name="use_dark_theme">Dark Theme</string>
    <string name="check_update">Check for updates</string>

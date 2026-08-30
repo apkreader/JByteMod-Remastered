@@ -4,7 +4,7 @@ import de.xbrowniecodez.jbytemod.JByteMod;
 import lombok.Getter;
 import lombok.Setter;
 import me.grax.jbytemod.utils.ErrorDisplay;
-import me.grax.jbytemod.utils.task.LoadTask;
+import de.xbrowniecodez.jbytemod.utils.task.LoadTask;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.File;

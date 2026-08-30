@@ -13,6 +13,8 @@ import me.grax.jbytemod.decompiler.Decompiler;
 import me.grax.jbytemod.res.LanguageRes;
 import me.grax.jbytemod.res.Options;
 import me.grax.jbytemod.ui.*;
+import de.xbrowniecodez.jbytemod.ui.MyMenuBar;
+import de.xbrowniecodez.jbytemod.ui.MyToolBar;
 import de.xbrowniecodez.jbytemod.ui.lists.LVPList;
 import me.grax.jbytemod.ui.graph.ControlFlowPanel;
 import me.grax.jbytemod.ui.lists.MyCodeList;
@@ -20,9 +22,10 @@ import de.xbrowniecodez.jbytemod.ui.lists.SearchList;
 import de.xbrowniecodez.jbytemod.ui.lists.TCBList;
 import me.grax.jbytemod.ui.tree.SortedTreeNode;
 import me.grax.jbytemod.utils.ErrorDisplay;
-import me.grax.jbytemod.utils.gui.LookUtils;
-import me.grax.jbytemod.utils.task.AttachTask;
-import me.grax.jbytemod.utils.task.RetransformTask;
+import de.xbrowniecodez.jbytemod.utils.gui.LookUtils;
+import de.xbrowniecodez.jbytemod.utils.attach.RemoteJarArchive;
+import de.xbrowniecodez.jbytemod.utils.task.AttachTask;
+import de.xbrowniecodez.jbytemod.utils.task.RetransformTask;
 import me.grax.jbytemod.utils.task.SaveTask;
 import me.lpk.util.OpUtils;
 import org.objectweb.asm.tree.ClassNode;
@@ -45,6 +48,7 @@ import java.util.LinkedHashMap;
 @Getter
 @Setter
 public class JByteMod extends JFrame {
+    private final boolean agent;
     private final Version version = new Version(Utils.readPropertiesFile().getProperty("version"));
     private final String title = "JByteMod Remastered v" + version;
     private LanguageRes languageRes;
@@ -64,14 +68,23 @@ public class JByteMod extends JFrame {
     private InfoPanel infoPanel;
     private LVPList lvpList;
     private MyMenuBar myMenuBar;
+    private MyToolBar toolBar;
     private ClassNode currentNode;
     private MethodNode currentMethod;
     private PluginManager pluginManager;
     private File filePath;
 
     public JByteMod(boolean agent) throws Exception {
+        this.agent = agent;
         this.options = new Options();
         this.languageRes = new LanguageRes();
+    }
+
+    public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Exception {
+        if (!instrumentation.isRedefineClassesSupported()) {
+            throw new IllegalStateException("Class redefinition is disabled in the target JVM");
+        }
+        Main.INSTANCE.startAgent(instrumentation);
     }
 
     public void initializeFrame(boolean agent) {
@@ -95,7 +108,7 @@ public class JByteMod extends JFrame {
         setLvpList(new LVPList());
         createSplitPane(contentPane);
         contentPane.add(pageEndPanel = new PageEndPanel(), BorderLayout.PAGE_END);
-        contentPane.add(new MyToolBar(this), BorderLayout.PAGE_START);
+        contentPane.add(toolBar = new MyToolBar(this), BorderLayout.PAGE_START);
 
         if (jarArchive != null) {
             refreshTree();
@@ -128,6 +141,10 @@ public class JByteMod extends JFrame {
     }
 
     public void applyChangesAgent() {
+        if (jarArchive instanceof RemoteJarArchive) {
+            new RetransformTask(this, null, jarArchive).execute();
+            return;
+        }
         if (agentInstrumentation == null) {
             throw new RuntimeException();
         }
@@ -136,6 +153,32 @@ public class JByteMod extends JFrame {
 
     public void attachTo(VirtualMachine vm) throws Exception {
         new AttachTask(this, vm).execute();
+    }
+
+    public void connectToAgent(RemoteJarArchive archive) {
+        if (jarArchive instanceof RemoteJarArchive previousArchive && previousArchive != archive) {
+            try {
+                previousArchive.close();
+            } catch (Exception ignored) {
+            }
+        }
+
+        jarArchive = archive;
+        lastEditFile = "attached process";
+        lastSelectedTreeEntries.clear();
+        Decompiler.clearCache();
+
+        setJMenuBar(myMenuBar = new MyMenuBar(this, true));
+        if (pluginManager != null) myMenuBar.addPluginMenu(pluginManager.getPlugins());
+        Container contentPane = getContentPane();
+        if (toolBar != null) contentPane.remove(toolBar);
+        contentPane.add(toolBar = new MyToolBar(this), BorderLayout.PAGE_START);
+
+        setTitleSuffix("Agent");
+        refreshTree();
+        notifyPlugins();
+        revalidate();
+        repaint();
     }
 
     /**
@@ -185,6 +228,30 @@ public class JByteMod extends JFrame {
     }
 
     public void refreshAgentClasses() {
+        if (jarArchive instanceof RemoteJarArchive remoteArchive) {
+            pageEndPanel.setValue(0);
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    remoteArchive.refresh();
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        get();
+                        Decompiler.clearCache();
+                        refreshTree();
+                        pageEndPanel.setValue(100);
+                    } catch (Exception exception) {
+                        Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+                        new ErrorDisplay(cause);
+                    }
+                }
+            }.execute();
+            return;
+        }
         if (agentInstrumentation == null) {
             throw new RuntimeException();
         }
@@ -270,10 +337,18 @@ public class JByteMod extends JFrame {
 
     @Override
     public void setVisible(boolean b) {
-        LookUtils.setTheme();
-        this.initializeFrame(false);
-        this.setPluginManager(new PluginManager(this));
-        this.myMenuBar.addPluginMenu(pluginManager.getPlugins());
+        if (!agent) {
+            LookUtils.setTheme();
+        }
+        this.initializeFrame(agent);
+        if (agent) {
+            setTitleSuffix("Agent");
+            LookUtils.applyAgentTheme(this, () -> super.setVisible(b));
+            return;
+        } else {
+            this.setPluginManager(new PluginManager(this));
+            this.myMenuBar.addPluginMenu(pluginManager.getPlugins());
+        }
         super.setVisible(b);
     }
 

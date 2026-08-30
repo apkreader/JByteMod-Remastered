@@ -1,10 +1,10 @@
-package me.grax.jbytemod.ui;
+package de.xbrowniecodez.jbytemod.ui;
 
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.JByteMod;
+import me.grax.jbytemod.ui.JAccessHelper;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class MyToolBar extends JToolBar {
@@ -25,7 +25,7 @@ public class MyToolBar extends JToolBar {
                 }
             }));
         } else {
-            this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("reload"), getIcon("reload"), e -> {
+            this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("reload"), getIcon("refresh"), e -> {
                 jbm.refreshAgentClasses();
             }));
             this.add(makeNavigationButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("apply"), getIcon("save"), e -> {
@@ -46,7 +46,12 @@ public class MyToolBar extends JToolBar {
     }
 
     private ImageIcon getIcon(String string) {
-        return new ImageIcon(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/resources/toolbar/" + string + ".png")));
+        java.net.URL resource = getClass().getResource("/resources/toolbar/" + string + ".png");
+        if (resource == null) {
+            Main.INSTANCE.getLogger().warn("Missing toolbar icon: " + string);
+            return new ImageIcon();
+        }
+        return new ImageIcon(resource);
     }
 
     protected JButton makeNavigationButton(String action, ImageIcon i, ActionListener a) {

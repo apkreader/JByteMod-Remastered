@@ -1,8 +1,11 @@
-package me.grax.jbytemod.ui;
+package de.xbrowniecodez.jbytemod.ui;
 
 import de.xbrowniecodez.jbytemod.JByteMod;
 import de.xbrowniecodez.jbytemod.Main;
 import lombok.Getter;
+import me.grax.jbytemod.ui.DecompilerTab;
+import me.grax.jbytemod.ui.InfoPanel;
+import me.grax.jbytemod.ui.MyCodeEditor;
 import me.grax.jbytemod.ui.graph.ControlFlowPanel;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -100,7 +103,7 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectClass(ClassNode cn) {
-        Main.INSTANCE.getDiscord().updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name);
+        Main.INSTANCE.updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name);
         decompiler.cancelDecompilation();
 
         String selectedComponentName = center.getComponent(0).getName();
@@ -115,7 +118,7 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectMethod(ClassNode cn, MethodNode mn) {
-        Main.INSTANCE.getDiscord().updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name + "." + mn.name);
+        Main.INSTANCE.updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name + "." + mn.name);
         decompiler.cancelDecompilation();
 
         String selectedComponentName = center.getComponent(0).getName();

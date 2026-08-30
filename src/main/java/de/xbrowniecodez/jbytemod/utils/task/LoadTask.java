@@ -1,4 +1,4 @@
-package me.grax.jbytemod.utils.task;
+package de.xbrowniecodez.jbytemod.utils.task;
 
 import com.googlecode.d2j.dex.Dex2Asm;
 import com.googlecode.d2j.node.DexFileNode;
@@ -298,7 +298,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     @Override
     protected void process(List<Integer> chunks) {
         int i = chunks.get(chunks.size() - 1);
-        Main.INSTANCE.getDiscord().updatePresence("Loading " + file.getName() + " (" + i + "%)", "");
+        Main.INSTANCE.updatePresence("Loading " + file.getName() + " (" + i + "%)", "");
         jpb.setValue(i);
         super.process(chunks);
     }
@@ -306,7 +306,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     @Override
     protected void done() {
         Main.INSTANCE.getJByteMod().setLastEditFile(file.getName());
-        Main.INSTANCE.getDiscord().updatePresence("Working on " + file.getName(), "Idle ...");
+        Main.INSTANCE.updatePresence("Working on " + file.getName(), "Idle ...");
         Main.INSTANCE.getLogger().log("Successfully loaded file!");
         jbm.refreshTree();
         Main.INSTANCE.getLogger().log("Tree refreshed.");

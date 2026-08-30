@@ -386,7 +386,11 @@ public class BytecodeUtils implements Opcodes {
     }
 
     public static byte[] getClassNodeBytes(ClassNode classNode) {
-        CustomClassWriter classWriter = new CustomClassWriter(0);
+        return getClassNodeBytes(classNode, 0);
+    }
+
+    public static byte[] getClassNodeBytes(ClassNode classNode, int flags) {
+        CustomClassWriter classWriter = new CustomClassWriter(flags);
         classNode.accept(classWriter);
         return classWriter.toByteArray();
     }

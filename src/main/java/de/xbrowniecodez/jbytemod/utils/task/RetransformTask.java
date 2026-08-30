@@ -1,4 +1,4 @@
-package me.grax.jbytemod.utils.task;
+package de.xbrowniecodez.jbytemod.utils.task;
 
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
@@ -6,6 +6,9 @@ import de.xbrowniecodez.jbytemod.JByteMod;
 import me.grax.jbytemod.JarArchive;
 import me.grax.jbytemod.ui.PageEndPanel;
 import me.grax.jbytemod.utils.ErrorDisplay;
+import de.xbrowniecodez.jbytemod.utils.attach.RemoteJarArchive;
+import de.xbrowniecodez.jbytemod.utils.attach.RuntimeJarArchive;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
 import javax.swing.*;
@@ -41,20 +44,35 @@ public class RetransformTask extends SwingWorker<Void, Integer> {
                 return null;
             }
             int i = 0;
+            int writerFlags = Main.INSTANCE.getJByteMod().getOptions().get("compute_maxs").getBoolean()
+                    ? ClassWriter.COMPUTE_MAXS
+                    : 0;
             for (Entry<String, ClassNode> e : classes.entrySet()) {
                 publish((int) ((i / size) * 80d));
                 byte[] originalBytes = original.get(e.getKey());
-                byte[] bytes = BytecodeUtils.getClassNodeBytes(e.getValue());
+                byte[] bytes = BytecodeUtils.getClassNodeBytes(e.getValue(), writerFlags);
                 //probably not the best solution but whatever
                 if (!Arrays.equals(bytes, originalBytes)) {
-                    definitions.add(new ClassDefinition(ClassLoader.getSystemClassLoader().loadClass(e.getKey().replace('/', '.')), bytes));
+                    if (!(file instanceof RemoteJarArchive)) {
+                        Class<?> runtimeClass = file instanceof RuntimeJarArchive runtimeArchive
+                                ? runtimeArchive.getRuntimeClass(e.getKey())
+                                : ClassLoader.getSystemClassLoader().loadClass(e.getKey().replace('/', '.'));
+                        if (runtimeClass == null) {
+                            throw new ClassNotFoundException(e.getKey().replace('/', '.'));
+                        }
+                        definitions.add(new ClassDefinition(runtimeClass, bytes));
+                    }
                     newOriginal.put(e.getKey(), bytes);
                 }
                 i++;
             }
-            if (!definitions.isEmpty()) {
+            if (!newOriginal.isEmpty()) {
                 publish(80);
-                ins.redefineClasses(definitions.toArray(new ClassDefinition[0]));
+                if (file instanceof RemoteJarArchive remoteArchive) {
+                    remoteArchive.redefine(newOriginal);
+                } else {
+                    ins.redefineClasses(definitions.toArray(new ClassDefinition[0]));
+                }
                  Main.INSTANCE.getLogger().log("Successfully retransformed " + newOriginal.size() + " classes");
                 original.putAll(newOriginal);
             }

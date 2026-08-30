@@ -5,7 +5,7 @@ import me.grax.jbytemod.ui.JAccessSelectorPanel;
 import me.grax.jbytemod.ui.JFrameList;
 import me.grax.jbytemod.ui.JLDCEditor;
 import me.grax.jbytemod.utils.InstrUtils;
-import me.grax.jbytemod.utils.asm.Loader;
+import de.xbrowniecodez.jbytemod.utils.asm.Loader;
 import me.grax.jbytemod.utils.gui.SwingUtils;
 import me.lpk.util.AccessHelper;
 import me.lpk.util.OpUtils;
