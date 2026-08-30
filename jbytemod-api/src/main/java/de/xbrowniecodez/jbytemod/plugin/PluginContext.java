@@ -23,6 +23,8 @@ public interface PluginContext {
 
     void openFile(String path) throws Exception;
 
+    String saveFile(String path) throws Exception;
+
     List<JvmProcess> listJvmProcesses();
 
     void attachToJvm(String pid) throws Exception;

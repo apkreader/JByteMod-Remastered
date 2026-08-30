@@ -284,10 +284,19 @@ public class JByteMod extends JFrame {
 
     public void saveFile(File output) {
         try {
-            new SaveTask(this, output, jarArchive).execute();
+            saveFileChecked(output);
         } catch (Throwable t) {
             new ErrorDisplay(t);
         }
+    }
+
+    public SaveTask saveFileChecked(File output) {
+        if (jarArchive == null || jarArchive.getClasses() == null) {
+            throw new IllegalStateException("No archive is open");
+        }
+        SaveTask task = new SaveTask(this, output, jarArchive);
+        task.execute();
+        return task;
     }
 
     public void selectClass(ClassNode cn) {

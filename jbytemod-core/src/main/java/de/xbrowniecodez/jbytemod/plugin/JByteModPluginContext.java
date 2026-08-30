@@ -17,6 +17,7 @@ import me.grax.jbytemod.decompiler.CFRDecompiler;
 import me.grax.jbytemod.decompiler.Decompiler;
 import me.grax.jbytemod.decompiler.KoffeeDecompiler;
 import me.grax.jbytemod.decompiler.ProcyonDecompiler;
+import me.grax.jbytemod.utils.task.SaveTask;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -125,6 +126,38 @@ public final class JByteModPluginContext implements PluginContext {
             }
             runOnEdt(() -> jByteMod.setLastEditFile(file.getName()));
         }
+    }
+
+    @Override
+    public String saveFile(String path) throws Exception {
+        JarArchive archive = jByteMod.getJarArchive();
+        if (archive == null || archive.getClasses() == null) {
+            throw new IllegalStateException("No archive is open in JByteMod");
+        }
+
+        Path outputPath = Path.of(Objects.requireNonNull(path, "path")).toAbsolutePath().normalize();
+        if (Files.isDirectory(outputPath)) {
+            throw new IllegalArgumentException("Output path is a directory: " + outputPath);
+        }
+        if (archive.isSingleEntry()
+                && !outputPath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".class")) {
+            outputPath = Path.of(outputPath + ".class");
+        }
+        Path parent = outputPath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+
+        AtomicReference<SaveTask> task = new AtomicReference<>();
+        Path finalOutputPath = outputPath;
+        runOnEdt(() -> task.set(jByteMod.saveFileChecked(finalOutputPath.toFile())));
+        try {
+            task.get().get();
+        } catch (ExecutionException exception) {
+            Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+            throw new IOException("Could not save " + outputPath, cause);
+        }
+        return outputPath.toString();
     }
 
     @Override
