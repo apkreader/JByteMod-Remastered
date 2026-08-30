@@ -29,6 +29,15 @@ public abstract class Plugin {
     public void loadFile(Map<String, ClassNode> map) {
     }
 
+    public void loadProgress(String fileName, int progress) {
+    }
+
+    public void classSelected(ClassNode classNode) {
+    }
+
+    public void methodSelected(ClassNode classNode, MethodNode method) {
+    }
+
     public boolean isClickable() {
         return false;
     }

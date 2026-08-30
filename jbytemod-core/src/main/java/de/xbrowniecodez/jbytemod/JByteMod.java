@@ -6,7 +6,6 @@ import de.xbrowniecodez.jbytemod.utils.Utils;
 import de.xbrowniecodez.jbytemod.utils.update.objects.Version;
 import lombok.Getter;
 import lombok.Setter;
-import de.xbrowniecodez.jbytemod.plugin.Plugin;
 import de.xbrowniecodez.jbytemod.plugin.PluginManager;
 import me.grax.jbytemod.JarArchive;
 import me.grax.jbytemod.decompiler.Decompiler;
@@ -137,7 +136,6 @@ public class JByteMod extends JFrame {
             if (agent) {
                 dispose();
             } else {
-                Main.INSTANCE.getDiscord().shutdown();
                 Runtime.getRuntime().exit(0);
             }
         }
@@ -228,9 +226,7 @@ public class JByteMod extends JFrame {
         if (pluginManager == null || jarArchive == null || jarArchive.getClasses() == null) {
             return;
         }
-        for (Plugin p : pluginManager.getPlugins()) {
-            p.loadFile(jarArchive.getClasses());
-        }
+        pluginManager.fileLoaded(jarArchive.getClasses());
     }
 
     public void refreshAgentClasses() {
@@ -290,6 +286,9 @@ public class JByteMod extends JFrame {
         infoPanel.selectClass(cn);
         codeList.loadFields(cn);
         tabbedPane.selectClass(cn);
+        if (pluginManager != null) {
+            pluginManager.classSelected(cn);
+        }
         lastSelectedTreeEntries.put(cn, null);
         if (lastSelectedTreeEntries.size() > 5) {
             lastSelectedTreeEntries.remove(lastSelectedTreeEntries.keySet().iterator().next());
@@ -331,6 +330,9 @@ public class JByteMod extends JFrame {
         controlFlowPanel.setMethodNode(mn);
         decompilerPanel.setDecompilerText("");
         tabbedPane.selectMethod(cn, mn);
+        if (pluginManager != null) {
+            pluginManager.methodSelected(cn, mn);
+        }
         lastSelectedTreeEntries.put(cn, mn);
         if (lastSelectedTreeEntries.size() > 5) {
             lastSelectedTreeEntries.remove(lastSelectedTreeEntries.keySet().iterator().next());

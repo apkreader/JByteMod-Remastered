@@ -13,8 +13,13 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 @Getter
 public class PluginManager implements Closeable {
@@ -57,7 +62,8 @@ public class PluginManager implements Closeable {
                 while (entries.hasMoreElements()) {
                     ZipEntry entry = entries.nextElement();
                     String name = entry.getName();
-                    if (!entry.isDirectory() && name.endsWith(".class") && !name.equals("module-info.class")) {
+                    if (!entry.isDirectory() && name.endsWith(".class")
+                            && !name.startsWith("META-INF/") && !name.equals("module-info.class")) {
                         loadClassFromEntry(classLoader, name);
                     }
                 }
@@ -86,6 +92,33 @@ public class PluginManager implements Closeable {
         } catch (ReflectiveOperationException | LinkageError e) {
             Main.INSTANCE.getLogger().err("Failed to load plugin class " + name);
             e.printStackTrace();
+        }
+    }
+
+    public void fileLoaded(Map<String, ClassNode> classes) {
+        notifyPlugins(plugin -> plugin.loadFile(classes));
+    }
+
+    public void loadProgress(String fileName, int progress) {
+        notifyPlugins(plugin -> plugin.loadProgress(fileName, progress));
+    }
+
+    public void classSelected(ClassNode classNode) {
+        notifyPlugins(plugin -> plugin.classSelected(classNode));
+    }
+
+    public void methodSelected(ClassNode classNode, MethodNode method) {
+        notifyPlugins(plugin -> plugin.methodSelected(classNode, method));
+    }
+
+    private void notifyPlugins(Consumer<Plugin> callback) {
+        for (Plugin plugin : plugins) {
+            try {
+                callback.accept(plugin);
+            } catch (Throwable throwable) {
+                Main.INSTANCE.getLogger().err("Plugin " + plugin.getName() + " failed to handle an event");
+                throwable.printStackTrace();
+            }
         }
     }
 

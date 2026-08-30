@@ -103,7 +103,6 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectClass(ClassNode cn) {
-        Main.INSTANCE.updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name);
         decompiler.cancelDecompilation();
 
         String selectedComponentName = center.getComponent(0).getName();
@@ -118,7 +117,6 @@ public class MyEditorTab extends JPanel {
     }
 
     public void selectMethod(ClassNode cn, MethodNode mn) {
-        Main.INSTANCE.updatePresence("Working on " + Main.INSTANCE.getJByteMod().getLastEditFile(), "Editing " + cn.name + "." + mn.name);
         decompiler.cancelDecompilation();
 
         String selectedComponentName = center.getComponent(0).getName();

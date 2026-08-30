@@ -3,7 +3,6 @@ package de.xbrowniecodez.jbytemod;
 import de.xbrowniecodez.jbytemod.utils.update.UpdateChecker;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import de.xbrowniecodez.jbytemod.discord.Discord;
 import me.grax.jbytemod.logging.Logging;
 
 import me.grax.jbytemod.utils.FileUtils;
@@ -20,7 +19,6 @@ public enum Main {
     INSTANCE;
     private JByteMod jByteMod;
     private Logging logger;
-    private Discord discord;
     private UpdateChecker updateChecker;
 
     public static void main(String[] args) { Main.INSTANCE.start(args); }
@@ -32,7 +30,6 @@ public enum Main {
         if (cmd.hasOption("help")) {
             this.printHelpAndExit();
         }
-        this.discord = new Discord("1184572566795468881");
         this.loadFileIfNeeded(cmd, jByteMod);
         SwingUtilities.invokeLater(() -> this.jByteMod.setVisible(true));
         this.updateChecker = new UpdateChecker();
@@ -65,12 +62,6 @@ public enum Main {
                 if (cause instanceof Error error) throw error;
                 throw exception;
             }
-        }
-    }
-
-    public void updatePresence(String state, String details) {
-        if (discord != null) {
-            discord.updatePresence(state, details);
         }
     }
 

@@ -298,7 +298,9 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     @Override
     protected void process(List<Integer> chunks) {
         int i = chunks.get(chunks.size() - 1);
-        Main.INSTANCE.updatePresence("Loading " + file.getName() + " (" + i + "%)", "");
+        if (jbm.getPluginManager() != null) {
+            jbm.getPluginManager().loadProgress(file.getName(), i);
+        }
         jpb.setValue(i);
         super.process(chunks);
     }
@@ -306,9 +308,11 @@ public class LoadTask extends SwingWorker<Void, Integer> {
     @Override
     protected void done() {
         Main.INSTANCE.getJByteMod().setLastEditFile(file.getName());
-        Main.INSTANCE.updatePresence("Working on " + file.getName(), "Idle ...");
         Main.INSTANCE.getLogger().log("Successfully loaded file!");
         jbm.refreshTree();
+        if (jbm.getPluginManager() != null) {
+            jbm.getPluginManager().fileLoaded(ja.getClasses());
+        }
         Main.INSTANCE.getLogger().log("Tree refreshed.");
         Main.INSTANCE.getLogger().log("Loaded classes in " + (System.currentTimeMillis() - startTime) + "ms" + ", bypassed " + othersFile + " files because I can't load them. (Include " + junkClasses + " junk classes.)");
     }
