@@ -64,7 +64,8 @@ public final class JByteModPluginContext implements PluginContext {
                 : archive instanceof RuntimeJarArchive ? ArchiveType.CURRENT_JVM
                 : archive.isSingleEntry() ? ArchiveType.CLASS : ArchiveType.ARCHIVE;
         int resourceCount = type == ArchiveType.ARCHIVE && archive.getOutput() != null
-                ? archive.getOutput().size() : 0;
+                ? (int) archive.getOutput().keySet().stream().filter(path -> !isClassResourcePath(path)).count()
+                : 0;
         return new ArchiveInfo(type, resourceCount, jByteMod.getLastEditFile());
     }
 
@@ -79,7 +80,10 @@ public final class JByteModPluginContext implements PluginContext {
     public List<String> getResourceNames() {
         JarArchive archive = editableResourceArchive();
         synchronized (archive) {
-            return archive.getOutput().keySet().stream().sorted().toList();
+            return archive.getOutput().keySet().stream()
+                    .filter(path -> !isClassResourcePath(path))
+                    .sorted()
+                    .toList();
         }
     }
 
@@ -437,10 +441,14 @@ public final class JByteModPluginContext implements PluginContext {
                 throw new IllegalArgumentException("Invalid archive resource path: " + path);
             }
         }
-        if (normalized.toLowerCase(Locale.ROOT).endsWith(".class")) {
+        if (isClassResourcePath(normalized)) {
             throw new IllegalArgumentException("Class entries must be edited through the class API");
         }
         return normalized;
+    }
+
+    private static boolean isClassResourcePath(String path) {
+        return path.toLowerCase(Locale.ROOT).endsWith(".class");
     }
 
     private void setProgress(int value) {
