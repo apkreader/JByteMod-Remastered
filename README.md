@@ -12,7 +12,8 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 ## Features
 -   **Android APK Support** (Decompile only at the moment)
 -   **Advanced Bytecode Editing**: Intuitive interface for directly modifying Java bytecode.
--   **Decompiler Integration**: Seamless integration with decompilers to view and edit Java source code.
+-   **Running JVM Attachment**: Attach to a local JVM to inspect or dump loaded classes and apply compatible bytecode changes at runtime.
+-   **Decompiler Integration**: Use CFR, Vineflower, Procyon, JD-Core, Koffee, and ASMifier. Packaged builds compile the latest CFR master source instead of using the old published release.
 -   **Graphical Bytecode Viewer**: Visualize bytecode in a graphical format for easier comprehension.
 -   **Control Flow Visualization**: Generate and view control flow diagrams of methods to understand execution flow better.
 -   **Drag and Drop Functionality**: Easily drag and drop `.jar`, `.apk`, and `.class` files onto the window for quick access.
@@ -24,8 +25,8 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 ## Installation
 
 ### Prerequisites
--   Java Development Kit (JDK) 21 or higher.
--   There is a Java 8 version too, however it doesn't support APKs and has less features
+-   A full Java Development Kit (JDK) 21 or newer. A JRE alone is not sufficient for JVM attachment.
+-   JDK 8 builds are no longer provided or supported.
 
 ### Download
 
@@ -43,6 +44,25 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
     ```
 
 4. Alternatively, drag and drop `.jar`, `.apk`, or `.class` files directly onto the JByteMod Remastered window to open them for editing.
+
+### Attaching to a running JVM
+
+1. Run JByteMod with a full JDK 21 or newer.
+2. Open `Utilities` > `Attach to process` and select a local JVM.
+3. Browse and edit the loaded classes in the current JByteMod window.
+4. Use `File` > `Apply changes` to redefine the modified classes in the target JVM.
+
+Class redefinition is limited by the target JVM. Method-body and constant changes are generally supported, while structural changes such as adding or removing fields, methods, superclasses, or interfaces are normally rejected.
+
+### Building from source
+
+Building requires JDK 21 or newer, Maven, Git, and an internet connection:
+
+```sh
+mvn package
+```
+
+The package build downloads the current CFR `master` branch, records its commit in the displayed CFR version, compiles it from source, and includes it in the final JByteMod jar.
 
 
 ### Getting Started
