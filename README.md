@@ -59,12 +59,20 @@ Class redefinition is limited by the target JVM. Method-body and constant change
 Building requires JDK 21 or newer, Maven, Git, and an internet connection:
 
 ```sh
+git clone --recurse-submodules https://github.com/apkreader/JByteMod-Remastered.git
+cd JByteMod-Remastered
 mvn package
+```
+
+For an existing checkout, initialize the API submodule before building:
+
+```sh
+git submodule update --init
 ```
 
 The repository is a Maven reactor with two modules:
 
-- `jbytemod-api` contains the standalone plugin API.
+- [`jbytemod-api`](https://github.com/jbytemod/api) is the standalone plugin API, included here as a Git submodule.
 - `jbytemod-core` contains the desktop application.
 
 The package build downloads the current CFR `master` branch, records its commit in the displayed CFR version, compiles it from source, and includes it in the final JByteMod jar.

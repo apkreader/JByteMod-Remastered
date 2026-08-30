@@ -17,5 +17,6 @@ steps:
         path: /root/.m2
     commands:
       - yum install -y git
+      - git submodule update --init
       - export M2_HOME=/usr/share/maven
       - mvn package -gs settings.xml

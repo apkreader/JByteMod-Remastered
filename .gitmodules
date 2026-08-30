@@ -1,0 +1,3 @@
+[submodule "jbytemod-api"]
+	path = jbytemod-api
+	url = https://github.com/jbytemod/api.git
