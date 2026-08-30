@@ -157,16 +157,7 @@ public final class AgentServer {
 
         Set<Class<?>> targets = new HashSet<>(classes);
         Map<Class<?>, byte[]> captured = new ConcurrentHashMap<>();
-        ClassFileTransformer transformer = new ClassFileTransformer() {
-            @Override
-            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-                if (classBeingRedefined != null && targets.contains(classBeingRedefined)) {
-                    captured.put(classBeingRedefined, classfileBuffer.clone());
-                }
-                return null;
-            }
-        };
+        ClassFileTransformer transformer = new CaptureTransformer(targets, captured);
 
         instrumentation.addTransformer(transformer, true);
         try {
@@ -278,5 +269,24 @@ public final class AgentServer {
     @FunctionalInterface
     private interface ProgressWriter {
         void write(int progress) throws Exception;
+    }
+
+    private static final class CaptureTransformer implements ClassFileTransformer {
+        private final Set<Class<?>> targets;
+        private final Map<Class<?>, byte[]> captured;
+
+        private CaptureTransformer(Set<Class<?>> targets, Map<Class<?>, byte[]> captured) {
+            this.targets = targets;
+            this.captured = captured;
+        }
+
+        @Override
+        public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+                                ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+            if (classBeingRedefined != null && targets.contains(classBeingRedefined)) {
+                captured.put(classBeingRedefined, classfileBuffer.clone());
+            }
+            return null;
+        }
     }
 }
