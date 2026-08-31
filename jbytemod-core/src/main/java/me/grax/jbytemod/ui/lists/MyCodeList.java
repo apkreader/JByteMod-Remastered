@@ -524,6 +524,18 @@ public class MyCodeList extends JList<InstrEntry> {
         return true;
     }
 
+    public boolean selectInstruction(AbstractInsnNode instruction) {
+        ListModel<InstrEntry> model = getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            if (model.getElementAt(i).getInstr() == instruction) {
+                setSelectedIndex(i);
+                ensureIndexIsVisible(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean loadFields(ClassNode cn) {
         this.currentClass = cn;
         this.currentMethod = null;

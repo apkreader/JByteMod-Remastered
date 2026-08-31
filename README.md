@@ -16,6 +16,7 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 -   **Decompiler Integration**: Use CFR, Vineflower, Procyon, JD-Core, Koffee, and ASMifier. Packaged builds compile the latest CFR master source instead of using the old published release.
 -   **Graphical Bytecode Viewer**: Visualize bytecode in a graphical format for easier comprehension.
 -   **Control Flow Visualization**: Generate and view control flow diagrams of methods to understand execution flow better.
+-   **Call Graph Explorer**: Explore callers and callees across the loaded archive and navigate directly to methods or their exact calling instructions.
 -   **Drag and Drop Functionality**: Easily drag and drop `.jar`, `.apk`, and `.class` files onto the window for quick access.
 -   **Search and Replace**: Effortlessly find and replace bytecode instructions.
 -   **Constant Pool Editor**: Manage and edit constant pool entries within class files.

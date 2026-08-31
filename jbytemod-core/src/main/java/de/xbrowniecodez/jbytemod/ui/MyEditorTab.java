@@ -23,6 +23,7 @@ public class MyEditorTab extends JPanel {
     private final JPanel info;
     private final DecompilerTab decompiler;
     private final ControlFlowPanel analysis;
+    private final CallGraphPanel callGraph;
     private final JPanel center;
     private final JButton codeButton;
     private final JLabel bytecodeStatus = new JLabel();
@@ -51,6 +52,9 @@ public class MyEditorTab extends JPanel {
         jbm.setControlFlowPanel(this.analysis = new ControlFlowPanel(jbm));
         this.analysis.setName("analysis");
 
+        this.callGraph = new CallGraphPanel(jbm);
+        this.callGraph.setName("callGraph");
+
         center.add(code);
 
         JPanel selector = new JPanel();
@@ -73,11 +77,18 @@ public class MyEditorTab extends JPanel {
                 analysis.clear();
             }
         });
+        JButton callGraphBtn = new JButton("Call Graph");
+        callGraphBtn.addActionListener(e -> {
+            showPanel(callGraph);
+            callGraph.setRoot(jbm.getCurrentNode(), jbm.getCurrentMethod());
+            callGraph.generateGraph();
+        });
 
         selector.add(codeButton);
         selector.add(infoBtn);
         selector.add(decompilerBtn);
         selector.add(analysisBtn);
+        selector.add(callGraphBtn);
         selector.setLayout(new FlowLayout(FlowLayout.LEFT));
         this.add(center, BorderLayout.CENTER);
         this.add(selector, BorderLayout.PAGE_END);
@@ -159,6 +170,8 @@ public class MyEditorTab extends JPanel {
                 decompiler.decompile(cn, null, false);
             else if (selectedComponentName.equals("analysis"))
                 analysis.clear();
+            else if (selectedComponentName.equals("callGraph"))
+                callGraph.clear();
         }
 
         this.classSelected = true;
@@ -173,6 +186,10 @@ public class MyEditorTab extends JPanel {
                 decompiler.decompile(cn, mn, false);
             else if (selectedComponentName.equals("analysis"))
                 analysis.generateList();
+            else if (selectedComponentName.equals("callGraph")) {
+                callGraph.setRoot(cn, mn);
+                callGraph.generateGraph();
+            }
         }
         this.classSelected = false;
     }
