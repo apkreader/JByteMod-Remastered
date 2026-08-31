@@ -2,14 +2,13 @@ package me.grax.jbytemod.ui;
 
 import de.xbrowniecodez.jbytemod.Main;
 import de.xbrowniecodez.jbytemod.JByteMod;
+import de.xbrowniecodez.jbytemod.ui.FileDropHandler;
 import me.grax.jbytemod.JarArchive;
 import de.xbrowniecodez.jbytemod.ui.dialogue.InsnEditDialogue;
 import me.grax.jbytemod.ui.tree.SortedTreeNode;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import me.grax.jbytemod.utils.MethodUtils;
 import me.grax.jbytemod.utils.asm.FrameGen;
-import me.lpk.util.drop.IDropUser;
-import me.lpk.util.drop.JarDropHandler;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -21,7 +20,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -29,7 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ClassTree extends JTree implements IDropUser {
+public class ClassTree extends JTree {
 
     private final Set<String> expandedNodes = new HashSet<>();
     private JByteMod jbm;
@@ -57,7 +55,7 @@ public class ClassTree extends JTree implements IDropUser {
         });
         this.model = new DefaultTreeModel(new SortedTreeNode(""));
         this.setModel(model);
-        this.setTransferHandler(new JarDropHandler(this, 0));
+        this.setTransferHandler(new FileDropHandler(jbm::loadFile));
         this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         addListener();
     }
@@ -381,16 +379,6 @@ public class ClassTree extends JTree implements IDropUser {
                 sort(model, child, sm);
             }
         }
-    }
-
-    @Override
-    public void preLoadJars(int id) {
-
-    }
-
-    @Override
-    public void onFileLoad(int id, File input) {
-        jbm.loadFile(input);
     }
 
     public void refreshMethod(ClassNode cn, MethodNode mn) {

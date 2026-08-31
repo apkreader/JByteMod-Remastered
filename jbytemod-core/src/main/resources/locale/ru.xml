@@ -5,7 +5,6 @@
    <string name="jar_warn">Неизвестный формат файла. Поддерживаются только JAR-Архивы.</string>
    <string name="about">О программе</string>
    <string name="sort_methods">Сортировать методы</string>
-   <string name="use_rt">Использовать rt.jar вместо динамической загрузки</string>
    <string name="primary_color">Основной цвет</string>
    <string name="secondary_color">Дополнительный цвет</string>
    <string name="general_group">Основные</string>

@@ -5,7 +5,6 @@
    <string name="jar_warn">只支持.jar文件, 請選擇正確的文件.</string>
    <string name="about">關於</string>
    <string name="sort_methods">整理方法</string>
-   <string name="use_rt">使用rt.jar代替動態加載</string>
    <string name="primary_color">首選色</string>
    <string name="secondary_color">次選色</string>
    <string name="general_group">一般</string>

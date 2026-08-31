@@ -5,7 +5,6 @@
    <string name="jar_warn">Otros archivos que no sean .jar aún no están soportados, por favor selecciona un archivo java.</string>
    <string name="about">Acerca de</string>
    <string name="sort_methods">Ordenar métodos</string>
-   <string name="use_rt">Usar rt.jar en vez de dynamic loading</string>
    <string name="primary_color">Color primario</string>
    <string name="secondary_color">Color secundario</string>
    <string name="general_group">General</string>

@@ -8,8 +8,8 @@ import me.grax.jbytemod.ui.dialogue.JChooseString;
 import me.grax.jbytemod.utils.InstrUtils;
 import de.xbrowniecodez.jbytemod.utils.asm.Loader;
 import me.grax.jbytemod.utils.gui.SwingUtils;
-import me.lpk.util.AccessHelper;
-import me.lpk.util.OpUtils;
+import de.xbrowniecodez.jbytemod.utils.AccessUtils;
+import de.xbrowniecodez.jbytemod.utils.OpcodeUtils;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -336,7 +336,7 @@ public class InsnEditDialogue extends ClassDialogue {
             if (arr != null) {
                 leftText.add(new JLabel("Opcode: "));
                 JComboBox<String> opcode = new JComboBox<String>(arr);
-                opcode.setSelectedItem(OpUtils.getOpcodeText(ain.getOpcode()).toLowerCase());
+                opcode.setSelectedItem(OpcodeUtils.getOpcodeText(ain.getOpcode()).toLowerCase());
                 rightInput.add(wrap("opc", opcode));
             }
         }
@@ -360,7 +360,7 @@ public class InsnEditDialogue extends ClassDialogue {
         if (o != null && o.equals("opc")) {
             JComboBox<String> opcode = (JComboBox<String>) wp.getComponent(0);
             AbstractInsnNode ain = (AbstractInsnNode) object;
-            setOpcode(ain, OpUtils.getOpcodeIndex(String.valueOf(opcode.getSelectedItem()).toUpperCase()));
+            setOpcode(ain, OpcodeUtils.getOpcodeIndex(String.valueOf(opcode.getSelectedItem()).toUpperCase()));
             return null;
         } else if (type.getName().equals(LabelNode.class.getName())) {
             JComboBox<LabelNode> label = (JComboBox<LabelNode>) wp.getComponent(0);
@@ -427,7 +427,7 @@ public class InsnEditDialogue extends ClassDialogue {
                 @Override
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                                boolean isSelected, boolean cellHasFocus) {
-                    String text = value instanceof LabelNode label ? "Label " + OpUtils.getLabelIndex(label) : "";
+                    String text = value instanceof LabelNode label ? "Label " + OpcodeUtils.getLabelIndex(label) : "";
                     return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
                 }
             });
@@ -578,7 +578,7 @@ public class InsnEditDialogue extends ClassDialogue {
                                     for (MethodNode mn : node.methods) {
                                         if (mn.name.equals(mName)) {
                                             if (!descs.contains(mn.desc))
-                                                descs.add(mn.desc + (AccessHelper.isStatic(mn.access) ? " <i>(static)</>" : ""));
+                                                descs.add(mn.desc + (AccessUtils.isStatic(mn.access) ? " <i>(static)</>" : ""));
                                         }
                                     }
                                     if (descs.size() == 1) {

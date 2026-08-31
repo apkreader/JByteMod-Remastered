@@ -3,7 +3,7 @@ package me.grax.jbytemod.utils;
 import de.xbrowniecodez.jbytemod.Main;
 
 import me.grax.jbytemod.res.Option;
-import me.lpk.util.OpUtils;
+import de.xbrowniecodez.jbytemod.utils.OpcodeUtils;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.tree.*;
 
@@ -13,10 +13,10 @@ public class InstrUtils {
     public static Option secColor = Main.INSTANCE.getJByteMod().getOptions().get("secondary_color");
 
     public static String toString(AbstractInsnNode ain) {
-        String opc = TextUtils.toBold(OpUtils.getOpcodeText(ain.getOpcode()).toLowerCase()) + " ";
+        String opc = TextUtils.toBold(OpcodeUtils.getOpcodeText(ain.getOpcode()).toLowerCase()) + " ";
         switch (ain.getType()) {
             case AbstractInsnNode.LABEL:
-                opc = TextUtils.toLight("label " + OpUtils.getLabelIndex((LabelNode) ain));
+                opc = TextUtils.toLight("label " + OpcodeUtils.getLabelIndex((LabelNode) ain));
                 break;
             case AbstractInsnNode.LINE:
                 opc = TextUtils.toLight("line " + ((LineNumberNode) ain).line);
@@ -54,7 +54,7 @@ public class InstrUtils {
                 break;
             case AbstractInsnNode.JUMP_INSN:
                 JumpInsnNode jin = (JumpInsnNode) ain;
-                opc += OpUtils.getLabelIndex(jin.label);
+                opc += OpcodeUtils.getLabelIndex(jin.label);
                 break;
             case AbstractInsnNode.LDC_INSN:
                 LdcInsnNode ldc = (LdcInsnNode) ain;
@@ -66,7 +66,7 @@ public class InstrUtils {
                 }
                 break;
             case AbstractInsnNode.INT_INSN:
-                opc += OpUtils.getIntValue(ain);
+                opc += OpcodeUtils.getIntValue(ain);
                 break;
             case AbstractInsnNode.IINC_INSN:
                 IincInsnNode iinc = (IincInsnNode) ain;
@@ -74,16 +74,16 @@ public class InstrUtils {
                 break;
             case AbstractInsnNode.FRAME:
                 FrameNode fn = (FrameNode) ain;
-                opc = TextUtils.toLight(OpUtils.getFrameType(fn.type).toLowerCase() + " " + fn.local.size() + " " + fn.stack.size());
+                opc = TextUtils.toLight(OpcodeUtils.getFrameType(fn.type).toLowerCase() + " " + fn.local.size() + " " + fn.stack.size());
                 break;
             case AbstractInsnNode.TABLESWITCH_INSN:
                 TableSwitchInsnNode tsin = (TableSwitchInsnNode) ain;
                 if (tsin.dflt != null) {
-                    opc += TextUtils.addTag("L" + OpUtils.getLabelIndex(tsin.dflt), "font color=" + secColor.getString());
+                    opc += TextUtils.addTag("L" + OpcodeUtils.getLabelIndex(tsin.dflt), "font color=" + secColor.getString());
                 }
                 if (tsin.labels.size() < 20) {
                     for (LabelNode l : tsin.labels) {
-                        opc += " " + TextUtils.addTag("L" + OpUtils.getLabelIndex(l), "font color=" + primColor.getString());
+                        opc += " " + TextUtils.addTag("L" + OpcodeUtils.getLabelIndex(l), "font color=" + primColor.getString());
                     }
                 } else {
                     opc += " " + TextUtils.addTag(tsin.labels.size() + " cases", "font color=" + primColor.getString());
@@ -225,10 +225,10 @@ public class InstrUtils {
     }
 
     public static String toEasyString(AbstractInsnNode ain) {
-        String opc = OpUtils.getOpcodeText(ain.getOpcode()).toLowerCase() + " ";
+        String opc = OpcodeUtils.getOpcodeText(ain.getOpcode()).toLowerCase() + " ";
         switch (ain.getType()) {
             case AbstractInsnNode.LABEL:
-                opc = "label " + OpUtils.getLabelIndex((LabelNode) ain);
+                opc = "label " + OpcodeUtils.getLabelIndex((LabelNode) ain);
                 break;
             case AbstractInsnNode.LINE:
                 opc = "line " + ((LineNumberNode) ain).line;
@@ -261,7 +261,7 @@ public class InstrUtils {
                 break;
             case AbstractInsnNode.JUMP_INSN:
                 JumpInsnNode jin = (JumpInsnNode) ain;
-                opc += OpUtils.getLabelIndex(jin.label);
+                opc += OpcodeUtils.getLabelIndex(jin.label);
                 break;
             case AbstractInsnNode.LDC_INSN:
                 LdcInsnNode ldc = (LdcInsnNode) ain;
@@ -273,7 +273,7 @@ public class InstrUtils {
                 }
                 break;
             case AbstractInsnNode.INT_INSN:
-                opc += OpUtils.getIntValue(ain);
+                opc += OpcodeUtils.getIntValue(ain);
                 break;
             case AbstractInsnNode.IINC_INSN:
                 IincInsnNode iinc = (IincInsnNode) ain;
@@ -281,16 +281,16 @@ public class InstrUtils {
                 break;
             case AbstractInsnNode.FRAME:
                 FrameNode fn = (FrameNode) ain;
-                opc = OpUtils.getOpcodeText(fn.type).toLowerCase() + " " + fn.local.size() + " " + fn.stack.size();
+                opc = OpcodeUtils.getFrameType(fn.type).toLowerCase() + " " + fn.local.size() + " " + fn.stack.size();
                 break;
             case AbstractInsnNode.TABLESWITCH_INSN:
                 TableSwitchInsnNode tsin = (TableSwitchInsnNode) ain;
                 if (tsin.dflt != null) {
-                    opc += "L" + OpUtils.getLabelIndex(tsin.dflt);
+                    opc += "L" + OpcodeUtils.getLabelIndex(tsin.dflt);
                 }
                 if (tsin.labels.size() < 20) {
                     for (LabelNode l : tsin.labels) {
-                        opc += " " + "L" + OpUtils.getLabelIndex(l);
+                        opc += " " + "L" + OpcodeUtils.getLabelIndex(l);
                     }
                 } else {
                     opc += " " + tsin.labels.size() + " cases";

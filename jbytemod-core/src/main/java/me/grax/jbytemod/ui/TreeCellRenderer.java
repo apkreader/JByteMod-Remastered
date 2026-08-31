@@ -1,7 +1,7 @@
 package me.grax.jbytemod.ui;
 
 import me.grax.jbytemod.ui.tree.SortedTreeNode;
-import me.lpk.util.AccessHelper;
+import de.xbrowniecodez.jbytemod.utils.AccessUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -88,9 +88,9 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer implements Opcodes
             SortedTreeNode stn = (SortedTreeNode) n;
             ClassNode cn = stn.getClassNode();
             if (cn != null) {
-                if (AccessHelper.isInterface(cn.access)) {
+                if (AccessUtils.isInterface(cn.access)) {
                     this.setIcon(this.itf);
-                } else if (AccessHelper.isEnum(cn.access)) {
+                } else if (AccessUtils.isEnum(cn.access)) {
                     this.setIcon(this.enu);
                 } else {
                     this.setIcon(this.clazz);
@@ -118,29 +118,29 @@ public class TreeCellRenderer extends DefaultTreeCellRenderer implements Opcodes
 
     private ImageIcon generateIcon(int access) {
         ImageIcon template = null;
-        if (AccessHelper.isPublic(access)) {
+        if (AccessUtils.isPublic(access)) {
             template = mpub;
-        } else if (AccessHelper.isPrivate(access)) {
+        } else if (AccessUtils.isPrivate(access)) {
             template = mpri;
-        } else if (AccessHelper.isProtected(access)) {
+        } else if (AccessUtils.isProtected(access)) {
             template = mpro;
         } else {
             template = mdef;
         }
-        if (AccessHelper.isAbstract(access)) {
+        if (AccessUtils.isAbstract(access)) {
             template = combineAccess(template, abs, true);
         } else {
             boolean scndRight = true;
-            if (AccessHelper.isFinal(access)) {
+            if (AccessUtils.isFinal(access)) {
                 template = combineAccess(template, fin, true);
                 scndRight = false;
-            } else if (AccessHelper.isNative(access)) { //do not allow triples
+            } else if (AccessUtils.isNative(access)) { //do not allow triples
                 template = combineAccess(template, nat, true);
                 scndRight = false;
             }
-            if (AccessHelper.isStatic(access)) {
+            if (AccessUtils.isStatic(access)) {
                 template = combineAccess(template, stat, scndRight);
-            } else if (AccessHelper.isSynthetic(access)) {
+            } else if (AccessUtils.isSynthetic(access)) {
                 template = combineAccess(template, syn, scndRight);
             }
         }

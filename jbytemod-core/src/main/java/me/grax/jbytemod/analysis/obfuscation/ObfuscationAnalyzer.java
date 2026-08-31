@@ -4,7 +4,7 @@ import me.grax.jbytemod.analysis.obfuscation.enums.MethodObfType;
 import me.grax.jbytemod.analysis.obfuscation.enums.NameObfType;
 import me.grax.jbytemod.analysis.obfuscation.result.MethodResult;
 import me.grax.jbytemod.analysis.obfuscation.result.NamesResult;
-import me.lpk.util.OpUtils;
+import de.xbrowniecodez.jbytemod.utils.OpcodeUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
@@ -116,10 +116,10 @@ public class ObfuscationAnalyzer implements Opcodes {
             return true;
         }
         for (TryCatchBlockNode tcbn : mn.tryCatchBlocks) {
-            int start = OpUtils.getLabelIndex(tcbn.start);
-            int end = OpUtils.getLabelIndex(tcbn.start);
+            int start = OpcodeUtils.getLabelIndex(tcbn.start);
+            int end = OpcodeUtils.getLabelIndex(tcbn.start);
             for (TryCatchBlockNode tcbn2 : mn.tryCatchBlocks) {
-                int start2 = OpUtils.getLabelIndex(tcbn2.start);
+                int start2 = OpcodeUtils.getLabelIndex(tcbn2.start);
                 if (start2 >= start && start2 < end) {
                     return true;
                 }

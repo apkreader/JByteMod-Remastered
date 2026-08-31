@@ -28,7 +28,7 @@ import de.xbrowniecodez.jbytemod.utils.task.AttachTask;
 import de.xbrowniecodez.jbytemod.utils.task.LoadTask;
 import de.xbrowniecodez.jbytemod.utils.task.RetransformTask;
 import me.grax.jbytemod.utils.task.SaveTask;
-import me.lpk.util.OpUtils;
+import de.xbrowniecodez.jbytemod.utils.OpcodeUtils;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -438,7 +438,7 @@ public class JByteMod extends JFrame {
         if (Main.INSTANCE.getJByteMod().getOptions().get("select_code_tab").getBoolean()) {
             tabbedPane.setSelectedIndex(0);
         }
-        OpUtils.clearLabelCache();
+        OpcodeUtils.clearLabelCache();
         this.currentNode = cn;
         this.currentMethod = mn;
         Decompiler.clearCache();

@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui;
 
-import me.lpk.util.AccessHelper;
+import de.xbrowniecodez.jbytemod.utils.AccessUtils;
 import org.objectweb.asm.Opcodes;
 
 import javax.swing.*;
@@ -60,13 +60,13 @@ public class JAccessSelectorPanel extends JPanel implements Opcodes {
         }
 
         public void updateVisibility(int access) {
-            if (AccessHelper.isPublic(access)) {
+            if (AccessUtils.isPublic(access)) {
                 visibility = ACC_PUBLIC;
                 this.setIcon(new ImageIcon(TreeCellRenderer.mpub.getImage()));
-            } else if (AccessHelper.isPrivate(access)) {
+            } else if (AccessUtils.isPrivate(access)) {
                 visibility = ACC_PRIVATE;
                 this.setIcon(new ImageIcon(TreeCellRenderer.mpri.getImage()));
-            } else if (AccessHelper.isProtected(access)) {
+            } else if (AccessUtils.isProtected(access)) {
                 visibility = ACC_PROTECTED;
                 this.setIcon(new ImageIcon(TreeCellRenderer.mpro.getImage()));
             } else {
@@ -140,40 +140,40 @@ public class JAccessSelectorPanel extends JPanel implements Opcodes {
 
         public void updateVisibility(int access) {
             visibility = 0;
-            if (AccessHelper.isFinal(access)) {
+            if (AccessUtils.isFinal(access)) {
                 visibility |= ACC_FINAL;
             }
-            if (AccessHelper.isNative(access)) {
+            if (AccessUtils.isNative(access)) {
                 visibility |= ACC_NATIVE;
             }
-            if (AccessHelper.isStatic(access)) {
+            if (AccessUtils.isStatic(access)) {
                 visibility |= ACC_STATIC;
             }
-            if (AccessHelper.isSynthetic(access)) {
+            if (AccessUtils.isSynthetic(access)) {
                 visibility |= ACC_SYNTHETIC;
             }
-            if (AccessHelper.isAbstract(access)) {
+            if (AccessUtils.isAbstract(access)) {
                 visibility |= ACC_ABSTRACT;
             }
 
             ImageIcon preview = new ImageIcon(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB));
             boolean empty = true;
-            if (AccessHelper.isAbstract(access)) {
+            if (AccessUtils.isAbstract(access)) {
                 preview = TreeCellRenderer.combineAccess(preview, TreeCellRenderer.abs, true);
                 empty = false;
             } else {
                 boolean scndRight = true;
-                if (AccessHelper.isFinal(access)) {
+                if (AccessUtils.isFinal(access)) {
                     preview = TreeCellRenderer.combineAccess(preview, TreeCellRenderer.fin, true);
                     empty = scndRight = false;
-                } else if (AccessHelper.isNative(access)) { // do not allow triples
+                } else if (AccessUtils.isNative(access)) { // do not allow triples
                     preview = TreeCellRenderer.combineAccess(preview, TreeCellRenderer.nat, true);
                     empty = scndRight = false;
                 }
-                if (AccessHelper.isStatic(access)) {
+                if (AccessUtils.isStatic(access)) {
                     preview = TreeCellRenderer.combineAccess(preview, TreeCellRenderer.stat, scndRight);
                     empty = false;
-                } else if (AccessHelper.isSynthetic(access)) {
+                } else if (AccessUtils.isSynthetic(access)) {
                     preview = TreeCellRenderer.combineAccess(preview, TreeCellRenderer.syn, scndRight);
                     empty = false;
                 }
@@ -185,22 +185,22 @@ public class JAccessSelectorPanel extends JPanel implements Opcodes {
             JPopupMenu pm = new JPopupMenu();
             JToggleButton abs = new JToggleButton(new ImageIcon(TreeCellRenderer.abs.getImage()));
             abs.setToolTipText("abstract");
-            abs.setSelected(AccessHelper.isAbstract(visibility));
+            abs.setSelected(AccessUtils.isAbstract(visibility));
             JToggleButton fin = new JToggleButton(new ImageIcon(TreeCellRenderer.fin.getImage()));
             fin.setToolTipText("final");
-            fin.setSelected(AccessHelper.isFinal(visibility));
+            fin.setSelected(AccessUtils.isFinal(visibility));
             JToggleButton nat = new JToggleButton(new ImageIcon(TreeCellRenderer.nat.getImage()));
             nat.setToolTipText("native");
-            nat.setSelected(AccessHelper.isNative(visibility));
+            nat.setSelected(AccessUtils.isNative(visibility));
             JToggleButton stat = new JToggleButton(new ImageIcon(TreeCellRenderer.stat.getImage()));
             stat.setToolTipText("static");
-            stat.setSelected(AccessHelper.isStatic(visibility));
+            stat.setSelected(AccessUtils.isStatic(visibility));
             JToggleButton syn = new JToggleButton(new ImageIcon(TreeCellRenderer.syn.getImage()));
             syn.setToolTipText("synthetic");
-            syn.setSelected(AccessHelper.isSynthetic(visibility));
+            syn.setSelected(AccessUtils.isSynthetic(visibility));
 
             abs.addActionListener(e -> {
-                if (AccessHelper.isAbstract(visibility)) {
+                if (AccessUtils.isAbstract(visibility)) {
                     visibility -= ACC_ABSTRACT;
                 } else {
                     visibility |= ACC_ABSTRACT;
@@ -216,7 +216,7 @@ public class JAccessSelectorPanel extends JPanel implements Opcodes {
                 updateVisibility(visibility);
             });
             fin.addActionListener(e -> {
-                if (AccessHelper.isFinal(visibility)) {
+                if (AccessUtils.isFinal(visibility)) {
                     visibility -= ACC_FINAL;
                 } else {
                     visibility |= ACC_FINAL;
@@ -228,7 +228,7 @@ public class JAccessSelectorPanel extends JPanel implements Opcodes {
                 updateVisibility(visibility);
             });
             nat.addActionListener(e -> {
-                if (AccessHelper.isNative(visibility)) {
+                if (AccessUtils.isNative(visibility)) {
                     visibility -= ACC_NATIVE;
                 } else {
                     visibility |= ACC_NATIVE;
@@ -240,7 +240,7 @@ public class JAccessSelectorPanel extends JPanel implements Opcodes {
                 updateVisibility(visibility);
             });
             stat.addActionListener(e -> {
-                if (AccessHelper.isStatic(visibility)) {
+                if (AccessUtils.isStatic(visibility)) {
                     visibility -= ACC_STATIC;
                 } else {
                     visibility |= ACC_STATIC;
@@ -250,7 +250,7 @@ public class JAccessSelectorPanel extends JPanel implements Opcodes {
                 updateVisibility(visibility);
             });
             syn.addActionListener(e -> {
-                if (AccessHelper.isSynthetic(visibility)) {
+                if (AccessUtils.isSynthetic(visibility)) {
                     visibility -= ACC_SYNTHETIC;
                 } else {
                     visibility |= ACC_SYNTHETIC;

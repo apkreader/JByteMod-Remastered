@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import me.grax.jbytemod.utils.InstrUtils;
 import me.grax.jbytemod.utils.TextUtils;
-import me.lpk.util.OpUtils;
+import de.xbrowniecodez.jbytemod.utils.OpcodeUtils;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -56,7 +56,7 @@ public class SearchEntry {
         this.methodNode = methodNode;
         this.found = owner + "." + name + desc;
         this.text = TextUtils.toHtml(InstrUtils.getDisplayClass(classNode.name) + "." + TextUtils.escape(methodNode.name) + " - "
-                + TextUtils.toBold(OpUtils.getOpcodeText(opcode).toLowerCase()) + " " + InstrUtils.getDisplayClassRed(owner) + "." + TextUtils.escape(name)
+                + TextUtils.toBold(OpcodeUtils.getOpcodeText(opcode).toLowerCase()) + " " + InstrUtils.getDisplayClassRed(owner) + "." + TextUtils.escape(name)
                 + "(" + InstrUtils.getDisplayArgs(TextUtils.escape(desc)) + ")");
     }
 

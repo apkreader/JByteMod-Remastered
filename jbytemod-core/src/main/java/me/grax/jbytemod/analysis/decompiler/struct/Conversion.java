@@ -12,7 +12,7 @@ import me.grax.jbytemod.analysis.decompiler.struct.exception.StackException;
 import me.grax.jbytemod.analysis.decompiler.struct.exception.UnknownOPException;
 import me.grax.jbytemod.analysis.decompiler.struct.utils.DescUtils;
 import me.grax.jbytemod.analysis.decompiler.syntax.nodes.NodeList;
-import me.lpk.util.OpUtils;
+import de.xbrowniecodez.jbytemod.utils.OpcodeUtils;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -465,12 +465,12 @@ public class Conversion implements Opcodes {
         } else if (opc == ARRAYLENGTH) {
             visiFieldInsnNode(GETFIELD, null, "length", "I");
         } else if (opc == MONITORENTER || opc == MONITOREXIT) {
-            list.add(new TextExpression(OpUtils.getOpcodeText(opc).toLowerCase()));
+            list.add(new TextExpression(OpcodeUtils.getOpcodeText(opc).toLowerCase()));
         } else if (opc == NOP) {
             //do nothing
         } else {
             //comparison nodes
-            throw new RuntimeException(OpUtils.getOpcodeText(opc));
+            throw new RuntimeException(OpcodeUtils.getOpcodeText(opc));
         }
     }
 

@@ -13,7 +13,7 @@ import me.grax.jbytemod.ui.lists.entries.PrototypeEntry;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import me.grax.jbytemod.utils.HtmlSelection;
 import me.grax.jbytemod.utils.list.LazyListModel;
-import me.lpk.util.OpUtils;
+import de.xbrowniecodez.jbytemod.utils.OpcodeUtils;
 import org.objectweb.asm.tree.*;
 
 import javax.swing.*;
@@ -116,7 +116,7 @@ public class MyCodeList extends JList<InstrEntry> {
                 if (entry != null && entry.getMethod() != null) {
                     try {
                         InsnEditDialogue.createInsertInsnDialog(entry.getMethod(), entry.getInstr(), true);
-                        OpUtils.clearLabelCache();
+                        OpcodeUtils.clearLabelCache();
                     } catch (Exception e1) {
                         new ErrorDisplay(e1);
                     }
@@ -280,7 +280,7 @@ public class MyCodeList extends JList<InstrEntry> {
                 for (InstrEntry sel : selected) {
                     methodNode.instructions.remove(sel.getInstr());
                 }
-                OpUtils.clearLabelCache();
+                OpcodeUtils.clearLabelCache();
                 MyCodeList.this.loadInstructions(methodNode);
             });
             menu.add(remove);
@@ -293,7 +293,7 @@ public class MyCodeList extends JList<InstrEntry> {
             insertBefore.addActionListener(e -> {
                 try {
                     InsnEditDialogue.createInsertInsnDialog(methodNode, abstractInsnNode, false);
-                    OpUtils.clearLabelCache();
+                    OpcodeUtils.clearLabelCache();
                 } catch (Exception e1) {
                     new ErrorDisplay(e1);
                 }
@@ -304,7 +304,7 @@ public class MyCodeList extends JList<InstrEntry> {
             insert.addActionListener(e -> {
                 try {
                     InsnEditDialogue.createInsertInsnDialog(methodNode, abstractInsnNode, true);
-                    OpUtils.clearLabelCache();
+                    OpcodeUtils.clearLabelCache();
                 } catch (Exception e1) {
                     new ErrorDisplay(e1);
                 }
@@ -405,7 +405,7 @@ public class MyCodeList extends JList<InstrEntry> {
 
     protected void removeNode(MethodNode mn, AbstractInsnNode ain) {
         mn.instructions.remove(ain);
-        OpUtils.clearLabelCache();
+        OpcodeUtils.clearLabelCache();
         loadInstructions(mn);
     }
 
@@ -414,7 +414,7 @@ public class MyCodeList extends JList<InstrEntry> {
         if (node != null) {
             mn.instructions.remove(node);
             mn.instructions.insertBefore(ain, node);
-            OpUtils.clearLabelCache();
+            OpcodeUtils.clearLabelCache();
             loadInstructions(mn);
             return true;
         }
@@ -426,7 +426,7 @@ public class MyCodeList extends JList<InstrEntry> {
         if (node != null) {
             mn.instructions.remove(node);
             mn.instructions.insert(ain, node);
-            OpUtils.clearLabelCache();
+            OpcodeUtils.clearLabelCache();
             loadInstructions(mn);
             return true;
         }
@@ -437,7 +437,7 @@ public class MyCodeList extends JList<InstrEntry> {
         try {
             if (ain instanceof LabelNode) {
                 mn.instructions.insert(ain, new LabelNode());
-                OpUtils.clearLabelCache();
+                OpcodeUtils.clearLabelCache();
             } else if (ain instanceof JumpInsnNode) {
                 mn.instructions.insert(ain, new JumpInsnNode(ain.getOpcode(), ((JumpInsnNode) ain).label));
             } else {

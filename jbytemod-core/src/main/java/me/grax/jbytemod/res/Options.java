@@ -24,7 +24,7 @@ public class Options {
 
     public List<Option> bools = new ArrayList<>();
     public List<Option> defaults = new ArrayList<>(Arrays.asList(new Option("sort_methods", false, Type.BOOLEAN),
-            new Option("use_rt", false, Type.BOOLEAN), new Option("compute_maxs", true, Type.BOOLEAN), new Option("select_code_tab", true, Type.BOOLEAN),
+            new Option("compute_maxs", true, Type.BOOLEAN), new Option("select_code_tab", true, Type.BOOLEAN),
             new Option("memory_warning", true, Type.BOOLEAN), new Option("python_path", "", Type.STRING),
             new Option("hints", false, Type.BOOLEAN, "editor"), new Option("copy_formatted", false, Type.BOOLEAN, "editor"),
             new Option("analyze_errors", true, Type.BOOLEAN, "editor"), new Option("simplify_graph", true, Type.BOOLEAN, "graph"),

@@ -1,7 +1,7 @@
 package me.grax.jbytemod.utils.asm;
 
 import de.xbrowniecodez.jbytemod.utils.asm.Loader;
-import me.lpk.util.AccessHelper;
+import de.xbrowniecodez.jbytemod.utils.AccessUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -14,13 +14,10 @@ public class LibClassWriter extends ClassWriter {
     private Map<String, ClassNode> classes;
     private ParentUtils util;
 
-    public LibClassWriter(int flags, Map<String, ClassNode> classes, Map<String, ClassNode> libraries) {
+    public LibClassWriter(int flags, Map<String, ClassNode> classes) {
         super(flags);
         this.classes = new HashMap<>(classes);
-        this.util = new ParentUtils(classes);
-        if (libraries != null) {
-            classes.putAll(libraries);
-        }
+        this.util = new ParentUtils(this.classes);
     }
 
     @Override
@@ -58,7 +55,7 @@ public class LibClassWriter extends ClassWriter {
         if (util.isAssignableFrom(mc2, mc1)) {
             return mc2;
         }
-        if (AccessHelper.isInterface(mc1.access) || AccessHelper.isInterface(mc2.access)) {
+        if (AccessUtils.isInterface(mc1.access) || AccessUtils.isInterface(mc2.access)) {
             return get("java/lang/Object");
         } else {
             do {

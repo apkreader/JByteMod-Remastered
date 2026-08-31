@@ -5,7 +5,6 @@
    <string name="jar_warn">Outros arquivos diferente de .jar não são surpotados ainda, por favor selecione um arquivo java.</string>
    <string name="about">Sobre</string>
    <string name="sort_methods">Organizar metodos</string>
-   <string name="use_rt">Use rt.jar ao invés de um dynamic loading</string>
    <string name="primary_color">Cor primaria</string>
    <string name="secondary_color">Cor secundária</string>
    <string name="general_group">Geral</string>
