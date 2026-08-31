@@ -20,7 +20,7 @@ import java.net.URI;
 import java.time.Year;
 
 public final class AboutDialog extends JDialog {
-    private static final URI PROJECT_URI = URI.create("https://github.com/apkreader/JByteMod-Remastered");
+    private static final URI PROJECT_URI = URI.create("https://github.com/jbytemod/JByteMod-Remastered");
 
     public AboutDialog(JByteMod jByteMod) {
         super(jByteMod, jByteMod.getLanguageRes().getResource("about") + " " + jByteMod.getTitle(),
@@ -53,7 +53,7 @@ public final class AboutDialog extends JDialog {
         information.add(credit("JByteMod Remastered", "xBrownieCodez", "2020-" + Year.now().getValue()));
         information.add(Box.createVerticalStrut(13));
 
-        JButton projectLink = new JButton("github.com/apkreader/JByteMod-Remastered");
+        JButton projectLink = new JButton("github.com/jbytemod/JByteMod-Remastered");
         projectLink.setAlignmentX(LEFT_ALIGNMENT);
         projectLink.setBorder(BorderFactory.createEmptyBorder());
         projectLink.setBorderPainted(false);
