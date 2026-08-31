@@ -323,6 +323,12 @@ public final class JByteModPluginContext implements PluginContext {
     }
 
     @Override
+    public byte[] invokeAttachedJvmAgentExtension(String extensionId, String entryClassName,
+                                                   Map<String, byte[]> classFiles, byte[] request) throws Exception {
+        return attachedArchive().invokeAgentExtension(extensionId, entryClassName, classFiles, request);
+    }
+
+    @Override
     public String decompile(ClassNode classNode, MethodNode method, String decompilerId) {
         String id = Objects.requireNonNull(decompilerId, "decompilerId").trim().toLowerCase(Locale.ROOT);
         Decompiler decompiler = switch (id) {

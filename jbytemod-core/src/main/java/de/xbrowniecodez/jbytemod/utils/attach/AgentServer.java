@@ -9,7 +9,9 @@ import java.io.StringWriter;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -36,7 +38,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class AgentServer {
-    public static final String PROTOCOL = "JByteMod-Agent/1";
+    public static final String PROTOCOL = "JByteMod-Agent/3";
     public static final String PORT_PROPERTY = "jbytemod.agent.port";
     public static final String TOKEN_PROPERTY = "jbytemod.agent.token";
     public static final String PROTOCOL_PROPERTY = "jbytemod.agent.protocol";
@@ -51,6 +53,7 @@ public final class AgentServer {
     static final int COMMAND_THREADS = 6;
     static final int COMMAND_CLASS_LOADERS = 7;
     static final int COMMAND_SYSTEM_PROPERTIES = 8;
+    static final int COMMAND_AGENT_EXTENSION = 9;
     static final int RESPONSE_OK = 0;
     static final int RESPONSE_ERROR = 1;
     static final int RESPONSE_PROGRESS = 2;
@@ -59,6 +62,7 @@ public final class AgentServer {
     private static volatile ServerSocket reusableServer;
     private static volatile Properties discoveryProperties;
     private static volatile Map<String, Class<?>> exposedClasses = Map.of();
+    private static final Map<String, LoadedAgentExtension> agentExtensions = new ConcurrentHashMap<>();
 
     private AgentServer() {
     }
@@ -111,6 +115,7 @@ public final class AgentServer {
             properties.remove(TOKEN_PROPERTY);
             properties.remove(PROTOCOL_PROPERTY);
         }
+        agentExtensions.clear();
     }
 
     private static synchronized void startReusableServer(String token, Instrumentation instrumentation)
@@ -138,15 +143,19 @@ public final class AgentServer {
     }
 
     private static Properties getAgentProperties(Instrumentation instrumentation) throws Exception {
-        Module javaBase = Object.class.getModule();
-        Module agentModule = AgentServer.class.getModule();
-        instrumentation.redefineModule(javaBase, Set.of(),
-                Map.of("jdk.internal.vm", Set.of(agentModule)),
-                Map.of("jdk.internal.vm", Set.of(agentModule)),
-                Set.of(), Map.of());
+        openJavaBasePackage(instrumentation, "jdk.internal.vm");
         Class<?> vmSupport = Class.forName("jdk.internal.vm.VMSupport");
         Method getter = vmSupport.getMethod("getAgentProperties");
         return (Properties) getter.invoke(null);
+    }
+
+    private static void openJavaBasePackage(Instrumentation instrumentation, String packageName) {
+        Module javaBase = Object.class.getModule();
+        Module agentModule = AgentServer.class.getModule();
+        instrumentation.redefineModule(javaBase, Set.of(),
+                Map.of(packageName, Set.of(agentModule)),
+                Map.of(packageName, Set.of(agentModule)),
+                Set.of(), Map.of());
     }
 
     private static void acceptReusableConnections(ServerSocket server, String token,
@@ -232,6 +241,8 @@ public final class AgentServer {
                         sendClassLoaders(output, instrumentation);
                     } else if (command == COMMAND_SYSTEM_PROPERTIES) {
                         sendSystemProperties(output);
+                    } else if (command == COMMAND_AGENT_EXTENSION) {
+                        invokeAgentExtension(input, output, instrumentation);
                     } else {
                         throw new IllegalArgumentException("Unknown agent command: " + command);
                     }
@@ -499,6 +510,81 @@ public final class AgentServer {
         output.flush();
     }
 
+    private static void invokeAgentExtension(DataInputStream input, DataOutputStream output,
+                                             Instrumentation instrumentation) throws Exception {
+        String extensionId = readString(input);
+        String revision = readString(input);
+        String entryClassName = readString(input);
+        if (extensionId.isBlank() || revision.isBlank() || entryClassName.isBlank()) {
+            throw new IllegalArgumentException("Invalid agent extension identity");
+        }
+
+        int classCount = input.readInt();
+        if (classCount < 1 || classCount > 256) {
+            throw new IllegalArgumentException("Invalid agent extension class count: " + classCount);
+        }
+        Map<String, byte[]> classFiles = new LinkedHashMap<>();
+        long totalClassSize = 0;
+        for (int index = 0; index < classCount; index++) {
+            String className = readString(input);
+            byte[] classFile = readBytes(input, 8 * 1024 * 1024, "extension class " + className);
+            totalClassSize += classFile.length;
+            if (totalClassSize > 32L * 1024 * 1024) {
+                throw new IllegalArgumentException("Agent extension classes exceed 32 MiB");
+            }
+            if (className.isBlank() || classFiles.putIfAbsent(className, classFile) != null) {
+                throw new IllegalArgumentException("Invalid or duplicate extension class: " + className);
+            }
+        }
+        if (!classFiles.containsKey(entryClassName)) {
+            throw new IllegalArgumentException("Agent extension does not contain its entry class");
+        }
+        byte[] request = readBytes(input, 32 * 1024 * 1024, "extension request");
+
+        LoadedAgentExtension extension = agentExtensions.get(extensionId);
+        if (extension == null || !extension.revision().equals(revision)) {
+            if (extension == null && agentExtensions.size() >= 256) {
+                throw new IllegalStateException("Too many agent extensions are loaded");
+            }
+            extension = loadAgentExtension(revision, entryClassName, classFiles);
+            agentExtensions.put(extensionId, extension);
+        }
+
+        byte[] response = extension.invoke(request, instrumentation);
+        if (response == null || response.length > 256 * 1024 * 1024) {
+            throw new IllegalArgumentException("Agent extension response exceeds 256 MiB");
+        }
+        output.writeByte(RESPONSE_OK);
+        output.writeInt(response.length);
+        output.write(response);
+        output.flush();
+    }
+
+    private static LoadedAgentExtension loadAgentExtension(String revision, String entryClassName,
+                                                            Map<String, byte[]> classFiles) throws Exception {
+        ClassLoader loader = new AgentExtensionClassLoader(classFiles, AgentServer.class.getClassLoader());
+        Class<?> entryClass = Class.forName(entryClassName, true, loader);
+        if (entryClass.getClassLoader() != loader) {
+            throw new IllegalArgumentException("Agent extension entry class resolved outside its extension");
+        }
+        Method method = entryClass.getMethod("invoke", byte[].class, Instrumentation.class);
+        if (!Modifier.isStatic(method.getModifiers()) || method.getReturnType() != byte[].class) {
+            throw new IllegalArgumentException(
+                    "Agent extension entry point must be public static byte[] invoke(byte[], Instrumentation)");
+        }
+        return new LoadedAgentExtension(revision, method);
+    }
+
+    private static byte[] readBytes(DataInputStream input, int maximum, String description) throws Exception {
+        int length = input.readInt();
+        if (length < 0 || length > maximum) {
+            throw new IllegalArgumentException("Invalid " + description + " size: " + length);
+        }
+        byte[] bytes = input.readNBytes(length);
+        if (bytes.length != length) throw new IllegalStateException("Connection closed while reading " + description);
+        return bytes;
+    }
+
     private static boolean isReadable(Class<?> runtimeClass, String name, Instrumentation instrumentation,
                                       ClassLoader agentLoader) {
         return runtimeClass.getClassLoader() != agentLoader
@@ -566,6 +652,35 @@ public final class AgentServer {
                 captured.put(classBeingRedefined, classfileBuffer.clone());
             }
             return null;
+        }
+    }
+
+    private record LoadedAgentExtension(String revision, Method method) {
+        private byte[] invoke(byte[] request, Instrumentation instrumentation) throws Exception {
+            try {
+                return (byte[]) method.invoke(null, request, instrumentation);
+            } catch (InvocationTargetException exception) {
+                Throwable cause = exception.getCause();
+                if (cause instanceof Exception targetException) throw targetException;
+                if (cause instanceof Error targetError) throw targetError;
+                throw new IllegalStateException(cause);
+            }
+        }
+    }
+
+    private static final class AgentExtensionClassLoader extends ClassLoader {
+        private final Map<String, byte[]> classFiles;
+
+        private AgentExtensionClassLoader(Map<String, byte[]> classFiles, ClassLoader parent) {
+            super(parent);
+            this.classFiles = Map.copyOf(classFiles);
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            byte[] bytes = classFiles.get(name);
+            if (bytes == null) throw new ClassNotFoundException(name);
+            return defineClass(name, bytes, 0, bytes.length);
         }
     }
 }

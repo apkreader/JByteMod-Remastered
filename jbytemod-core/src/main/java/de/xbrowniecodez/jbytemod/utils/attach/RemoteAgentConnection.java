@@ -13,10 +13,14 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.IntConsumer;
 
 public final class RemoteAgentConnection implements Closeable {
@@ -145,6 +149,73 @@ public final class RemoteAgentConnection implements Closeable {
             properties.put(AgentServer.readString(input), AgentServer.readString(input));
         }
         return Map.copyOf(properties);
+    }
+
+    public synchronized byte[] invokeAgentExtension(String extensionId, String entryClassName,
+                                                     Map<String, byte[]> classFiles, byte[] request) throws Exception {
+        if (extensionId == null || extensionId.isBlank()) {
+            throw new IllegalArgumentException("extensionId cannot be blank");
+        }
+        if (entryClassName == null || entryClassName.isBlank()) {
+            throw new IllegalArgumentException("entryClassName cannot be blank");
+        }
+        if (classFiles == null || !classFiles.containsKey(entryClassName)) {
+            throw new IllegalArgumentException("classFiles must contain the entry class");
+        }
+        if (request == null || request.length > 32 * 1024 * 1024) {
+            throw new IllegalArgumentException("Agent extension request exceeds 32 MiB");
+        }
+
+        TreeMap<String, byte[]> sortedClasses = new TreeMap<>(classFiles);
+        validateExtensionClasses(sortedClasses);
+        output.writeByte(AgentServer.COMMAND_AGENT_EXTENSION);
+        AgentServer.writeString(output, extensionId);
+        AgentServer.writeString(output, extensionRevision(entryClassName, sortedClasses));
+        AgentServer.writeString(output, entryClassName);
+        output.writeInt(sortedClasses.size());
+        for (Map.Entry<String, byte[]> entry : sortedClasses.entrySet()) {
+            AgentServer.writeString(output, entry.getKey());
+            output.writeInt(entry.getValue().length);
+            output.write(entry.getValue());
+        }
+        output.writeInt(request.length);
+        output.write(request);
+        output.flush();
+        checkResponse();
+        int length = input.readInt();
+        if (length < 0 || length > 256 * 1024 * 1024) throw new IOException("Invalid extension response size");
+        byte[] bytes = input.readNBytes(length);
+        if (bytes.length != length) throw new IOException("Target disconnected while reading extension response");
+        return bytes;
+    }
+
+    private static void validateExtensionClasses(Map<String, byte[]> classFiles) {
+        if (classFiles.isEmpty() || classFiles.size() > 256) {
+            throw new IllegalArgumentException("Agent extension must contain between 1 and 256 classes");
+        }
+        long totalSize = 0;
+        for (Map.Entry<String, byte[]> entry : classFiles.entrySet()) {
+            if (entry.getKey() == null || entry.getKey().isBlank() || entry.getValue() == null) {
+                throw new IllegalArgumentException("Agent extension contains an invalid class entry");
+            }
+            if (entry.getValue().length > 8 * 1024 * 1024) {
+                throw new IllegalArgumentException("Agent extension class exceeds 8 MiB: " + entry.getKey());
+            }
+            totalSize += entry.getValue().length;
+        }
+        if (totalSize > 32L * 1024 * 1024) {
+            throw new IllegalArgumentException("Agent extension classes exceed 32 MiB");
+        }
+    }
+
+    private static String extensionRevision(String entryClassName, Map<String, byte[]> classFiles) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        digest.update(entryClassName.getBytes(StandardCharsets.UTF_8));
+        for (Map.Entry<String, byte[]> entry : classFiles.entrySet()) {
+            digest.update(entry.getKey().getBytes(StandardCharsets.UTF_8));
+            digest.update(entry.getValue());
+        }
+        return HexFormat.of().formatHex(digest.digest());
     }
 
     private int readCount(String type, int maximum) throws IOException {

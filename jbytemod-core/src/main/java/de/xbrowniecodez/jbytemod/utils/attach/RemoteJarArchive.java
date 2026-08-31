@@ -13,8 +13,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.function.IntConsumer;
 
 public final class RemoteJarArchive extends JarArchive implements Closeable {
@@ -90,6 +90,12 @@ public final class RemoteJarArchive extends JarArchive implements Closeable {
     public synchronized Map<String, String> getSystemProperties() throws Exception {
         requireRunning();
         return connection.getSystemProperties();
+    }
+
+    public synchronized byte[] invokeAgentExtension(String extensionId, String entryClassName,
+                                                     Map<String, byte[]> classFiles, byte[] request) throws Exception {
+        requireRunning();
+        return connection.invokeAgentExtension(extensionId, entryClassName, classFiles, request);
     }
 
     public boolean isFrozen() {
