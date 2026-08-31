@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -18,22 +19,30 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class AgentServer {
-    static final String PROTOCOL = "JByteMod-Agent/1";
+    public static final String PROTOCOL = "JByteMod-Agent/1";
+    public static final String PORT_PROPERTY = "jbytemod.agent.port";
+    public static final String TOKEN_PROPERTY = "jbytemod.agent.token";
+    public static final String PROTOCOL_PROPERTY = "jbytemod.agent.protocol";
+    static final int HANDSHAKE_OK = 0;
+    static final int HANDSHAKE_REJECTED = 1;
+    static final int HANDSHAKE_BUSY = 2;
     static final int COMMAND_LIST_CLASSES = 1;
     static final int COMMAND_REDEFINE_CLASSES = 2;
     static final int COMMAND_CLOSE = 3;
@@ -47,6 +56,8 @@ public final class AgentServer {
     static final int RESPONSE_PROGRESS = 2;
 
     private static volatile Socket connection;
+    private static volatile ServerSocket reusableServer;
+    private static volatile Properties discoveryProperties;
     private static volatile Map<String, Class<?>> exposedClasses = Map.of();
 
     private AgentServer() {
@@ -58,6 +69,8 @@ public final class AgentServer {
             throw new IllegalArgumentException("Invalid JByteMod agent connection options");
         }
 
+        startReusableServer(options[1], instrumentation);
+
         Socket socket = new Socket();
         socket.connect(new InetSocketAddress(InetAddress.getLoopbackAddress(), Integer.parseInt(options[0])), 10000);
         socket.setTcpNoDelay(true);
@@ -67,11 +80,11 @@ public final class AgentServer {
         output.writeUTF(options[1]);
         output.flush();
 
-        connection = socket;
-        Thread server = new Thread(() -> serve(socket, instrumentation), "JByteMod agent bridge");
-        server.setDaemon(true);
-        server.setContextClassLoader(AgentServer.class.getClassLoader());
-        server.start();
+        if (!claimConnection(socket)) {
+            socket.close();
+            throw new IllegalStateException("A JByteMod client is already connected");
+        }
+        startConnectionThread(socket, instrumentation);
     }
 
     public static synchronized void shutdown() {
@@ -83,15 +96,123 @@ public final class AgentServer {
             } catch (Exception ignored) {
             }
         }
+        ServerSocket server = reusableServer;
+        reusableServer = null;
+        if (server != null) {
+            try {
+                server.close();
+            } catch (Exception ignored) {
+            }
+        }
+        Properties properties = discoveryProperties;
+        discoveryProperties = null;
+        if (properties != null) {
+            properties.remove(PORT_PROPERTY);
+            properties.remove(TOKEN_PROPERTY);
+            properties.remove(PROTOCOL_PROPERTY);
+        }
+    }
+
+    private static synchronized void startReusableServer(String token, Instrumentation instrumentation)
+            throws Exception {
+        if (reusableServer != null && !reusableServer.isClosed()) return;
+
+        ServerSocket server = new ServerSocket(0, 4, InetAddress.getLoopbackAddress());
+        try {
+            Properties properties = getAgentProperties(instrumentation);
+            discoveryProperties = properties;
+            properties.setProperty(PORT_PROPERTY, Integer.toString(server.getLocalPort()));
+            properties.setProperty(TOKEN_PROPERTY, token);
+            properties.setProperty(PROTOCOL_PROPERTY, PROTOCOL);
+            reusableServer = server;
+        } catch (Exception exception) {
+            server.close();
+            throw exception;
+        }
+
+        Thread listener = new Thread(() -> acceptReusableConnections(server, token, instrumentation),
+                "JByteMod reusable agent");
+        listener.setDaemon(true);
+        listener.setContextClassLoader(AgentServer.class.getClassLoader());
+        listener.start();
+    }
+
+    private static Properties getAgentProperties(Instrumentation instrumentation) throws Exception {
+        Module javaBase = Object.class.getModule();
+        Module agentModule = AgentServer.class.getModule();
+        instrumentation.redefineModule(javaBase, Set.of(),
+                Map.of("jdk.internal.vm", Set.of(agentModule)),
+                Map.of("jdk.internal.vm", Set.of(agentModule)),
+                Set.of(), Map.of());
+        Class<?> vmSupport = Class.forName("jdk.internal.vm.VMSupport");
+        Method getter = vmSupport.getMethod("getAgentProperties");
+        return (Properties) getter.invoke(null);
+    }
+
+    private static void acceptReusableConnections(ServerSocket server, String token,
+                                                   Instrumentation instrumentation) {
+        while (!server.isClosed()) {
+            Socket socket = null;
+            try {
+                socket = server.accept();
+                socket.setTcpNoDelay(true);
+                DataInputStream input = new DataInputStream(socket.getInputStream());
+                DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+                if (!PROTOCOL.equals(input.readUTF()) || !token.equals(input.readUTF())) {
+                    output.writeByte(HANDSHAKE_REJECTED);
+                    output.flush();
+                    socket.close();
+                    continue;
+                }
+                if (!claimConnection(socket)) {
+                    output.writeByte(HANDSHAKE_BUSY);
+                    output.flush();
+                    socket.close();
+                    continue;
+                }
+                output.writeByte(HANDSHAKE_OK);
+                output.flush();
+                startConnectionThread(socket, instrumentation);
+            } catch (Exception ignored) {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (Exception ignoredClose) {
+                    }
+                }
+            }
+        }
+    }
+
+    private static synchronized boolean claimConnection(Socket socket) {
+        if (connection != null && !connection.isClosed()) return false;
+        connection = socket;
+        return true;
+    }
+
+    private static void startConnectionThread(Socket socket, Instrumentation instrumentation) {
+        Thread thread = new Thread(() -> serve(socket, instrumentation), "JByteMod agent bridge");
+        thread.setDaemon(true);
+        thread.setContextClassLoader(AgentServer.class.getClassLoader());
+        thread.start();
+    }
+
+    private static synchronized void releaseConnection(Socket socket) {
+        if (connection == socket) connection = null;
     }
 
     private static void serve(Socket socket, Instrumentation instrumentation) {
         try (socket;
              DataInputStream input = new DataInputStream(socket.getInputStream());
-             DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
+            DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
             while (!socket.isClosed()) {
                 int command = input.readUnsignedByte();
-                if (command == COMMAND_CLOSE) return;
+                if (command == COMMAND_CLOSE) {
+                    releaseConnection(socket);
+                    output.writeByte(RESPONSE_OK);
+                    output.flush();
+                    return;
+                }
 
                 try {
                     if (command == COMMAND_LIST_CLASSES) {
@@ -122,7 +243,7 @@ public final class AgentServer {
             }
         } catch (Exception ignored) {
         } finally {
-            if (connection == socket) connection = null;
+            releaseConnection(socket);
         }
     }
 
@@ -331,7 +452,7 @@ public final class AgentServer {
             if (loader == null) bootstrapCount++;
             else counts.merge(loader, 1, Integer::sum);
         }
-        Set<ClassLoader> loaders = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+        Set<ClassLoader> loaders = Collections.newSetFromMap(new IdentityHashMap<>());
         for (ClassLoader loader : counts.keySet()) {
             for (ClassLoader current = loader; current != null; current = current.getParent()) {
                 loaders.add(current);

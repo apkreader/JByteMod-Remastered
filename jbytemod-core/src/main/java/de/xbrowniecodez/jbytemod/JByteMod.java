@@ -348,7 +348,7 @@ public class JByteMod extends JFrame {
         if (jarArchive != remoteArchive) {
             return;
         }
-        JarArchive snapshot = new JarArchive(remoteArchive.getClasses(), remoteArchive.getOutput());
+        JarArchive snapshot = new JarArchive(remoteArchive.getClasses(), new HashMap<>());
         snapshot.setJarManifest(remoteArchive.getJarManifest());
         jarArchive = snapshot;
         lastEditFile = editFile;

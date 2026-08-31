@@ -9,11 +9,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.LinkedHashMap;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntConsumer;
@@ -182,6 +183,7 @@ public final class RemoteAgentConnection implements Closeable {
             if (!socket.isClosed()) {
                 output.writeByte(AgentServer.COMMAND_CLOSE);
                 output.flush();
+                checkResponse();
             }
         } catch (Exception ignored) {
         } finally {
@@ -189,8 +191,39 @@ public final class RemoteAgentConnection implements Closeable {
         }
     }
 
+    public static RemoteAgentConnection connect(int port, String token) throws IOException {
+        Socket socket = new Socket();
+        try {
+            socket.connect(new InetSocketAddress(InetAddress.getLoopbackAddress(), port), 3000);
+            RemoteAgentConnection connection = new RemoteAgentConnection(socket);
+            connection.output.writeUTF(AgentServer.PROTOCOL);
+            connection.output.writeUTF(token);
+            connection.output.flush();
+            int response = connection.input.readUnsignedByte();
+            if (response == AgentServer.HANDSHAKE_BUSY) {
+                throw new AgentBusyException("The JByteMod agent is already connected to another client");
+            }
+            if (response != AgentServer.HANDSHAKE_OK) {
+                throw new IOException("The target rejected the reusable JByteMod agent connection");
+            }
+            return connection;
+        } catch (IOException exception) {
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
+            throw exception;
+        }
+    }
+
     public static Listener listen() throws IOException {
         return new Listener();
+    }
+
+    public static final class AgentBusyException extends IOException {
+        public AgentBusyException(String message) {
+            super(message);
+        }
     }
 
     public static final class Listener implements Closeable {
