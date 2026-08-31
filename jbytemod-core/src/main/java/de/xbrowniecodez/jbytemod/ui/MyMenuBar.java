@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 
@@ -533,7 +534,7 @@ public class MyMenuBar extends JMenuBar {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new JAboutFrame(jbm).setVisible(true);
+                    new AboutDialog(jbm).setVisible(true);
                 } catch (Exception ex) {
                     new ErrorDisplay(ex);
                 }
@@ -547,12 +548,18 @@ public class MyMenuBar extends JMenuBar {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    JFrame jf = new JFrame();
-                    jf.setBounds(100, 100, 700, 800);
-                    jf.add(new JScrollPane(
-                            new JTextArea(IOUtils.toString(MyMenuBar.class.getResourceAsStream("/resources/LICENSES")))));
-                    jf.setTitle(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("licenses"));
-                    jf.setVisible(true);
+                    JDialog dialog = new JDialog(jbm,
+                            Main.INSTANCE.getJByteMod().getLanguageRes().getResource("licenses"),
+                            Dialog.ModalityType.MODELESS);
+                    JTextArea text = new JTextArea(IOUtils.toString(
+                            MyMenuBar.class.getResourceAsStream("/resources/LICENSES"), StandardCharsets.UTF_8));
+                    text.setEditable(false);
+                    text.setCaretPosition(0);
+                    dialog.add(new JScrollPane(text));
+                    dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                    dialog.setSize(700, 650);
+                    dialog.setLocationRelativeTo(jbm);
+                    dialog.setVisible(true);
                 } catch (Exception ex) {
                     new ErrorDisplay(ex);
                 }
@@ -560,6 +567,10 @@ public class MyMenuBar extends JMenuBar {
         });
 
         help.add(licenses);
+        int helpItemWidth = Math.max(120,
+                Math.max(about.getPreferredSize().width, licenses.getPreferredSize().width) + 24);
+        about.setPreferredSize(new Dimension(helpItemWidth, about.getPreferredSize().height));
+        licenses.setPreferredSize(new Dimension(helpItemWidth, licenses.getPreferredSize().height));
         this.add(help);
     }
 
