@@ -20,7 +20,7 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 -   **Drag and Drop Functionality**: Easily drag and drop `.jar`, `.apk`, and `.class` files onto the window for quick access.
 -   **Search and Replace**: Effortlessly find and replace bytecode instructions.
 -   **Constant Pool Editor**: Manage and edit constant pool entries within class files.
--   **Plugin System**: Extend functionality with custom plugins tailored to specific needs.
+-   **Plugin System**: Browse, install, update, enable, and disable extensions through the built-in plugin repository.
 -   **Cross-Platform Compatibility**: Compatible with Windows, macOS, and Linux operating systems.
 
 ## Installation
@@ -54,6 +54,12 @@ JByteMod Remastered is an enhanced Java bytecode editor that offers a wide array
 4. Use `File` > `Apply changes` to redefine the modified classes in the target JVM.
 
 Class redefinition is limited by the target JVM. Method-body and constant changes are generally supported, while structural changes such as adding or removing fields, methods, superclasses, or interfaces are normally rejected.
+
+### Installing plugins
+
+Open `Plugins` > `Manage Plugins` and select the `Plugin Repository` tab. JByteMod loads the official [`jbytemod/plugin-registry`](https://github.com/jbytemod/plugin-registry), verifies downloaded release JARs with SHA-256, and reloads installed or updated plugins without restarting the application.
+
+Additional GitHub repositories or direct `plugins.json` URLs can be added from `Repositories...`. Third-party sources can be removed again; the official repository is built in and cannot be removed.
 
 ### Building from source
 

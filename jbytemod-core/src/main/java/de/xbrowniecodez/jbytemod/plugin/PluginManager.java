@@ -7,13 +7,21 @@ import de.xbrowniecodez.jbytemod.JByteMod;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -63,8 +71,8 @@ public class PluginManager implements Closeable {
             return;
         }
 
-        java.util.Arrays.sort(files, Comparator.comparing(File::getName));
-        URL[] pluginUrls = java.util.Arrays.stream(files).filter(this::isFileEnabled).map(file -> {
+        Arrays.sort(files, Comparator.comparing(File::getName));
+        URL[] pluginUrls = Arrays.stream(files).filter(this::isFileEnabled).map(file -> {
             try {
                 return file.toURI().toURL();
             } catch (Exception exception) {
@@ -128,6 +136,52 @@ public class PluginManager implements Closeable {
                 flushPreferences();
                 break;
             }
+        }
+    }
+
+    public void installPluginJar(PluginRepositoryService.RepositoryPlugin plugin, Path downloadedJar) throws IOException {
+        PluginInfo installed = availablePlugins.stream()
+                .filter(candidate -> candidate.id().equals(plugin.id()))
+                .findFirst()
+                .orElse(null);
+        String requestedName = plugin.fileName();
+        if (requestedName == null || requestedName.isBlank()) {
+            String downloadPath = URI.create(plugin.downloadUrl()).getPath();
+            requestedName = Path.of(downloadPath).getFileName().toString();
+        }
+        String fileName = Path.of(requestedName).getFileName().toString();
+        if (!fileName.toLowerCase(Locale.ROOT).endsWith(".jar")) fileName += ".jar";
+        if (!fileName.matches("[A-Za-z0-9._-]+")) {
+            fileName = plugin.id().replaceAll("[^A-Za-z0-9._-]", "_") + ".jar";
+        }
+
+        Path target = installed == null
+                ? pluginFolder.toPath().resolve(fileName)
+                : pluginFolder.toPath().resolve(installed.sourceFile());
+        if (installed == null && Files.exists(target)) {
+            throw new IOException("A different plugin already uses " + target.getFileName());
+        }
+
+        close();
+        Path backup = target.resolveSibling(target.getFileName() + ".backup");
+        Files.deleteIfExists(backup);
+        boolean hadExistingFile = Files.exists(target);
+        if (hadExistingFile) moveReplacing(target, backup);
+        try {
+            moveReplacing(downloadedJar, target);
+            Files.deleteIfExists(backup);
+        } catch (IOException exception) {
+            Files.deleteIfExists(target);
+            if (hadExistingFile && Files.exists(backup)) moveReplacing(backup, target);
+            throw exception;
+        }
+    }
+
+    private void moveReplacing(Path source, Path target) throws IOException {
+        try {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException ignored) {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
