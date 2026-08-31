@@ -302,7 +302,7 @@ public class JByteMod extends JFrame {
             protected void done() {
                 try {
                     get();
-                    completeAttachedJvmTermination();
+                    completeAttachedJvmTermination(remoteArchive);
                 } catch (Exception exception) {
                     Throwable cause = exception.getCause() == null ? exception : exception.getCause();
                     new ErrorDisplay(cause);
@@ -311,14 +311,54 @@ public class JByteMod extends JFrame {
         }.execute();
     }
 
-    public void completeAttachedJvmTermination() {
-        lastEditFile = "terminated process snapshot";
+    public void detachAttachedJvm() {
+        if (!(jarArchive instanceof RemoteJarArchive remoteArchive)) {
+            return;
+        }
+
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                remoteArchive.close();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    get();
+                    completeAttachedJvmDetachment(remoteArchive);
+                } catch (Exception exception) {
+                    Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+                    new ErrorDisplay(cause);
+                }
+            }
+        }.execute();
+    }
+
+    public void completeAttachedJvmTermination(RemoteJarArchive remoteArchive) {
+        completeAttachedJvmSession(remoteArchive, "terminated process snapshot", "Target terminated");
+    }
+
+    public void completeAttachedJvmDetachment(RemoteJarArchive remoteArchive) {
+        completeAttachedJvmSession(remoteArchive, "detached process snapshot", "Detached snapshot");
+    }
+
+    private void completeAttachedJvmSession(RemoteJarArchive remoteArchive, String editFile, String titleSuffix) {
+        if (jarArchive != remoteArchive) {
+            return;
+        }
+        JarArchive snapshot = new JarArchive(remoteArchive.getClasses(), remoteArchive.getOutput());
+        snapshot.setJarManifest(remoteArchive.getJarManifest());
+        jarArchive = snapshot;
+        lastEditFile = editFile;
         setJMenuBar(myMenuBar = new MyMenuBar(this, false));
         if (pluginManager != null) myMenuBar.addPluginMenu(pluginManager.getPlugins());
         Container contentPane = getContentPane();
         contentPane.remove(toolBar);
         contentPane.add(toolBar = new MyToolBar(this), BorderLayout.PAGE_START);
-        setTitleSuffix("Target terminated");
+        setTitleSuffix(titleSuffix);
+        notifyPlugins();
         revalidate();
         repaint();
     }

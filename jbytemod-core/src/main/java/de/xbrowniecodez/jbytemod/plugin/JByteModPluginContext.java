@@ -289,9 +289,17 @@ public final class JByteModPluginContext implements PluginContext {
     }
 
     @Override
+    public void detachFromAttachedJvm() throws Exception {
+        RemoteJarArchive archive = attachedArchive();
+        archive.close();
+        runOnEdt(() -> jByteMod.completeAttachedJvmDetachment(archive));
+    }
+
+    @Override
     public void terminateAttachedJvm() throws Exception {
-        attachedArchive().terminate();
-        runOnEdt(jByteMod::completeAttachedJvmTermination);
+        RemoteJarArchive archive = attachedArchive();
+        archive.terminate();
+        runOnEdt(() -> jByteMod.completeAttachedJvmTermination(archive));
     }
 
     @Override

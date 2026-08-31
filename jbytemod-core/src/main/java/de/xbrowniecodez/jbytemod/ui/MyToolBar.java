@@ -45,6 +45,9 @@ public class MyToolBar extends JToolBar {
                 freezeButton = makeNavigationToggleButton("Freeze connected JVM", createFreezeIcon());
                 freezeButton.addActionListener(e -> setFrozen(jbm));
                 this.add(freezeButton);
+                this.add(makeNavigationButton("Detach from connected JVM", createDetachIcon(), e -> {
+                    jbm.detachAttachedJvm();
+                }));
                 this.add(makeNavigationButton("Terminate connected JVM", createTerminateIcon(), e -> {
                     jbm.terminateAttachedJvm();
                 }));
@@ -93,6 +96,39 @@ public class MyToolBar extends JToolBar {
                     g.fill(stop);
                     g.setColor(Color.WHITE);
                     g.fillRect(x + 5, y + 5, 6, 6);
+                } finally {
+                    g.dispose();
+                }
+            }
+
+            @Override
+            public int getIconWidth() {
+                return 16;
+            }
+
+            @Override
+            public int getIconHeight() {
+                return 16;
+            }
+        };
+    }
+
+    private Icon createDetachIcon() {
+        return new Icon() {
+            @Override
+            public void paintIcon(Component component, Graphics graphics, int x, int y) {
+                Graphics2D g = (Graphics2D) graphics.create();
+                try {
+                    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g.setColor(new Color(64, 140, 225));
+                    g.drawLine(x + 2, y + 5, x + 7, y + 10);
+                    g.drawLine(x + 5, y + 2, x + 10, y + 7);
+                    g.drawLine(x + 2, y + 2, x + 5, y + 5);
+                    g.drawLine(x + 7, y + 7, x + 10, y + 10);
+                    g.setColor(new Color(225, 145, 55));
+                    g.drawLine(x + 11, y + 5, x + 15, y + 5);
+                    g.drawLine(x + 11, y + 11, x + 15, y + 11);
                 } finally {
                     g.dispose();
                 }
