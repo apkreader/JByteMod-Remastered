@@ -39,40 +39,69 @@ public class Options {
         if (propFile.exists()) {
             Main.INSTANCE.getLogger().log("Loading settings... ");
             try {
-                Files.lines(propFile.toPath()).forEach(l -> {
-                    int split = l.indexOf('=');
-                    String part1 = l.substring(0, split);
-                    String part2 = split == l.length() ? "" : l.substring(split + 1, l.length());
-                    String[] def = part1.split(":");
-                    try {
-                        bools.add(new Option(def[0], part2, Type.valueOf(def[1]), def[2]));
-                    } catch (Exception e) {
-                         Main.INSTANCE.getLogger().warn("Couldn't parse line: " + l);
+                for (String line : Files.readAllLines(propFile.toPath())) {
+                    if (line.isBlank()) {
+                        continue;
                     }
-                });
-                for (int i = 0; i < bools.size(); i++) {
-                    Option o1 = bools.get(i);
-                    Option o2 = defaults.get(i);
-                    if (o1 == null || o2 == null || find(o2.getName()) == null || findDefault(o1.getName()) == null) {
-                         Main.INSTANCE.getLogger().warn("Option file not matching defaults, maybe from old version?");
-                        this.initWithDefaults(true);
-                        this.save();
-                        return;
+                    try {
+                        int separator = line.indexOf('=');
+                        if (separator < 1) {
+                            throw new IllegalArgumentException();
+                        }
+                        String[] definition = line.substring(0, separator).split(":", 3);
+                        if (definition.length != 3) {
+                            throw new IllegalArgumentException();
+                        }
+                        bools.add(new Option(definition[0], line.substring(separator + 1),
+                                Type.valueOf(definition[1]), definition[2]));
+                    } catch (Exception e) {
+                        Main.INSTANCE.getLogger().warn("Couldn't parse line: " + line);
                     }
                 }
-                if (bools.isEmpty()) {
-                     Main.INSTANCE.getLogger().warn("Couldn't read file, probably empty");
-                    this.initWithDefaults(false);
+                if (mergeWithDefaults()) {
+                    Main.INSTANCE.getLogger().warn("Option file not matching defaults, updating it...");
                     this.save();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Main.INSTANCE.getLogger().warn("Couldn't read option file, restoring defaults...");
+                this.initWithDefaults(false);
+                this.save();
             }
         } else {
              Main.INSTANCE.getLogger().warn("Property File \"" + propFile.getName() + "\" does not exist, creating...");
             this.initWithDefaults(false);
             this.save();
         }
+    }
+
+    private boolean mergeWithDefaults() {
+        List<Option> loaded = bools;
+        List<Option> merged = new ArrayList<>(defaults.size());
+        boolean changed = loaded.size() != defaults.size();
+
+        for (Option defaultOption : defaults) {
+            Option loadedOption = find(loaded, defaultOption.getName());
+            if (loadedOption == null || loadedOption.getType() != defaultOption.getType()) {
+                merged.add(defaultOption);
+                changed = true;
+                continue;
+            }
+            merged.add(new Option(defaultOption.getName(), loadedOption.getValue(),
+                    defaultOption.getType(), defaultOption.getGroup()));
+            if (!defaultOption.getName().equals(loadedOption.getName())
+                    || !defaultOption.getGroup().equals(loadedOption.getGroup())) {
+                changed = true;
+            }
+        }
+
+        for (Option loadedOption : loaded) {
+            if (find(defaults, loadedOption.getName()) == null) {
+                changed = true;
+                break;
+            }
+        }
+        bools = merged;
+        return changed;
     }
 
     private void initializeDecompilerOptions() {
@@ -145,7 +174,11 @@ public class Options {
     }
 
     private Option find(String name) {
-        for (Option o : bools) {
+        return find(bools, name);
+    }
+
+    private static Option find(List<Option> options, String name) {
+        for (Option o : options) {
             if (o.getName().equalsIgnoreCase(name)) {
                 return o;
             }
