@@ -1,6 +1,7 @@
 package de.xbrowniecodez.jbytemod;
 
 import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 import de.xbrowniecodez.jbytemod.utils.BytecodeUtils;
 import de.xbrowniecodez.jbytemod.utils.Utils;
 import de.xbrowniecodez.jbytemod.utils.update.objects.Version;
@@ -177,7 +178,7 @@ public class JByteMod extends JFrame {
         if (toolBar != null) contentPane.remove(toolBar);
         contentPane.add(toolBar = new MyToolBar(this), BorderLayout.PAGE_START);
 
-        setTitleSuffix("Agent");
+        setProcessTitle(archive.getProcessId());
         refreshTree();
         notifyPlugins();
         revalidate();
@@ -423,6 +424,29 @@ public class JByteMod extends JFrame {
         this.setTitle(title + " - " + suffix);
     }
 
+    private void setProcessTitle(long processId) {
+        setTitleSuffix("PID " + processId + " - " + processDisplayName(processId));
+    }
+
+    private static String processDisplayName(long processId) {
+        try {
+            String pid = Long.toString(processId);
+            for (VirtualMachineDescriptor descriptor : VirtualMachine.list()) {
+                if (descriptor.id().equals(pid) && !descriptor.displayName().isBlank()) {
+                    return descriptor.displayName();
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        try {
+            return ProcessHandle.of(processId)
+                    .flatMap(process -> process.info().command())
+                    .orElse("Unknown JVM");
+        } catch (Throwable ignored) {
+            return "Unknown JVM";
+        }
+    }
+
     @Override
     public void setVisible(boolean b) {
         if (!agent) {
@@ -430,7 +454,7 @@ public class JByteMod extends JFrame {
         }
         this.initializeFrame(agent);
         if (agent) {
-            setTitleSuffix("Agent");
+            setProcessTitle(ProcessHandle.current().pid());
             LookUtils.applyAgentTheme(this, () -> super.setVisible(b));
             return;
         } else {

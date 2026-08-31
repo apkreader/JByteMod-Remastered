@@ -96,6 +96,10 @@ public final class RemoteJarArchive extends JarArchive implements Closeable {
         return frozen;
     }
 
+    public long getProcessId() {
+        return processId;
+    }
+
     private void requireRunning() {
         if (frozen) throw new IllegalStateException("Resume the attached JVM before inspecting it");
     }
