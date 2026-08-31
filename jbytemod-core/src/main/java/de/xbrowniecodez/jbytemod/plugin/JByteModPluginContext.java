@@ -348,10 +348,21 @@ public final class JByteModPluginContext implements PluginContext {
         if (jByteMod.getJarTree() == null) {
             return;
         }
-        SwingUtilities.invokeLater(() -> {
-            if (jByteMod.getCurrentNode() == classNode && jByteMod.getCurrentMethod() == method) {
-                jByteMod.selectMethod(classNode, method);
-            } else {
+        runOnEdt(() -> {
+            ClassNode selectedClass = jByteMod.getCurrentNode();
+            MethodNode selectedMethod = jByteMod.getCurrentMethod();
+            if (selectedClass != null && selectedMethod != null
+                    && selectedClass.name.equals(classNode.name)
+                    && selectedMethod.name.equals(method.name)
+                    && selectedMethod.desc.equals(method.desc)) {
+                ClassNode currentClass = getCurrentFile().get(classNode.name);
+                MethodNode currentMethod = findMethod(currentClass, method.name, method.desc);
+                if (currentMethod != null) {
+                    jByteMod.selectMethod(currentClass, currentMethod);
+                    return;
+                }
+            }
+            if (jByteMod.getJarTree() != null) {
                 jByteMod.getJarTree().repaint();
             }
         });
@@ -404,7 +415,32 @@ public final class JByteModPluginContext implements PluginContext {
 
     @Override
     public void updateTree() {
-        runOnEdt(jByteMod::refreshTree);
+        ClassNode selectedClass = jByteMod.getCurrentNode();
+        MethodNode selectedMethod = jByteMod.getCurrentMethod();
+        String className = selectedClass == null ? null : selectedClass.name;
+        String methodName = selectedMethod == null ? null : selectedMethod.name;
+        String methodDescriptor = selectedMethod == null ? null : selectedMethod.desc;
+
+        runOnEdt(() -> {
+            jByteMod.refreshTree();
+            if (className == null) {
+                return;
+            }
+            ClassNode currentClass = getCurrentFile().get(className);
+            if (currentClass == null) {
+                return;
+            }
+            if (methodName == null) {
+                jByteMod.selectClass(currentClass);
+                jByteMod.treeSelection(currentClass);
+                return;
+            }
+            MethodNode currentMethod = findMethod(currentClass, methodName, methodDescriptor);
+            if (currentMethod != null) {
+                jByteMod.selectMethod(currentClass, currentMethod);
+                jByteMod.treeSelection(currentClass, currentMethod);
+            }
+        });
     }
 
     @Override
@@ -469,6 +505,18 @@ public final class JByteModPluginContext implements PluginContext {
 
     private static boolean isClassResourcePath(String path) {
         return path.toLowerCase(Locale.ROOT).endsWith(".class");
+    }
+
+    private static MethodNode findMethod(ClassNode classNode, String name, String descriptor) {
+        if (classNode == null) {
+            return null;
+        }
+        for (MethodNode method : classNode.methods) {
+            if (method.name.equals(name) && method.desc.equals(descriptor)) {
+                return method;
+            }
+        }
+        return null;
     }
 
     private void setProgress(int value) {
