@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.List;
 
 public class MyMenuBar extends JMenuBar {
+    private JMenu pluginMenu;
 
     private static final Icon searchIcon = new ImageIcon(MyMenuBar.class.getResource("/resources/search.png"));
     private JByteMod jbm;
@@ -1000,8 +1001,12 @@ public class MyMenuBar extends JMenuBar {
     }
 
     public void addPluginMenu(ArrayList<Plugin> plugins) {
+        if (pluginMenu != null) {
+            remove(pluginMenu);
+            pluginMenu = null;
+        }
         if (jbm.getPluginManager() != null && !jbm.getPluginManager().getAvailablePlugins().isEmpty()) {
-            JMenu pluginMenu = new JMenu("Plugins");
+            pluginMenu = new JMenu("Plugins");
             for (Plugin p : plugins) {
                 JMenuItem jmi = new JMenuItem(p.getName() + " v" + p.getVersion());
                 jmi.setToolTipText("Version " + p.getVersion() + " by " + p.getAuthor());
@@ -1019,8 +1024,10 @@ public class MyMenuBar extends JMenuBar {
             Dimension manageSize = manage.getPreferredSize();
             manage.setPreferredSize(new Dimension(Math.max(manageSize.width, 160), manageSize.height));
             pluginMenu.add(manage);
-            this.add(pluginMenu);
+            add(pluginMenu);
         }
+        revalidate();
+        repaint();
     }
 
     public boolean isAgent() {

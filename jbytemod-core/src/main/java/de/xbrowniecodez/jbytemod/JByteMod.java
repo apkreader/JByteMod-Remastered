@@ -327,12 +327,8 @@ public class JByteMod extends JFrame {
             pluginManager.close();
         }
         pluginManager = new PluginManager(this);
-        boolean attached = jarArchive instanceof RemoteJarArchive;
-        setJMenuBar(myMenuBar = new MyMenuBar(this, attached));
         myMenuBar.addPluginMenu(pluginManager.getPlugins());
         notifyPlugins();
-        revalidate();
-        repaint();
     }
 
     public void refreshTree() {
