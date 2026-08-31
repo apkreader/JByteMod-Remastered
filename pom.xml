@@ -11,6 +11,7 @@
 
     <modules>
         <module>jbytemod-api</module>
+        <module>jbytemod-agent</module>
         <module>jbytemod-core</module>
     </modules>
 
@@ -34,6 +35,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>jbytemod-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jbytemod-agent</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

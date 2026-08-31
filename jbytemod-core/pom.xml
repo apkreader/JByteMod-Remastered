@@ -54,6 +54,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>jbytemod-agent</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>jbytemod-api</artifactId>
 		</dependency>
 		<dependency>

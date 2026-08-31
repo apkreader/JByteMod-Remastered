@@ -71,14 +71,15 @@ For an existing checkout, initialize the API submodule before building:
 git submodule update --init
 ```
 
-The repository is a Maven reactor with two modules:
+The repository is a Maven reactor with three modules:
 
 - [`jbytemod-api`](https://github.com/jbytemod/api) is the standalone plugin API, included here as a Git submodule.
+- `jbytemod-agent` is the small JDK-only agent loaded into attached JVMs.
 - `jbytemod-core` contains the desktop application.
 
 The package build downloads the current CFR `master` branch, records its commit in the displayed CFR version, compiles it from source, and includes it in the final JByteMod jar.
 
-The application is written to `jbytemod-core/target/JByteMod-Remastered-<version>.jar`. The plugin API is written to `jbytemod-api/target/jbytemod-api-<version>.jar` for third-party plugin projects.
+The application is written to `jbytemod-core/target/JByteMod-Remastered-<version>.jar`. The standalone agent is written to `jbytemod-agent/target/jbytemod-agent-<version>.jar`, and the plugin API is written to `jbytemod-api/target/jbytemod-api-<version>.jar` for third-party plugin projects.
 
 
 ### Getting Started
