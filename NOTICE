@@ -1,0 +1,25 @@
+JByteMod Remastered
+
+Copyright (C) 2016-2018 loerting
+Copyright (C) 2019 Panda
+Copyright (C) 2020-2026 xBrownieCodez and JByteMod Remastered contributors
+
+This project is a substantially modified continuation of JByteMod and
+JByteMod Reborn:
+
+  https://github.com/loerting/JByteMod-Beta
+  https://github.com/DotRacel/JByteMod-Reborn
+
+The Remastered project changes the original program and includes, among
+other work, newer Java and bytecode support, additional decompilers,
+archive and APK handling, runtime JVM attachment, a modular agent and
+plugin API, bytecode analysis and editing improvements, and a plugin
+repository. Modification dates and authorship are recorded in the Git
+history and release changelogs.
+
+JByteMod Remastered is distributed under the GNU General Public License,
+version 2 only (GPL-2.0-only). See LICENSE for the complete terms. It is
+provided without warranty.
+
+Bundled third-party components retain their own copyright notices and
+license terms. See jbytemod-core/src/main/resources/resources/LICENSES.

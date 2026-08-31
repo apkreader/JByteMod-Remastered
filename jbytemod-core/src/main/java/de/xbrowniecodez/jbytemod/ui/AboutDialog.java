@@ -46,7 +46,7 @@ public final class AboutDialog extends JDialog {
         information.add(description);
         information.add(Box.createVerticalStrut(18));
 
-        information.add(credit("Original JByteMod", "noverify", "2016-2018"));
+        information.add(credit("Original JByteMod", "loerting", "2016-2018"));
         information.add(Box.createVerticalStrut(5));
         information.add(credit("JByteMod Reborn", "Panda", "2019"));
         information.add(Box.createVerticalStrut(5));

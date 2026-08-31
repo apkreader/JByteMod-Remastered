@@ -112,8 +112,13 @@ Report any bugs or suggest improvements on the [issue tracker](https://github.co
 
 ## License
 
-JByteMod Remastered is licensed under the MIT License. See the LICENSE file for details.
+JByteMod Remastered is a modified work based on JByteMod and is distributed under the [GNU General Public License version 2 only (`GPL-2.0-only`)](LICENSE). It comes with absolutely no warranty. See [NOTICE](NOTICE) for its lineage and modification notice.
+
+Third-party components remain subject to their respective licenses. Their notices are collected in the application's license information.
 
 ## Acknowledgements
 
--   Gratitude to all contributors and community members who support the development of JByteMod Remastered.
+-   [JByteMod](https://github.com/loerting/JByteMod-Beta), originally developed by loerting.
+-   [JByteMod Reborn](https://github.com/DotRacel/JByteMod-Reborn), maintained by Panda.
+-   JByteMod Remastered, maintained by xBrownieCodez and its contributors.
+-   All contributors and community members who continue to support the project.
