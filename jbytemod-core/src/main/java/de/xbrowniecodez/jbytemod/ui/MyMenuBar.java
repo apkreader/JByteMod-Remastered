@@ -10,7 +10,7 @@ import me.grax.jbytemod.res.LanguageRes;
 import me.grax.jbytemod.res.Option;
 import me.grax.jbytemod.res.Options;
 import me.grax.jbytemod.ui.*;
-import me.grax.jbytemod.ui.dialogue.ClassDialogue;
+import de.xbrowniecodez.jbytemod.ui.dialogue.ClassDialogue;
 import de.xbrowniecodez.jbytemod.ui.lists.entries.SearchEntry;
 import me.grax.jbytemod.utils.DeobfusacteUtils;
 import me.grax.jbytemod.utils.ErrorDisplay;

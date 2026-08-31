@@ -10,7 +10,7 @@ import com.mxgraph.view.mxStylesheet;
 import de.xbrowniecodez.jbytemod.Main;
 import lombok.Getter;
 import me.grax.jbytemod.analysis.block.Block;
-import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;
+import de.xbrowniecodez.jbytemod.ui.dialogue.InsnEditDialogue;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import org.objectweb.asm.tree.AbstractInsnNode;
 

@@ -1,6 +1,6 @@
 package me.grax.jbytemod.ui.dialogue.testing;
 
-import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;
+import de.xbrowniecodez.jbytemod.ui.dialogue.InsnEditDialogue;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

@@ -1,15 +1,17 @@
-package me.grax.jbytemod.ui.dialogue;
+package de.xbrowniecodez.jbytemod.ui.dialogue;
 
 import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.JAccessSelectorPanel;
 import me.grax.jbytemod.ui.JFrameList;
 import me.grax.jbytemod.ui.JLDCEditor;
+import me.grax.jbytemod.ui.dialogue.JChooseString;
 import me.grax.jbytemod.utils.InstrUtils;
 import de.xbrowniecodez.jbytemod.utils.asm.Loader;
 import me.grax.jbytemod.utils.gui.SwingUtils;
 import me.lpk.util.AccessHelper;
 import me.lpk.util.OpUtils;
 import org.objectweb.asm.Handle;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
@@ -71,10 +73,13 @@ public class InsnEditDialogue extends ClassDialogue {
     private Handle handle;
     private JTextField ownerField;
     private JTextField nameField;
+    private AbstractInsnNode replacement;
+    private final Object editedObject;
 
     public InsnEditDialogue(MethodNode mn, Object object) {
         super(object);
         this.mn = mn;
+        this.editedObject = object;
     }
 
     public static void createInsertInsnDialog(MethodNode mn, AbstractInsnNode ain, boolean after) {
@@ -88,11 +93,11 @@ public class InsnEditDialogue extends ClassDialogue {
         input.add(clazz);
         if (JOptionPane.showConfirmDialog(Main.INSTANCE.getJByteMod(), panel, "Insert " + (after ? "after" : "before"), 2) == JOptionPane.OK_OPTION) {
             try {
-                //only works because i created constructors for those nodes
-                Class<?> node = Class.forName("org.objectweb.asm.tree" + "." + clazz.getSelectedItem().toString());
-                AbstractInsnNode newnode = (AbstractInsnNode) node.getConstructor().newInstance();
+                AbstractInsnNode newnode = createInstruction(String.valueOf(clazz.getSelectedItem()));
                 //we need no edit for LabelNode
-                if (!hasSettings(newnode) || new InsnEditDialogue(mn, newnode).open()) {
+                InsnEditDialogue dialogue = new InsnEditDialogue(mn, newnode);
+                if (!hasSettings(newnode) || dialogue.open()) {
+                    newnode = (AbstractInsnNode) dialogue.getObject();
                     if (ain != null) {
                         if (after) {
                             mn.instructions.insert(ain, newnode);
@@ -102,6 +107,7 @@ public class InsnEditDialogue extends ClassDialogue {
                     } else {
                         mn.instructions.add(newnode);
                     }
+                    addMissingLabels(mn, newnode);
                     Main.INSTANCE.getJByteMod().getCodeList().loadInstructions(mn);
                 }
             } catch (Exception e) {
@@ -109,6 +115,57 @@ public class InsnEditDialogue extends ClassDialogue {
             }
 
         }
+    }
+
+    private static AbstractInsnNode createInstruction(String type) {
+        LabelNode label = new LabelNode();
+        return switch (type) {
+            case "InsnNode" -> new InsnNode(Opcodes.NOP);
+            case "IntInsnNode" -> new IntInsnNode(Opcodes.BIPUSH, 0);
+            case "VarInsnNode" -> new VarInsnNode(Opcodes.ALOAD, 0);
+            case "TypeInsnNode" -> new TypeInsnNode(Opcodes.NEW, "java/lang/Object");
+            case "FieldInsnNode" -> new FieldInsnNode(Opcodes.GETSTATIC, "", "", "Ljava/lang/Object;");
+            case "MethodInsnNode" -> new MethodInsnNode(Opcodes.INVOKESTATIC, "", "", "()V", false);
+            case "InvokeDynamicInsnNode" -> new InvokeDynamicInsnNode("", "()V",
+                    new Handle(Opcodes.H_INVOKESTATIC, "", "", "()V", false));
+            case "JumpInsnNode" -> new JumpInsnNode(Opcodes.GOTO, label);
+            case "LabelNode" -> label;
+            case "LdcInsnNode" -> new LdcInsnNode("");
+            case "IincInsnNode" -> new IincInsnNode(0, 1);
+            case "TableSwitchInsnNode" -> new TableSwitchInsnNode(0, 0, label, label);
+            case "LookupSwitchInsnNode" -> new LookupSwitchInsnNode(label, new int[0], new LabelNode[0]);
+            case "MultiANewArrayInsnNode" -> new MultiANewArrayInsnNode("[[Ljava/lang/Object;", 2);
+            case "FrameNode" -> new FrameNode(Opcodes.F_NEW, 0, new Object[0], 0, new Object[0]);
+            case "LineNumberNode" -> new LineNumberNode(0, label);
+            default -> throw new IllegalArgumentException("Unsupported instruction type: " + type);
+        };
+    }
+
+    private static void addMissingLabels(MethodNode method, AbstractInsnNode instruction) {
+        if (instruction instanceof LineNumberNode line && !contains(method, line.start)) {
+            method.instructions.insertBefore(instruction, line.start);
+            return;
+        }
+
+        LinkedHashSet<LabelNode> labels = new LinkedHashSet<>();
+        if (instruction instanceof JumpInsnNode jump) {
+            labels.add(jump.label);
+        } else if (instruction instanceof TableSwitchInsnNode tableSwitch) {
+            labels.add(tableSwitch.dflt);
+            labels.addAll(tableSwitch.labels);
+        } else if (instruction instanceof LookupSwitchInsnNode lookupSwitch) {
+            labels.add(lookupSwitch.dflt);
+            labels.addAll(lookupSwitch.labels);
+        }
+        for (LabelNode label : labels) {
+            if (label != null && !contains(method, label)) {
+                method.instructions.add(label);
+            }
+        }
+    }
+
+    private static boolean contains(MethodNode method, AbstractInsnNode instruction) {
+        return instruction != null && method.instructions.indexOf(instruction) >= 0;
     }
 
     public static boolean canEdit(AbstractInsnNode ain) {
@@ -205,7 +262,7 @@ public class InsnEditDialogue extends ClassDialogue {
             mainPanel.add(rightInput, BorderLayout.CENTER);
             mainPanel.add(handleButton, BorderLayout.SOUTH);
 
-            if (JOptionPane.showConfirmDialog(null, mainPanel, "Edit LdcInsnNode", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(dialogParent(), mainPanel, "Edit LdcInsnNode", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                 try {
                     switch (ldctype.getSelectedItem().toString()) {
                         case "String":
@@ -235,12 +292,32 @@ public class InsnEditDialogue extends ClassDialogue {
                     JOptionPane.showMessageDialog(null, "Exception: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
+                refreshEditedInstruction();
                 return true;
             }
             return false;
         }
 
-        return super.open();
+        boolean saved = super.open();
+        if (saved) {
+            refreshEditedInstruction();
+        }
+        return saved;
+    }
+
+    private void refreshEditedInstruction() {
+        if (mn == null || !(editedObject instanceof AbstractInsnNode)) {
+            return;
+        }
+        AbstractInsnNode visibleInstruction = replacement == null
+                ? (AbstractInsnNode) editedObject
+                : replacement;
+        if (!contains(mn, visibleInstruction)) {
+            return;
+        }
+        if (Main.INSTANCE.getJByteMod() != null && Main.INSTANCE.getJByteMod().getCurrentMethod() == mn) {
+            Main.INSTANCE.getJByteMod().getCodeList().loadInstructions(mn);
+        }
     }
 
     @Override
@@ -283,7 +360,7 @@ public class InsnEditDialogue extends ClassDialogue {
         if (o != null && o.equals("opc")) {
             JComboBox<String> opcode = (JComboBox<String>) wp.getComponent(0);
             AbstractInsnNode ain = (AbstractInsnNode) object;
-            ain.setOpcode(OpUtils.getOpcodeIndex(String.valueOf(opcode.getSelectedItem()).toUpperCase()));
+            setOpcode(ain, OpUtils.getOpcodeIndex(String.valueOf(opcode.getSelectedItem()).toUpperCase()));
             return null;
         } else if (type.getName().equals(LabelNode.class.getName())) {
             JComboBox<LabelNode> label = (JComboBox<LabelNode>) wp.getComponent(0);
@@ -346,6 +423,14 @@ public class InsnEditDialogue extends ClassDialogue {
                 }
             }
             JComboBox<LabelNode> jcb = new JComboBox<>(ln.toArray(new LabelNode[0]));
+            jcb.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                               boolean isSelected, boolean cellHasFocus) {
+                    String text = value instanceof LabelNode label ? "Label " + OpUtils.getLabelIndex(label) : "";
+                    return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+                }
+            });
             jcb.setSelectedItem(o);
             return jcb;
         } else if (name.equals("tag")) {
@@ -519,6 +604,34 @@ public class InsnEditDialogue extends ClassDialogue {
             return jtf;
         }
         return null;
+    }
+
+    private void setOpcode(AbstractInsnNode instruction, int opcode) {
+        if (instruction instanceof InsnNode) {
+            replacement = new InsnNode(opcode);
+            replacement.visibleTypeAnnotations = instruction.visibleTypeAnnotations;
+            replacement.invisibleTypeAnnotations = instruction.invisibleTypeAnnotations;
+            if (mn != null && mn.instructions.indexOf(instruction) >= 0) {
+                mn.instructions.set(instruction, replacement);
+            }
+        } else if (instruction instanceof IntInsnNode node) {
+            node.setOpcode(opcode);
+        } else if (instruction instanceof VarInsnNode node) {
+            node.setOpcode(opcode);
+        } else if (instruction instanceof TypeInsnNode node) {
+            node.setOpcode(opcode);
+        } else if (instruction instanceof FieldInsnNode node) {
+            node.setOpcode(opcode);
+        } else if (instruction instanceof MethodInsnNode node) {
+            node.setOpcode(opcode);
+        } else if (instruction instanceof JumpInsnNode node) {
+            node.setOpcode(opcode);
+        }
+    }
+
+    @Override
+    public Object getObject() {
+        return replacement == null ? super.getObject() : replacement;
     }
 
     @Override

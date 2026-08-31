@@ -1,7 +1,7 @@
 package me.grax.jbytemod.ui;
 
 import de.xbrowniecodez.jbytemod.Main;
-import me.grax.jbytemod.ui.dialogue.ClassDialogue.JCharField;
+import de.xbrowniecodez.jbytemod.ui.dialogue.ClassDialogue.JCharField;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import me.grax.jbytemod.utils.gui.SwingUtils;
 import org.objectweb.asm.tree.AnnotationNode;

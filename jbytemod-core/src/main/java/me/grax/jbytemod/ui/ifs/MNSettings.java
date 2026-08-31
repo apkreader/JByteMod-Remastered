@@ -3,7 +3,7 @@ package me.grax.jbytemod.ui.ifs;
 import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.JAccessHelper;
 import me.grax.jbytemod.ui.JAnnotationEditor;
-import me.grax.jbytemod.ui.dialogue.ClassDialogue;
+import de.xbrowniecodez.jbytemod.ui.dialogue.ClassDialogue;
 import me.grax.jbytemod.utils.gui.SwingUtils;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;

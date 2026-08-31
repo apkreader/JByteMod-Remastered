@@ -382,45 +382,6 @@
 					<fork>true</fork>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ow2.asm</groupId>
-									<artifactId>asm</artifactId>
-									<version>${asm.version}</version>
-									<type>jar</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}/classes</outputDirectory>
-									<excludes>
-										module-info.class, META-INF/versions/**/module-info.class, **/ModuleWriter.class, **/ClassWriter.class, **/SymbolTable.class, **/Symbol.class
-									</excludes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.ow2.asm</groupId>
-									<artifactId>asm-tree</artifactId>
-									<version>${asm.version}</version>
-									<type>jar</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}/classes</outputDirectory>
-									<excludes>
-										module-info.class, META-INF/versions/**/module-info.class, **/AbstractInsnNode.class, **/LdcInsnNode.class, **/InsnNode.class, **/IntInsnNode.class, **/LabelNode.class, **/MethodInsnNode.class, **/FieldInsnNode.class, **/VarInsnNode.class, **/TypeInsnNode.class, **/MultiANewArrayInsnNode.class, **/IincInsnNode.class, **/JumpInsnNode.class, **/InvokeDynamicInsnNode.class, **/TableSwitchInsnNode.class, **/LookupSwitchInsnNode.class, **/LineNumberNode.class, */FrameNode.class
-									</excludes>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 		<resources>
 			<resource>

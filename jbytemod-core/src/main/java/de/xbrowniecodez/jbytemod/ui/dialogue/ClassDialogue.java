@@ -1,4 +1,4 @@
-package me.grax.jbytemod.ui.dialogue;
+package de.xbrowniecodez.jbytemod.ui.dialogue;
 
 import de.xbrowniecodez.jbytemod.Main;
 import me.grax.jbytemod.ui.JLDCEditor;
@@ -91,7 +91,7 @@ public class ClassDialogue {
     public boolean open() {
         JPanel panel = initializePanel();
         JPanel rightInput = (JPanel) panel.getComponent(1);
-        if (JOptionPane.showConfirmDialog(null, panel, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+        if (JOptionPane.showConfirmDialog(dialogParent(), panel, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             for (Component c : rightInput.getComponents()) {
                 WrappedPanel wp = (WrappedPanel) c;
                 Field f = wp.getField();
@@ -121,6 +121,10 @@ public class ClassDialogue {
             return true;
         }
         return false;
+    }
+
+    protected Component dialogParent() {
+        return Main.INSTANCE.getJByteMod();
     }
 
     protected Object getSpecialValue(Object object, String name, Class<?> type, Object object3, WrappedPanel wp) {
@@ -628,7 +632,7 @@ public class ClassDialogue {
             JPanel panel = initializePanel();
             JScrollPane scrollPane = (JScrollPane) panel.getComponent(0);
             JTable table = (JTable) scrollPane.getViewport().getView();
-            if (JOptionPane.showConfirmDialog(null, panel, "Edit Array", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(dialogParent(), panel, "Edit Array", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                 list.clear();
                 for (int row = 0; row < table.getRowCount(); row++) {
                     Object o = table.getValueAt(row, 2);
@@ -675,7 +679,7 @@ public class ClassDialogue {
             mainPanel.add(rightInput, BorderLayout.CENTER);
             leftText.add(new JLabel(formatText(o.getClass().getSimpleName() + ":")));
             Object newObject = null;
-            if (JOptionPane.showConfirmDialog(null, mainPanel, "Edit List Item", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(dialogParent(), mainPanel, "Edit List Item", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                 for (Component c : rightInput.getComponents()) {
                     WrappedPanel wp = (WrappedPanel) c;
                     if (o != null) {
@@ -747,7 +751,7 @@ public class ClassDialogue {
             mainPanel.add(rightInput, BorderLayout.CENTER);
             mainPanel.add(handleButton, BorderLayout.SOUTH);
 
-            if (JOptionPane.showConfirmDialog(null, mainPanel, "Add BSM Object", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(dialogParent(), mainPanel, "Add BSM Object", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                 try {
                     switch (ldctype.getSelectedItem().toString()) {
                         case "String":

@@ -6,7 +6,7 @@ import de.xbrowniecodez.jbytemod.ui.lists.AdressList;
 import lombok.Setter;
 import me.grax.jbytemod.ui.JAnnotationEditor;
 import me.grax.jbytemod.ui.JSearch;
-import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;
+import de.xbrowniecodez.jbytemod.ui.dialogue.InsnEditDialogue;
 import me.grax.jbytemod.ui.lists.entries.FieldEntry;
 import me.grax.jbytemod.ui.lists.entries.InstrEntry;
 import me.grax.jbytemod.ui.lists.entries.PrototypeEntry;

@@ -1,7 +1,7 @@
 package de.xbrowniecodez.jbytemod.ui.lists;
 
 import de.xbrowniecodez.jbytemod.Main;
-import me.grax.jbytemod.ui.dialogue.InsnEditDialogue;
+import de.xbrowniecodez.jbytemod.ui.dialogue.InsnEditDialogue;
 import me.grax.jbytemod.ui.lists.entries.TCBEntry;
 import me.grax.jbytemod.utils.ErrorDisplay;
 import org.objectweb.asm.tree.ClassNode;

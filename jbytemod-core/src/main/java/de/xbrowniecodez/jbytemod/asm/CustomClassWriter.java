@@ -1,23 +1,35 @@
 package de.xbrowniecodez.jbytemod.asm;
 
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ModuleVisitor;
-import org.objectweb.asm.ModuleWriter;
+import org.objectweb.asm.Opcodes;
 
-public class CustomClassWriter extends ClassWriter {
+public final class CustomClassWriter extends ClassVisitor {
+    private final ClassWriter writer;
 
     public CustomClassWriter(int flags) {
-        super(flags);
+        this(new ClassWriter(flags));
+    }
+
+    private CustomClassWriter(ClassWriter writer) {
+        super(Opcodes.ASM9, writer);
+        this.writer = writer;
     }
 
     @Override
     public ModuleVisitor visitModule(final String name, final int access, final String version) {
+        if (name == null || name.isBlank()) {
+            return null;
+        }
         try {
-            return moduleWriter = new ModuleWriter(symbolTable, symbolTable.addConstantModule(name).index, access,
-                    version == null ? 0 : symbolTable.addConstantUtf8(version));
-        } catch (NullPointerException npe) {
-            return moduleWriter = new ModuleWriter(symbolTable, 0, 0, 0);
+            return super.visitModule(name, access, version);
+        } catch (IllegalArgumentException | NullPointerException ignored) {
+            return null;
         }
     }
 
+    public byte[] toByteArray() {
+        return writer.toByteArray();
+    }
 }
